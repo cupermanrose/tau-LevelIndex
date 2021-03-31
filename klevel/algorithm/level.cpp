@@ -54,7 +54,7 @@ void level::LoadData(string datafile) {
 
 void level::initIdx(){
     vector<int> candidate;
-    GlobalFilter(candidate);
+    //GlobalFilter(candidate);
 
     idx.clear();
     kcell rootcell; rootcell.TobeRoot(candidate, dim);
@@ -69,10 +69,13 @@ void level::Build() {
     for (int k=1;k<=tau;k++){
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
-            LocalFilter(S1,Sk,*cur_cell); // rskyband or Gridfilter
+            //LocalFilter(S1,Sk,*cur_cell); // rskyband or Gridfilter
             for (auto p=S1.begin();p!=S1.end();p++){
-                if (!VerifyDuplicate(*p,*cur_cell,this_level)){ // merge s_tau
-                    CreateNewCell(*p, S1, Sk, *cur_cell, this_level);
+                if (!VerifyDuplicate(*p,*cur_cell,Sk, this_level)){ // merge s_tau
+                    kcell newcell;
+                    CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
+                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) // compute innerPoint
+                        this_level.emplace_back(newcell);
                 }
             }
         }
@@ -85,4 +88,74 @@ void level::Build() {
         }
         idx.emplace_back(this_level);
     }
+}
+
+bool level::VerifyDuplicate(int p, kcell &cur_cell, vector<int>& Sk, vector<kcell> &this_level) {
+    bool flag = false;
+
+    for (auto r=this_level.begin();r!=this_level.end();r++){
+        if (r->objID!=p) continue;
+        if (r->topk.find(p)==r->topk.end()) continue;
+        bool found=true;
+        for (auto it=r->topk.begin();it!=r->topk.end();it++){
+            if(cur_cell.topk.find(*it)==cur_cell.topk.end()){
+                found=false;
+                break;
+            }
+        }
+        if (found) {
+            flag = true;
+            for (auto it = Sk.begin(); it != Sk.end(); it++) {
+                if (*it != p) r->Stau.insert(*it);
+            }
+            break;
+        }
+    }
+
+    return flag;
+}
+
+void level::CreateNewCell(int p, vector<int> &S1, vector<int> &Sk, kcell &cur_cell, kcell &newcell) {
+    newcell.curk=cur_cell.curk+1;
+    newcell.objID=p;
+    newcell.topk=cur_cell.topk; newcell.topk.insert(p);
+    newcell.Stau.clear();
+    for (auto it=Sk.begin();it!=Sk.end();it++){
+        if (*it!=p) newcell.Stau.insert(*it);
+    }
+
+    // just for verification whether p can top-1 in cur_cell
+    newcell.r.V.clear();
+    newcell.r.H=cur_cell.r.H;
+
+    for (auto it = S1.begin(); it != S1.end(); it++) {
+        if (*it != p) AddHS(p,*it,true,newcell.r.H);
+    }
+    return;
+}
+
+void level::AddHS(int o1, int o2, bool side, vector<halfspace> &H) {
+    halfspace hp;
+    lp_adapter::ComputeHP(Allobj[o1],Allobj[o2],hp.w,dim);
+    hp.side=side; // the halfspace score(p)>score(*it)
+    H.emplace_back(hp);
+}
+
+void level::UpdateH(kcell &cur_cell) {
+    // Replace halfspaces to compute the vertices of new region(merged)
+    int p=cur_cell.objID;
+    cur_cell.r.H.clear();
+    for (auto it = cur_cell.topk.begin(); it != cur_cell.topk.end(); it++) {
+        // the halfspace score(p)<score(*it)
+        if (*it != p) AddHS(p,*it,false,cur_cell.r.H);
+    }
+
+    for (auto it = cur_cell.Stau.begin(); it != cur_cell.Stau.end(); it++) {
+        // the halfspace score(p)>score(*it)
+        AddHS(p,*it,true,cur_cell.r.H);
+    }
+}
+
+void level::UpdateV(kcell &cur_cell) {
+    qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.innerPoint,dim);
 }

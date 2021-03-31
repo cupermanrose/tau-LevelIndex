@@ -31,12 +31,16 @@ include_directories(${CMAKE_SOURCE_DIR}/klevel/adapter)
 
 add_executable(${PROJECT_NAME}
         main.cpp
+        klevel/k_level_lib.h
+        klevel/k_level_lib.cpp
+
         klevel/algorithm/region.h
         klevel/algorithm/region.cpp
         klevel/algorithm/kcell.h
         klevel/algorithm/kcell.cpp
         klevel/algorithm/level.h
         klevel/algorithm/level.cpp
+
         klevel/adapter/lp_adapter.h
         klevel/adapter/lp_adapter.cpp
         klevel/adapter/qhull_adapter.h

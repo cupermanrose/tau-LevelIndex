@@ -13,7 +13,7 @@ public:
     int curk, objID;
     region r;
     set<int> topk; // the top-kth in this region
-    set<int> Sg; // top-tau candidates set
+    set<int> Stau; // top-tau candidates set
 
 public:
     kcell();

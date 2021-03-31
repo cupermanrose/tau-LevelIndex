@@ -6,7 +6,7 @@
 #define K_LEVEL_LEVEL_H
 
 #include "kcell.h"
-//#include "build.h"
+#include "qhull_adapter.h"
 
 class level {
 public:
@@ -19,12 +19,13 @@ public:
     ~level();
 
     void LoadData(string datafile);
-    void GlobalFilter(vector<int>& candidate, ALlobj, int tau);
-    void LocalFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+    //void GlobalFilter(vector<int>& candidate);
+    //void LocalFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
     void initIdx();
     void Build();
-    bool VerifyDuplicate(int p, kcell& cur_cell, vector<kcell>& this_level);
-    void CreateNewCell(int p, vector<int>& S1, vector<int>& Sk, kcell& cur_cell,vector<kcell>& this_level);
+    bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level);
+    void CreateNewCell(int p, vector<int>& S1, vector<int>& Sk, kcell& cur_cell,kcell& newcell);
+    void AddHS(int o1, int o2, bool side, vector<halfspace>& H);
     void UpdateH(kcell& cur_cell);
     void UpdateV(kcell& cur_cell);
 };
