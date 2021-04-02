@@ -5,6 +5,7 @@
 #ifndef K_LEVEL_LEVEL_H
 #define K_LEVEL_LEVEL_H
 
+#include "dominateG.h"
 #include "kcell.h"
 #include "qhull_adapter.h"
 
@@ -12,7 +13,8 @@ class level {
 public:
     int dim, tau;
     vector<vector<kcell>> idx;
-    vector<vector<float>> Allobj;
+    vector<vector<float>> Allobj, OriginD;
+    vector<dominateG> Grid;
 
 public:
     level(int a_dim, int a_tau);
@@ -21,6 +23,7 @@ public:
     void LoadData(string datafile);
     //void GlobalFilter(vector<int>& candidate);
     //void LocalFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+    void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
     void initIdx();
     void Build();
     bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level);

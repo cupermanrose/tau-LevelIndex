@@ -21,8 +21,7 @@ level::~level() {
 
 void level::LoadData(string datafile) {
     fstream fin(datafile, ios::in);
-    Allobj.clear();
-    //OriginData.clear();
+    OriginD.clear();
     while (true) {
         int id;
         float *cl = new float[dim];
@@ -35,19 +34,19 @@ void level::LoadData(string datafile) {
         for (int d = 0; d < dim; d++) fin >> cl[d];
         for (int d = 0; d < dim; d++) fin >> cu[d];
         for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
-        Allobj.push_back(tmp);
+        OriginD.push_back(tmp);
 
         /*if (TEST) {
             if (objCnt >= 50) break;
         }*/
         //log information
-        if (Allobj.size() % 1000 == 0)
+        if (OriginD.size() % 1000 == 0)
             cout << ".";
-        if (Allobj.size() % 10000 == 0)
-            cout << Allobj.size() << " objects loaded" << endl;
+        if (OriginD.size() % 10000 == 0)
+            cout << OriginD.size() << " objects loaded" << endl;
     }
 
-    cout << "Total number of objects: " << Allobj.size() << endl;
+    cout << "Total number of objects: " << OriginD.size() << endl;
     fin.close();
     return;
 }
@@ -55,6 +54,15 @@ void level::LoadData(string datafile) {
 void level::initIdx(){
     vector<int> candidate;
     //GlobalFilter(candidate);
+
+    Allobj.clear();
+    for (auto it=candidate.begin();it!=candidate.end();it++){
+        Allobj.push_back(OriginD[*it]);
+    }
+
+    // Initial Grid
+    vector<int> offset(dim,0);
+    dominateG::EnumerateGrid(offset,0,div_num,dim,Allobj,Grid);
 
     idx.clear();
     kcell rootcell; rootcell.TobeRoot(candidate, dim);
@@ -70,6 +78,7 @@ void level::Build() {
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
             //LocalFilter(S1,Sk,*cur_cell); // rskyband or Gridfilter
+            GridFilter(S1,Sk,*cur_cell);
             for (auto p=S1.begin();p!=S1.end();p++){
                 if (!VerifyDuplicate(*p,*cur_cell,Sk, this_level)){ // merge s_tau
                     kcell newcell;
@@ -87,6 +96,19 @@ void level::Build() {
             UpdateV(*cur_cell);
         }
         idx.emplace_back(this_level);
+    }
+}
+
+void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+    unordered_map<int, set<int>> G; G.clear();
+    for (auto v=cur_cell.r.V.begin();v!=cur_cell.r.V.end();v++){
+        int cube_id=dominateG::FindCube(*v,dim);
+        dominateG::MergeG(G,Grid[cube_id].G,cur_cell.Stau);
+    }
+    S1.clear();Sk.clear();
+    for (auto p=G.begin();p!=G.end();p++){
+        if (p->second.size()==0) S1.push_back(p->first);
+        if (p->second.size()<(tau-cur_cell.curk)) Sk.push_back(p->first);
     }
 }
 
