@@ -4,8 +4,10 @@
 
 #include "k_level_lib.h"
 
-void k_level_lib::BuildIdx(int dim, int tau, string datafile) {
+void k_level_lib::BuildIdx(int dim, int tau, char* datafile, char* logfile) {
+    fstream log(logfile, ios::out);
     level idx(dim,tau);
     idx.LoadData(datafile);
-    idx.Build();
+    idx.Build(log);
+    log.close();
 }

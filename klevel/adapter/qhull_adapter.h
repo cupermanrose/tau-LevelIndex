@@ -6,11 +6,14 @@
 #define K_LEVEL_QHULLADAPTER_H
 
 #include "lp_adapter.h"
+#include "libqhull_r/libqhull_r.h"
+#include "libqhull_r/qhull_ra.h"
 
 class qhull_adapter{
-
 public:
-    static void ComputeVertex(vector<halfspace>& H, point& innerPoint, int dim);
+    qhull_adapter();
+    ~qhull_adapter();
+    static void ComputeVertex(vector<halfspace>& H, vector<point>& V, vector<float>& innerPoint, int& dim);
 };
 
 #endif //K_LEVEL_QHULLADAPTER_H

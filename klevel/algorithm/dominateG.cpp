@@ -66,6 +66,7 @@ void dominateG::EnumerateGrid(vector<int> &cur_offset, int cur_dim, int remains,
         dominateG G;
         G.GetGraph(cur_offset,Allobj,dim);
         Grid.emplace_back(G);
+        //std::cout << Grid.size() << std::endl;
         return;
     }
     cur_dim++;

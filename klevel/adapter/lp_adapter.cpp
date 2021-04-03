@@ -72,7 +72,7 @@ void lp_adapter::addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator
     }
 }
 
-bool lp_adapter::is_Feasible(vector<halfspace>& H, point& innerPoint, int dimm) {
+bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, int dimm) {
 
     double row[Max_Dimension];
 
@@ -119,7 +119,8 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, point& innerPoint, int dimm) 
             get_variables(lp, var1);
             for (int i = 0; i < dim; i++) var[i] = (var[i] + var1[i]) / 2.0;
         }
-        for (int i = 0; i < dim; i++) innerPoint.w[i] = var[i];
+        innerPoint.clear();
+        for (int i = 0; i < dim; i++) innerPoint.push_back(var[i]);
         delete_lp(lp);
         return true;
     }

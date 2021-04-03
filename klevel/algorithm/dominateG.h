@@ -5,6 +5,7 @@
 #ifndef K_LEVEL_DOMINATEG_H
 #define K_LEVEL_DOMINATEG_H
 
+#include <iostream>
 #include <set>
 #include <unordered_map>
 #include "region.h"

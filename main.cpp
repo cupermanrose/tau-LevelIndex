@@ -6,8 +6,10 @@
 #include "k_level_lib.h"
 
 int main(int argc, char* argv[]) {
-    int dim,tau;
-    string datafile;
-    k_level_lib::BuildIdx(dim,tau,datafile);
+    int dim=4;
+    int tau=10;
+    char* datafile="/home/jiahaozhang/data/klevel/U100K4.dat";
+    char* logfile="/home/jiahaozhang/data/klevel/U100K4.log";
+    k_level_lib::BuildIdx(dim, tau, datafile, logfile);
     return 0;
 }

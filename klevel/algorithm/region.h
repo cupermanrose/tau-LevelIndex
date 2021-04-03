@@ -16,7 +16,7 @@ public:
 
     vector<halfspace> H; // halfspace representation
     vector<point> V; // vertice representation
-    point innerPoint;
+    vector<float> innerPoint;
 
 public:
     region();
@@ -24,8 +24,6 @@ public:
 
     void ToBeRoot(int dim);
     void ComputeHP(vector<float>& w, vector<float>& o1, vector<float>& o2, int dim);
-    bool isValid(int dim);
-    void ComputeV(int dim);
 };
 
 
