@@ -37,7 +37,7 @@ void level::LoadData(char* datafile) {
         OriginD.push_back(tmp);
 
         if (TEST) {
-            if (OriginD.size() >= 50) break;
+            if (OriginD.size() >= 100) break;
         }
         //log information
         if (OriginD.size() % 1000 == 0)
@@ -74,6 +74,9 @@ void level::initIdx(fstream& log){
         Allobj.push_back(OriginD[*it]);
     }
 
+    log << "The number of options for building: " << Allobj.size() << std::endl;
+
+
     // Initial Grid
     vector<int> offset(dim,0);
     dominateG::EnumerateGrid(offset,0,div_num,dim,Allobj,Grid);
@@ -98,8 +101,8 @@ void level::Build(fstream& log) {
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
-            //rskyband(S1,Sk,*cur_cell);
-            GridFilter(S1,Sk,*cur_cell);
+            rskyband(S1,Sk,*cur_cell);
+            //GridFilter(S1,Sk,*cur_cell);
             //NoFilter(S1,Sk,*cur_cell);
 
             ave_Sk=ave_Sk+Sk.size();ave_S1=ave_S1+S1.size();
@@ -241,12 +244,14 @@ void level::print_info(int k, clock_t & cur_time, int ave_S1, int ave_Sk, int av
     cout << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
     cout << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
     cout << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
+    cout << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)idx[k-1].size() << endl;
     cout << "Average verterices of region in LEVEL" << ": " << ave_vertex / (float)idx[k].size() << endl;
     cout << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
     log << "LEVEL: " << k << endl;
     log << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
     log << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
     log << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
+    log << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)idx[k-1].size() << endl;
     log << "Average verterices of region in LEVEL" << ": " << ave_vertex / (float)idx[k].size() << endl;
     log << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
 }
