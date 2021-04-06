@@ -18,6 +18,6 @@ void kcell::TobeRoot(vector<int> &candidates, int dim) {
     curk=0;
     objID=-1;
     topk.clear();
-    for (auto it=candidates.begin();it!=candidates.end();it++) Stau.insert(*it);
+    for (int i=0;i!=candidates.size();i++) Stau.insert(i);
     r.ToBeRoot(dim);
 }
