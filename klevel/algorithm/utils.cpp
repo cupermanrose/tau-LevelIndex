@@ -9,6 +9,15 @@
 #include <chrono>
 using namespace std;
 
+template<typename V1, typename V2>
+double dot(const V1& v1, const V2& v2, size_t size){
+    double ret=0;
+    for (int i = 0; i <size ; ++i) {
+        ret+=v1[i]*v2[i];
+    }
+    return ret;
+}
+
 template<typename V, typename U>
 bool v1_dominate_v2(const V &v1, const U &v2, size_t size) {
     /*
@@ -23,7 +32,7 @@ bool v1_dominate_v2(const V &v1, const U &v2, size_t size) {
 }
 
 template<typename V>
-bool dominate(const V &v1, const V &v2) {
+bool v1_dominate_v2(const V &v1, const V &v2) {
     /*
      * /tpara V vector, vector
      */
@@ -58,6 +67,64 @@ bool dominatedByK(const int dimen, const V &pt, const vector<int> &kskyband, con
     }
     return false;
 }
+
+template<typename V, typename U>
+bool v1_rdominate_v2(const V &v1, const U &v2, size_t size,
+                     const std::vector<std::vector<float>> &region) {
+    /*
+     * /tpara V array, pointer
+     */
+//    for (auto &v:region) {
+//        if (v1[i] < v2[i]) {
+//            return false;
+//        }
+//    }
+//TODO
+    return true;
+}
+
+template<typename V>
+bool v1_rdominate_v2(const V &v1, const V &v2,
+                     const std::vector<std::vector<float>> &region) {
+    /*
+     * /tpara V vector, vector
+     */
+    //TODO
+    return v1_dominate_v2(v1, v2, v1.size());
+}
+
+template<typename V>
+bool rdominatedByK(const int dimen, const V &pt, const vector<int> &kskyband, const vector<vector<float>>&PG, int k,
+                   const std::vector<std::vector<float>> &region)
+{
+    //TODO
+
+    // see if pt is dominated by k options of kskyband
+    if (kskyband.empty())
+        return false;
+
+    int count = 0;
+    for (long pid : kskyband)
+    {
+        bool dominated = true;
+        for (int i = 0; i < dimen; i++)
+        {
+            if (PG[pid][i] < pt[i])
+            {
+                dominated = false;
+                break;
+            }
+        }
+        if (dominated) {
+            count++;
+            if(count>=k){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 
 template<typename V1, typename V2>
 float dist(const V1& v1, const V2& v2, int dim){
@@ -131,7 +198,7 @@ float dist(const V1& v1, const V2& v2, int dim){
 //                    do_map[j].insert(i);
 //                    dominated_map[i].insert(j);
 //                    ++dominated_cnt[i];
-////                }else{// non-dominate
+////                }else{// non-v1_dominate_v2
 //                }
 //            }
 //        }
@@ -253,9 +320,9 @@ void kskyband_nortree(
             if (do_cnt[i] >= k) {
                 break;
             }
-            if (dominate(data[i], data[j])) {
+            if (v1_dominate_v2(data[i], data[j])) {
                 ++do_cnt[j];
-            } else if (dominate(data[j], data[i])) {
+            } else if (v1_dominate_v2(data[j], data[i])) {
                 ++do_cnt[i];
             }
         }
