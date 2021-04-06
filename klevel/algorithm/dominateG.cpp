@@ -30,7 +30,12 @@ void dominateG::GetCube(vector<point> &cube, vector<int> &offset, int pos, int d
 
 float dominateG::GetScore(vector<float> &w, vector<float> &p, int dim) { // w[dim-1]=1.0-sigma(w[0] to w[dim-2])
     float score=0.0;
-    for (int i=0;i<dim;i++) score=score+w[i]*p[i];
+    float res=1.0;
+    for (int i=0;i<dim-1;i++) {
+        score=score+w[i]*p[i];
+        res=res-w[i];
+    }
+    score=score+res*p[dim-1];
     return score;
 }
 

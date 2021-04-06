@@ -93,8 +93,8 @@ void level::Build(fstream& log) {
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
             //rskyband(S1,Sk,*cur_cell);
-            //GridFilter(S1,Sk,*cur_cell);
-            NoFilter(S1,Sk,*cur_cell);
+            GridFilter(S1,Sk,*cur_cell);
+            //NoFilter(S1,Sk,*cur_cell);
 
             ave_Sk=ave_Sk+Sk.size();ave_S1=ave_S1+S1.size();
             for (auto p=S1.begin();p!=S1.end();p++){
