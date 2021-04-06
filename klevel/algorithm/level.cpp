@@ -36,9 +36,9 @@ void level::LoadData(char* datafile) {
         for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
         OriginD.push_back(tmp);
 
-        if (TEST) {
-            if (OriginD.size() >= 50) break;
-        }
+//        if (TEST) {
+//            if (OriginD.size() >= 50) break;
+//        }
         //log information
         if (OriginD.size() % 1000 == 0)
             cout << ".";
@@ -57,7 +57,7 @@ void level::GlobalFilter(vector<int> &candidate) {
     //kskyband
     vector<int> candidate_skyband, candidate_onionlayer;
     kskyband(candidate_skyband, OriginD,tau);
-    //onionlayer(candidate_onionlayer, candidate_skyband,  OriginD, tau);
+    onionlayer(candidate_onionlayer, candidate_skyband,  OriginD, tau);
     //our_filter();
     cout << candidate_skyband.size()<< endl;
     candidate=candidate_skyband;
