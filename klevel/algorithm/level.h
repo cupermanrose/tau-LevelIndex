@@ -8,6 +8,8 @@
 #include "dominateG.h"
 #include "kcell.h"
 #include "qhull_adapter.h"
+#include "utils.h"
+
 #include <iostream>
 #include <fstream>
 #include <time.h>

@@ -53,8 +53,14 @@ void level::LoadData(char* datafile) {
 
 void level::GlobalFilter(vector<int> &candidate) {
     candidate.clear();
-    for (int i=0;i<OriginD.size();i++) candidate.push_back(i);
+    //for (int i=0;i<OriginD.size();i++) candidate.push_back(i);
     //kskyband
+    vector<int> candidate_skyband, candidate_onionlayer;
+    kskyband(candidate_skyband, OriginD,tau);
+    //onionlayer(candidate_onionlayer, candidate_skyband,  OriginD, tau);
+    //our_filter();
+    cout << candidate_skyband.size()<< endl;
+    candidate=candidate_skyband;
     //k-onionlayer
     std::cout << "GlobalFilter done!" << std::endl;
 }
