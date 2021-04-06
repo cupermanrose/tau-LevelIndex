@@ -1,83 +1,14 @@
 #include "utils.h"
-#include "qhull_user.h"
 #include "filemem.h"
 #include "hypercube.h"
 #include "point.h"
 #include "rentry.h"
 #include "rnode.h"
 #include "tgs.h"
+#include "rtree_adapter.h"
 #include <chrono>
 using namespace std;
-void release_rtree(Rtree *rt){
 
-}
-
-void rtreeRAM(const Rtree& rt, unordered_map<long int, RtreeNode*>& ramTree)
-{
-    ramTree.clear();
-    queue<long int> H;
-    RtreeNode* node;
-    H.push(rt.m_memory.m_rootPageID);
-    long int pageID;
-    while (!H.empty())
-    {
-        pageID = H.front();
-        H.pop();
-        node = rt.m_memory.loadPage(pageID);
-        ramTree[pageID] = node;
-        if (node->isLeaf() == false)
-        {
-            for (int i = 0; i < node->m_usedspace; i++)
-            {
-                H.push(node->m_entry[i]->m_id);
-            }
-        }
-    }
-}
-
-int countRecords(Rtree& a_rtree, int pageID)
-{
-    int sumRecords = 0;
-    RtreeNode* node = a_rtree.m_memory.loadPage(pageID);
-    if (node->isLeaf())
-    {
-        sumRecords = node->m_usedspace;
-    }
-    else
-    {
-        for (int i = 0; i < node->m_usedspace; i++)
-        {
-            sumRecords += countRecords(a_rtree, node->m_entry[i]->m_id);
-        }
-    }
-    delete node;
-    return sumRecords;
-}
-
-void aggregateRecords(Rtree& a_rtree)
-{
-    queue<long int> H;
-    RtreeNode* node;
-    H.push(a_rtree.m_memory.m_rootPageID);
-    long int pageID;
-
-    while (!H.empty())
-    {
-        pageID = H.front();
-        H.pop();
-        node = a_rtree.m_memory.loadPage(pageID);
-
-        if (node->isLeaf() == false)
-        {
-            for (int i = 0; i < node->m_usedspace; i++)
-            {
-                node->m_entry[i]->num_records = countRecords(a_rtree, node->m_entry[i]->m_id);
-                H.push(node->m_entry[i]->m_id);
-            }
-        }
-        a_rtree.m_memory.writePage(pageID, node);
-    }
-}
 template<typename V, typename U>
 bool v1_dominate_v2(const V &v1, const U &v2, size_t size) {
     /*
@@ -288,7 +219,6 @@ float dist(const V1& v1, const V2& v2, int dim){
 void kskyband(
         vector<int> &ret,
         const std::vector<std::vector<float>> &data,
-        std::vector<int> &ids,
         const int k,
         bool rtree,
         const Rtree *rtree_rt){
@@ -296,42 +226,16 @@ void kskyband(
         if(rtree_rt){
             unordered_map<long int, RtreeNode*> ramTree;
             rtreeRAM(*rtree_rt, ramTree);
-            kskyband_rtree(ret,data,ids,k,rtree_rt, ramTree);
+            kskyband_rtree(ret,data,k,rtree_rt, ramTree);
         }else{
-            if(data.empty()){
-                return;
-            }
-            int dim=data[0].size();
-            RtreeNodeEntry** p = new RtreeNodeEntry*[data.size()];
-            for (int id=0;id<data.size();++id)
-            {
-                float* cl = new float[dim];
-                float* cu = new float[dim];
-                for (int i = 0; i <dim ; ++i) {
-                    cl[i]=data[id][i]-SIDELEN;
-                    cu[i]=data[id][i]+SIDELEN;
-                }
-                Hypercube hc(dim, cl, cu);
-                p[id] = new RtreeNodeEntry(id, hc);
-            }
-            // build rtree
-            const int maxChild = (PAGESIZE - RtreeNode::size()) / RtreeNodeEntry::size(dim);
-            FileMemory mem(PAGESIZE, "./result/index.txt", RtreeNodeEntry::fromMem, true);
-            Rtree* rtree = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
-//            cout << "[Rtree build done]" << endl;
+            Rtree* rtree = nullptr;
             unordered_map<long int, RtreeNode*> ramTree;
-
-            // in-memory rtree
-//            cout << "cache R-tree into memory" << endl;
-            rtreeRAM(*rtree, ramTree);
-
-            // aggregate rtree
-            aggregateRecords(*rtree);
-            kskyband_rtree(ret,data,ids,k,rtree, ramTree);
+            build_rtree(rtree, ramTree, data);
+            kskyband_rtree(ret,data,k,rtree, ramTree);
             // TODO release mem of rtree
         }
     }else{
-        kskyband_nortree(ret,data,ids,k);
+        kskyband_nortree(ret,data,k);
     }
 
 }
@@ -339,10 +243,8 @@ void kskyband(
 void kskyband_nortree(
         std::vector<int> &ret,
         const std::vector<std::vector<float>> &data,
-        std::vector<int> &ids,
         const int k) {
     /*
-     * /tpara vector<vector<double>> or vector<vector<double>>
      * the k-skyband contains thoes records that are dominated by fewer than k others
      */
     vector<int> do_cnt(data.size(), 0);
@@ -366,7 +268,6 @@ void kskyband_nortree(
 void kskyband_rtree(
         std::vector<int> &ret,
         const std::vector<std::vector<float>> &data,
-        std::vector<int> &ids,
         const int k,
         const Rtree *rtree_rt,
         unordered_map<long int, RtreeNode*>& ramTree){

@@ -6,7 +6,6 @@
 void kskyband(
         std::vector<int> &ret,
         const std::vector<std::vector<float>> &data,
-        std::vector<int> &ids,
         const int k,
         bool rtree=true,
         const Rtree *rtree_rt= nullptr);
@@ -14,7 +13,6 @@ void kskyband(
 void kskyband_rtree(
         std::vector<int> &ret,
         const std::vector<std::vector<float>> &data,
-        std::vector<int> &ids,
         const int k,
         const Rtree *rtree_rt,
         std::unordered_map<long int, RtreeNode*> &ramTree);
@@ -22,7 +20,6 @@ void kskyband_rtree(
 void kskyband_nortree(
         std::vector<int> &ret,
         const std::vector<std::vector<float>> &data,
-        std::vector<int> &ids,
         const int k);
 
 #endif //K_LEVEL_UTILS_H

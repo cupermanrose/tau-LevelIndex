@@ -50,7 +50,8 @@ add_executable(${PROJECT_NAME}
         klevel/adapter/lp_adapter.cpp
         klevel/adapter/qhull_adapter.h
         klevel/adapter/qhull_adapter.cpp
-
+        klevel/adapter/rtree_adapter.h
+        klevel/adapter/rtree_adapter.cpp
 
 
 
