@@ -34,13 +34,13 @@ void build_rtree(Rtree *&rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,
     // build rtree
     const int maxChild = (PAGESIZE - RtreeNode::size()) / RtreeNodeEntry::size(dim);
     FileMemory mem(PAGESIZE, "./result/index.txt", RtreeNodeEntry::fromMem, true);
-    Rtree* rtree = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
+    rtree_rt = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
 //            cout << "[Rtree build done]" << endl;
 
     // in-memory rtree
 //            cout << "cache R-tree into memory" << endl;
-    rtreeRAM(*rtree, ramTree);
+    rtreeRAM(*rtree_rt, ramTree);
 
     // aggregate rtree
-    aggregateRecords(*rtree);
+    aggregateRecords(*rtree_rt);
 }
