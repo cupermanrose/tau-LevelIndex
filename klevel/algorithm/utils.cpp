@@ -362,7 +362,7 @@ void kskyband_rtree(
         pageID = heapIter->second;
         heap.erase(heapIter);
 
-        if (pageID > MAXPAGEID)
+        if (pageID >= MAXPAGEID)
         {
             if (!dominatedByK(dimen, data[pageID - MAXPAGEID], ret, data, k))
             {
@@ -372,6 +372,7 @@ void kskyband_rtree(
         else
         {
             //node = a_rtree.m_memory.loadPage(pageID);
+            cout<<pageID<<endl;
             node = ramTree[pageID];
             if (node->isLeaf())
             {
