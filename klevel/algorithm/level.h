@@ -10,6 +10,7 @@
 #include "qhull_adapter.h"
 #include <iostream>
 #include <fstream>
+#include <time.h>
 
 #define TEST 1
 
@@ -18,7 +19,7 @@ public:
     int dim, tau;
     vector<vector<kcell>> idx;
     vector<vector<float>> Allobj, OriginD;
-    vector<dominateG> Grid;
+    unordered_map<int, dominateG> Grid;
 
 public:
     level(int a_dim, int a_tau);
@@ -26,9 +27,11 @@ public:
 
     void LoadData(char* datafile);
     void GlobalFilter(vector<int>& candidate);
-    //void LocalFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+
     void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
     void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+    void NoFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+
     void initIdx(fstream& log);
     void Build(fstream& log);
     bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level);
@@ -36,6 +39,8 @@ public:
     void AddHS(int o1, int o2, bool side, vector<halfspace>& H);
     void UpdateH(kcell& cur_cell);
     void UpdateV(kcell& cur_cell);
+
+    void print_info(int k, clock_t& cur_time, int ave_S1, int ave_Sk, int ave_vertex, fstream& log);
 };
 
 

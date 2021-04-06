@@ -83,14 +83,20 @@ void level::initIdx(fstream& log){
 }
 
 void level::Build(fstream& log) {
+
     vector<int> S1,Sk;
     initIdx(log);
+    clock_t cur_time=clock();
     for (int k=1;k<=tau;k++){
+        int ave_Sk=0,ave_S1=0, ave_vertex=0;
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
-            //LocalFilter: rskyband or Gridfilter
-            rskyband(S1,Sk,*cur_cell);
+
+            //rskyband(S1,Sk,*cur_cell);
             //GridFilter(S1,Sk,*cur_cell);
+            NoFilter(S1,Sk,*cur_cell);
+
+            ave_Sk=ave_Sk+Sk.size();ave_S1=ave_S1+S1.size();
             for (auto p=S1.begin();p!=S1.end();p++){
                 if (!VerifyDuplicate(*p,*cur_cell,Sk, this_level)){ // merge s_tau
                     kcell newcell;
@@ -106,19 +112,19 @@ void level::Build(fstream& log) {
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
             UpdateH(*cur_cell);
             UpdateV(*cur_cell);
+            ave_vertex=ave_vertex+cur_cell->r.V.size();
         }
         idx.emplace_back(this_level);
 
-        cout << "LEVEL: " << k << endl;
-        cout << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
-        //cout << "The utk size of LEVEL " << k << ": " << utk_results.size() << endl;
-        //cout << "Time Cost of LEVEL " << k << ": " << (clock() - now) / (float)CLOCKS_PER_SEC << endl;
-        ///cout << "Average one_skyband size of LEVEL" << ": " << one_candidate / (float)L[level - 1].size() << endl;
-        //cout << "Average spliting number of LEVEL" << ": " << spliting / (float)L[level - 1].size() << endl;
-        //cout << "Average candidates of LEVEL" << ": " << ave_candidate / (float)L[level - 1].size() << endl;
-        //cout << "Average verterices of region in LEVEL" << ": " << ave_hull_vertex / (float)L[level - 1].size() << endl;
-        //cout << "subgraph_pruning in LEVEL" << ": " << subgraph_pruning / (float)L[level - 1].size() << endl;
+        print_info(k,cur_time,ave_S1,ave_Sk,ave_vertex,log);
+    }
+}
 
+void level::NoFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+    S1.clear();Sk.clear();
+    for (auto it=cur_cell.Stau.begin();it!=cur_cell.Stau.end();it++){
+        S1.push_back(*it);
+        Sk.push_back(*it);
     }
 }
 
@@ -137,10 +143,16 @@ void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
 
 void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
     unordered_map<int, set<int>> G; G.clear();
+    set<int> id; id.clear();
     for (auto v=cur_cell.r.V.begin();v!=cur_cell.r.V.end();v++){
         int cube_id=dominateG::FindCube(*v,dim);
-        dominateG::MergeG(G,Grid[cube_id].G,cur_cell.Stau);
+        id.insert(cube_id);
     }
+    for (auto cube_id=id.begin();cube_id!=id.end();cube_id++){
+        auto cube=Grid.find(*cube_id);
+        if (cube!=Grid.end()) dominateG::MergeG(G,cube->second.G,cur_cell.Stau);
+    }
+
     S1.clear();Sk.clear();
     for (auto p=G.begin();p!=G.end();p++){
         if (p->second.size()==0) S1.push_back(p->first);
@@ -216,4 +228,19 @@ void level::UpdateH(kcell &cur_cell) {
 
 void level::UpdateV(kcell &cur_cell) {
     qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
+}
+
+void level::print_info(int k, clock_t & cur_time, int ave_S1, int ave_Sk, int ave_vertex, fstream& log) {
+    cout << "LEVEL: " << k << endl;
+    cout << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
+    cout << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
+    cout << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
+    cout << "Average verterices of region in LEVEL" << ": " << ave_vertex / (float)idx[k].size() << endl;
+    cout << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+    log << "LEVEL: " << k << endl;
+    log << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
+    log << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
+    log << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
+    log << "Average verterices of region in LEVEL" << ": " << ave_vertex / (float)idx[k].size() << endl;
+    log << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
 }

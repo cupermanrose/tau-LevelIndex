@@ -60,12 +60,12 @@ void dominateG::GetGraph(vector<int> &offset, vector<vector<float>> &Allobj, int
     }
 }
 
-void dominateG::EnumerateGrid(vector<int> &cur_offset, int cur_dim, int remains, int dim, vector<vector<float>>& Allobj, vector<dominateG>& Grid) {
+void dominateG::EnumerateGrid(vector<int> &cur_offset, int cur_dim, int remains, int dim, vector<vector<float>>& Allobj, unordered_map<int, dominateG>& Grid) {
     if (cur_dim==(dim-1)){
         if (remains<=0) return;
         dominateG G;
         G.GetGraph(cur_offset,Allobj,dim);
-        Grid.emplace_back(G);
+        Grid.insert(make_pair(G.Gid, G));
         //std::cout << Grid.size() << std::endl;
         return;
     }
@@ -77,9 +77,13 @@ void dominateG::EnumerateGrid(vector<int> &cur_offset, int cur_dim, int remains,
 }
 
 int dominateG::FindCube(point &v,int dim) {
-    float w_offset=1.0/div_num;
+    float w_offset=1.0/div_num+EPS;
     vector<int> offset(dim,0);
-    for (int d=0;d<dim-1;d++) offset[d]=v.w[d]/w_offset;
+    for (int d=0;d<dim-1;d++){
+        offset[d]=floor(v.w[d]/w_offset);
+        offset[d]=max(0,offset[d]);
+    }
+
     return offsetToID(offset,dim);
 }
 
@@ -89,7 +93,7 @@ void dominateG::MergeG(unordered_map<int, set<int>> &G, unordered_map<int, set<i
         for (auto i=S.begin();i!=S.end();i++){
             set<int> edge; edge.clear();
             auto it=G_cube.find(*i);
-            for (auto j=S.end();j!=S.end();j++){
+            for (auto j=S.begin();j!=S.end();j++){
                 if (*i==*j) continue;
                 if (it->second.find(*j)!=it->second.end()) edge.insert(*j);
             }
