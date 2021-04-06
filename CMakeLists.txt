@@ -28,6 +28,7 @@ include_directories(${CMAKE_SOURCE_DIR}/lib/lp_lib)
 include_directories(${CMAKE_SOURCE_DIR}/klevel)
 include_directories(${CMAKE_SOURCE_DIR}/klevel/algortihm)
 include_directories(${CMAKE_SOURCE_DIR}/klevel/adapter)
+include_directories(${CMAKE_SOURCE_DIR}/lib/rtree)
 
 add_executable(${PROJECT_NAME}
         main.cpp
@@ -40,6 +41,8 @@ add_executable(${PROJECT_NAME}
         klevel/algorithm/kcell.cpp
         klevel/algorithm/level.h
         klevel/algorithm/level.cpp
+        klevel/algorithm/utils.h
+        klevel/algorithm/utils.cpp
 
         klevel/adapter/lp_adapter.h
         klevel/adapter/lp_adapter.cpp
@@ -98,11 +101,38 @@ add_executable(${PROJECT_NAME}
         lib/lp_lib/lp_SOS.c
         lib/lp_lib/lp_utils.c
         lib/lp_lib/lp_wlp.c
+
+
         lib/quadProg_lib/Array.hh
         lib/quadProg_lib/Array.cc
         lib/quadProg_lib/QuadProg++.hh
         lib/quadProg_lib/QuadProg++.cc
-)
+
+        lib/rtree/collection.h
+        lib/rtree/collection.cpp
+        lib/rtree/filemem.h
+        lib/rtree/filemem.cpp
+        lib/rtree/global.h
+        lib/rtree/global.cpp
+        lib/rtree/header.h
+        lib/rtree/hypercube.h
+        lib/rtree/hypercube.cpp
+        lib/rtree/mem.h
+        lib/rtree/param.h
+        lib/rtree/param.cpp
+        lib/rtree/point.h
+        lib/rtree/point.cpp
+        lib/rtree/rentry.h
+        lib/rtree/rentry.cpp
+        lib/rtree/rnode.h
+        lib/rtree/rnode.cpp
+        lib/rtree/rtree.h
+        lib/rtree/rtree.cpp
+        lib/rtree/tgs.h
+        lib/rtree/tgs.cpp
+        lib/rtree/virtualRNode.h
+        lib/rtree/virtualRNode.cpp
+        )
 
 
 target_link_libraries(${PROJECT_NAME} PRIVATE libqhullcpp)
