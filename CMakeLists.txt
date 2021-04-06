@@ -43,6 +43,8 @@ add_executable(${PROJECT_NAME}
         klevel/algorithm/level.cpp
         klevel/algorithm/utils.h
         klevel/algorithm/utils.cpp
+        klevel/algorithm/dominateG.h
+        klevel/algorithm/dominateG.cpp
 
         klevel/adapter/lp_adapter.h
         klevel/adapter/lp_adapter.cpp

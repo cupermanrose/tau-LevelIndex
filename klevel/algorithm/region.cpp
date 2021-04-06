@@ -7,7 +7,7 @@
 region::region() {
     H.clear();
     V.clear();
-    innerPoint.w.clear();
+    innerPoint.clear();
 }
 
 region::~region() {
@@ -15,15 +15,13 @@ region::~region() {
     vector<halfspace>().swap(H);
     V.clear();
     vector<point>().swap(V);
-    innerPoint.w.clear();
-    vector<float>().swap(innerPoint.w);
+    innerPoint.clear();
+    vector<float>().swap(innerPoint);
 }
 
 void region::ToBeRoot(int dim) {
     H.clear();
     V.clear();
-    innerPoint.w.clear();
-
     //Generate vertices for the whole space
     point origin; origin.w.clear();
     for (int d = 0; d < dim - 1; d++) origin.w.push_back(0);
@@ -33,8 +31,9 @@ void region::ToBeRoot(int dim) {
         V.push_back(origin);
         origin.w[d] = 0.0;
     }
-    for (int d = 0; d < dim - 1; d++) innerPoint.w[d] = 1.0 / (float)dim;
-
+    innerPoint.clear();
+    for (int d = 0; d < dim - 1; d++) innerPoint.push_back(1.0 / (float)dim);
+    innerPoint.push_back(0.0);
     return;
 }
 

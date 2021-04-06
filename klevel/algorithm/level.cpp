@@ -3,13 +3,13 @@
 //
 
 #include "level.h"
-#include <fstream>
 
 level::level(int a_dim, int a_tau){
     dim=a_dim;
     tau=a_tau;
     idx.clear();
     Allobj.clear();
+    Grid.clear();
 }
 
 level::~level() {
@@ -19,10 +19,9 @@ level::~level() {
     vector<vector<float>>().swap(Allobj);
 }
 
-void level::LoadData(string datafile) {
+void level::LoadData(char* datafile) {
     fstream fin(datafile, ios::in);
-    Allobj.clear();
-    //OriginData.clear();
+    OriginD.clear();
     while (true) {
         int id;
         float *cl = new float[dim];
@@ -35,41 +34,69 @@ void level::LoadData(string datafile) {
         for (int d = 0; d < dim; d++) fin >> cl[d];
         for (int d = 0; d < dim; d++) fin >> cu[d];
         for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
-        Allobj.push_back(tmp);
+        OriginD.push_back(tmp);
 
-        /*if (TEST) {
-            if (objCnt >= 50) break;
-        }*/
+        if (TEST) {
+            if (OriginD.size() >= 50) break;
+        }
         //log information
-        if (Allobj.size() % 1000 == 0)
+        if (OriginD.size() % 1000 == 0)
             cout << ".";
-        if (Allobj.size() % 10000 == 0)
-            cout << Allobj.size() << " objects loaded" << endl;
+        if (OriginD.size() % 10000 == 0)
+            cout << OriginD.size() << " objects loaded" << endl;
     }
 
-    cout << "Total number of objects: " << Allobj.size() << endl;
+    cout << "Total number of objects: " << OriginD.size() << endl;
     fin.close();
     return;
 }
 
-void level::initIdx(){
+void level::GlobalFilter(vector<int> &candidate) {
+    candidate.clear();
+    for (int i=0;i<OriginD.size();i++) candidate.push_back(i);
+    //kskyband
+    //k-onionlayer
+    std::cout << "GlobalFilter done!" << std::endl;
+}
+
+void level::initIdx(fstream& log){
     vector<int> candidate;
-    //GlobalFilter(candidate);
+    GlobalFilter(candidate);
+
+    Allobj.clear();
+    for (auto it=candidate.begin();it!=candidate.end();it++){
+        Allobj.push_back(OriginD[*it]);
+    }
+
+    // Initial Grid
+    vector<int> offset(dim,0);
+    dominateG::EnumerateGrid(offset,0,div_num,dim,Allobj,Grid);
+    std::cout << "Init Grid done!" << std::endl;
 
     idx.clear();
     kcell rootcell; rootcell.TobeRoot(candidate, dim);
     vector<kcell> Lzero;
     Lzero={rootcell};
     idx.push_back(Lzero);
+
+    cout << "Init done!" << endl;
 }
 
-void level::Build() {
+void level::Build(fstream& log) {
+
     vector<int> S1,Sk;
-    initIdx();
+    initIdx(log);
+    clock_t cur_time=clock();
     for (int k=1;k<=tau;k++){
+        int ave_Sk=0,ave_S1=0, ave_vertex=0;
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
-            //LocalFilter(S1,Sk,*cur_cell); // rskyband or Gridfilter
+
+            //rskyband(S1,Sk,*cur_cell);
+            GridFilter(S1,Sk,*cur_cell);
+            //NoFilter(S1,Sk,*cur_cell);
+
+            ave_Sk=ave_Sk+Sk.size();ave_S1=ave_S1+S1.size();
             for (auto p=S1.begin();p!=S1.end();p++){
                 if (!VerifyDuplicate(*p,*cur_cell,Sk, this_level)){ // merge s_tau
                     kcell newcell;
@@ -85,8 +112,51 @@ void level::Build() {
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
             UpdateH(*cur_cell);
             UpdateV(*cur_cell);
+            ave_vertex=ave_vertex+cur_cell->r.V.size();
         }
         idx.emplace_back(this_level);
+
+        print_info(k,cur_time,ave_S1,ave_Sk,ave_vertex,log);
+    }
+}
+
+void level::NoFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+    S1.clear();Sk.clear();
+    for (auto it=cur_cell.Stau.begin();it!=cur_cell.Stau.end();it++){
+        S1.push_back(*it);
+        Sk.push_back(*it);
+    }
+}
+
+void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+    S1.clear();Sk.clear();
+    for (auto i=cur_cell.Stau.begin();i!=cur_cell.Stau.end();i++){
+        int cnt=0;
+        for (auto j=cur_cell.Stau.begin();j!=cur_cell.Stau.end();j++){
+            if (*i==*j) continue;
+            if (dominateG::RegionDominate(cur_cell.r.V,Allobj[*i],Allobj[*j],dim)) cnt++;
+        }
+        if (cnt==0) S1.push_back(*i);
+        if (cnt<(tau-cur_cell.curk)) Sk.push_back(*i);
+    }
+}
+
+void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+    unordered_map<int, set<int>> G; G.clear();
+    set<int> id; id.clear();
+    for (auto v=cur_cell.r.V.begin();v!=cur_cell.r.V.end();v++){
+        int cube_id=dominateG::FindCube(*v,dim);
+        id.insert(cube_id);
+    }
+    for (auto cube_id=id.begin();cube_id!=id.end();cube_id++){
+        auto cube=Grid.find(*cube_id);
+        if (cube!=Grid.end()) dominateG::MergeG(G,cube->second.G,cur_cell.Stau);
+    }
+
+    S1.clear();Sk.clear();
+    for (auto p=G.begin();p!=G.end();p++){
+        if (p->second.size()==0) S1.push_back(p->first);
+        if (p->second.size()<(tau-cur_cell.curk)) Sk.push_back(p->first);
     }
 }
 
@@ -157,5 +227,20 @@ void level::UpdateH(kcell &cur_cell) {
 }
 
 void level::UpdateV(kcell &cur_cell) {
-    qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.innerPoint,dim);
+    qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
+}
+
+void level::print_info(int k, clock_t & cur_time, int ave_S1, int ave_Sk, int ave_vertex, fstream& log) {
+    cout << "LEVEL: " << k << endl;
+    cout << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
+    cout << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
+    cout << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
+    cout << "Average verterices of region in LEVEL" << ": " << ave_vertex / (float)idx[k].size() << endl;
+    cout << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+    log << "LEVEL: " << k << endl;
+    log << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
+    log << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
+    log << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
+    log << "Average verterices of region in LEVEL" << ": " << ave_vertex / (float)idx[k].size() << endl;
+    log << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
 }
