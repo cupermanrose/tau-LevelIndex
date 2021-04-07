@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 ### add qhull
 include_directories(/usr/local/include/libqhullcpp)
+###include_directories(/usr/local/include/libqhull_r)
 ### qhullstatic reentrant library
 add_library(libqhullstatic_r STATIC IMPORTED)
 set_property(TARGET libqhullstatic_r PROPERTY IMPORTED_LOCATION /usr/local/lib/${CMAKE_STATIC_LIBRARY_PREFIX}qhullstatic_r${CMAKE_STATIC_LIBRARY_SUFFIX})
@@ -52,8 +53,6 @@ add_executable(${PROJECT_NAME}
         klevel/adapter/qhull_adapter.cpp
         klevel/adapter/rtree_adapter.h
         klevel/adapter/rtree_adapter.cpp
-
-
 
 
         lib/lp_lib/bfp/bfp_LUSOL/lp_LUSOL.h

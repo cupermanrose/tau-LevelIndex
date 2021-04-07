@@ -51,7 +51,7 @@ void level::LoadData(char* datafile) {
     return;
 }
 
-void level::GlobalFilter(vector<int> &candidate) {
+void level::GlobalFilter(fstream& log, vector<int> &candidate) {
     candidate.clear();
     //for (int i=0;i<OriginD.size();i++) candidate.push_back(i);
     //kskyband
@@ -59,27 +59,25 @@ void level::GlobalFilter(vector<int> &candidate) {
     kskyband(candidate_skyband, OriginD,tau);
     onionlayer(candidate_onionlayer, candidate_skyband,  OriginD, tau);
     //our_filter();
-    cout << candidate_skyband.size()<< endl;
     candidate=candidate_skyband;
     //k-onionlayer
-    std::cout << "GlobalFilter done!" << std::endl;
-}
-
-void level::initIdx(fstream& log){
-    vector<int> candidate;
-    GlobalFilter(candidate);
-
     Allobj.clear();
     for (auto it=candidate.begin();it!=candidate.end();it++){
         Allobj.push_back(OriginD[*it]);
     }
 
+    cout << "The number of options for building: " << Allobj.size() << std::endl;
     log << "The number of options for building: " << Allobj.size() << std::endl;
+    std::cout << "GlobalFilter done!" << std::endl;
+}
 
+void level::initIdx(fstream& log){
+    vector<int> candidate;
+    GlobalFilter(log,candidate);
 
     // Initial Grid
     vector<int> offset(dim,0);
-    dominateG::EnumerateGrid(offset,0,div_num,dim,Allobj,Grid);
+    //dominateG::EnumerateGrid(offset,0,div_num,dim,Allobj,Grid);
     std::cout << "Init Grid done!" << std::endl;
 
     idx.clear();
@@ -101,8 +99,8 @@ void level::Build(fstream& log) {
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
-            //rskyband(S1,Sk,*cur_cell);
-            GridFilter(S1,Sk,*cur_cell);
+            rskyband(S1,Sk,*cur_cell);
+            //GridFilter(S1,Sk,*cur_cell);
             //NoFilter(S1,Sk,*cur_cell);
 
             ave_Sk=ave_Sk+Sk.size();ave_S1=ave_S1+S1.size();
@@ -118,7 +116,9 @@ void level::Build(fstream& log) {
 
         //Compute V for each cell
         //discuss why we need recompute after all
+        int cnt=0;
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
+            cout << cnt << endl; cnt++;
             UpdateH(*cur_cell);
             UpdateV(*cur_cell);
             ave_vertex=ave_vertex+cur_cell->r.V.size();

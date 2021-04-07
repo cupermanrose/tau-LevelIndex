@@ -28,7 +28,7 @@ public:
     ~level();
 
     void LoadData(char* datafile);
-    void GlobalFilter(vector<int>& candidate);
+    void GlobalFilter(fstream& log, vector<int>& candidate);
 
     void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
     void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
