@@ -69,13 +69,24 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<point>& V, vector
        If so, set 'qh->feasible_point and do not use option 'Hn,...' [it would retransform the halfspaces]
     */
     //char qhull_cmd[] = "qhull H0 s Tcv Fp";
-    char qhull_cmd[] = "qhull H0 Fp";
+    //char qhull_cmd[] = "qhull H0 Fp";
 
-    coordT* feasible_point = new coordT[dim - 1];
-    for (int i = 0; i < dim - 1; i++) feasible_point[i] = innerPoint[i];
-    exitcode = qh_new_qhull_klevel(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, feasible_point, NULL, NULL);
+    string s="qhull H";
+    for (int i = 0; i < dim - 2; i++) {
+        s += to_string(innerPoint[i]) + ",";
+    }
+    s += to_string(innerPoint[dim-2])+" Fp";
+    char qhull_cmd[s.length()+1];
+    strcpy(qhull_cmd, s.c_str());
 
-    //exitcode = qh_new_qhull(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, NULL, NULL);
+    //coordT* feasible_point = new coordT[dim - 1];
+    /*for (int i = 0; i < dim - 1; i++) {
+        feasible_point[i] = innerPoint[i];
+    }*/
+
+    //exitcode = qh_new_qhull_klevel(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, feasible_point, NULL, NULL);
+
+    exitcode = qh_new_qhull(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, NULL, NULL);
 
     V.clear();
 
