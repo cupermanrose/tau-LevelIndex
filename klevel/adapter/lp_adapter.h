@@ -10,8 +10,6 @@
 #include "lp_lib.h"
 
 #define Max_Dimension 8
-#define EPS 0.000001
-
 using namespace std;
 
 struct halfspace {

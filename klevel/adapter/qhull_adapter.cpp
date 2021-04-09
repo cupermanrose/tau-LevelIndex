@@ -69,9 +69,9 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<point>& V, vector
        If so, set 'qh->feasible_point and do not use option 'Hn,...' [it would retransform the halfspaces]
     */
     //char qhull_cmd[] = "qhull H0 s Tcv Fp";
-    //char qhull_cmd[] = "qhull H0 Fp";
 
-    string s="qhull H";
+
+    /*string s="qhull H";
     for (int i = 0; i < dim - 2; i++) {
         s += to_string(innerPoint[i]) + ",";
     }
@@ -79,19 +79,20 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<point>& V, vector
     char qhull_cmd[s.length()+1];
     strcpy(qhull_cmd, s.c_str());
 
-    //coordT* feasible_point = new coordT[dim - 1];
-    /*for (int i = 0; i < dim - 1; i++) {
+    exitcode = qh_new_qhull(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, NULL, NULL);*/
+
+    char qhull_cmd[] = "qhull H0 Fp";
+    coordT* feasible_point = new coordT[dim - 1];
+    for (int i = 0; i < dim - 1; i++) {
         feasible_point[i] = innerPoint[i];
-    }*/
+    }
 
-    //exitcode = qh_new_qhull_klevel(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, feasible_point, NULL, NULL);
-
-    exitcode = qh_new_qhull(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, NULL, NULL);
+    exitcode = qh_new_qhull_klevel(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, feasible_point, NULL, NULL);
 
     V.clear();
-
-    boolT zerodiv;
-    FORALLfacets{
+    if (exitcode==0){ // no error in qhull
+        boolT zerodiv;
+        FORALLfacets{
             point tmp; tmp.w.clear();
             for (int d = 0; d < qh->hull_dim; d++) {
                 if (facet->offset < -qh->MINdenom) {
@@ -99,11 +100,15 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<point>& V, vector
                 }
                 else {
                     tmp.w.push_back(qh_divzero(facet->normal[d], facet->offset, qh->MINdenom_1,
-                                                    &zerodiv) + qh->feasible_point[d]);
+                                               &zerodiv) + qh->feasible_point[d]);
                 }
             }
             V.emplace_back(tmp);
+        }
+
     }
+
+
 
 #ifdef qh_NOmem
     qh_freeqhull(qh, qh_ALL);

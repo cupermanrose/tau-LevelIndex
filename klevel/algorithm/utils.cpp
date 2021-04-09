@@ -7,7 +7,7 @@
 #include "tgs.h"
 #include "rtree_adapter.h"
 #include <chrono>
-#include "qhull_user.h"
+//#include "qhull_user.h"
 using namespace std;
 
 template<typename V1, typename V2>
@@ -344,6 +344,7 @@ void kskyband_rtree(
 
 
 
+/*
 template<typename VVF>
 void build_qhull(const vector<int> &opt_idxes, VVF &PG, vector<vector<double>> &square_vertexes, Qhull *q_ptr){
     int dim=square_vertexes[0].size();
@@ -521,4 +522,4 @@ void onionlayer(vector<int> &ret, vector<int>& candidate, vector<vector<float>>&
             ret.push_back(id);
         }
     }
-}
+}*/

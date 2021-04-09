@@ -6,7 +6,7 @@
 #define K_LEVEL_QHULLADAPTER_H
 
 #include "lp_adapter.h"
-#include "libqhull_r/libqhull_r.h"
+//#include "libqhull_r/libqhull_r.h"
 #include "libqhull_r/qhull_ra.h"
 
 class qhull_adapter{
