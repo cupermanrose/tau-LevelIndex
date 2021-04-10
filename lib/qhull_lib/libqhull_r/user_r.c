@@ -282,10 +282,10 @@ void qh_errexit(qhT *qh, int exitcode, facetT *facet, ridgeT *ridge) {
     qh->hulltime= qh_CPUclock - qh->hulltime;
   qh_errprint(qh, "ERRONEOUS", facet, NULL, ridge, NULL);
   qh_option(qh, "_maxoutside", NULL, &qh->MAXoutside);
-  /*Jiahao
-  qh_fprintf(qh, qh->ferr, 8127, "\nWhile executing: %s | %s\n", qh->rbox_command, qh->qhull_command);
-  qh_fprintf(qh, qh->ferr, 8128, "Options selected for Qhull %s:\n%s\n", qh_version, qh->qhull_options);
-  */
+  /*Jiahao*/
+  /*qh_fprintf(qh, qh->ferr, 8127, "\nWhile executing: %s | %s\n", qh->rbox_command, qh->qhull_command);
+  qh_fprintf(qh, qh->ferr, 8128, "Options selected for Qhull %s:\n%s\n", qh_version, qh->qhull_options);*/
+
   if (qh->furthest_id >= 0) {
     qh_fprintf(qh, qh->ferr, 8129, "Last point added to hull was p%d.", qh->furthest_id);
     if (zzval_(Ztotmerge))
@@ -535,7 +535,7 @@ angle is %.16f.  If so, Qhull may produce a wide facet.\n\
 Options 'Qs' (search all points), 'Qbb' (scale last coordinate), or\n\
 'QbB' (scale to unit box) may remove this warning.\n\
 See 'Limitations' in qh-impre.htm.  Use 'Pp' to skip this warning.\n",
-          -minangle);*/   /* convert from angle between normals to angle between facets */
+          -minangle); */  /* convert from angle between normals to angle between facets */
 } /* printhelp_narrowhull */
 
 /*-<a                             href="qh-user_r.htm#TOC"

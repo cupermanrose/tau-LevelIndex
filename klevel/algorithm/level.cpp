@@ -37,7 +37,7 @@ void level::LoadData(char* datafile) {
         OriginD.push_back(tmp);
 
         /*if (TEST) {
-            if (OriginD.size() >= 1000) break;
+            if (OriginD.size() >= 50) break;
         }*/
         //log information
         if (OriginD.size() % 1000 == 0)
@@ -100,6 +100,7 @@ void level::Build(fstream& log) {
         float ave_vertex=0.0;
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
+            if (cur_cell->r.V.empty()) continue;
             rskyband(S1,Sk,*cur_cell);
             //GridFilter(S1,Sk,*cur_cell);
             //NoFilter(S1,Sk,*cur_cell);
@@ -119,12 +120,15 @@ void level::Build(fstream& log) {
 
         //Compute V for each cell
         //discuss why we need recompute after all
+        int cnt=0;
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
             UpdateH(*cur_cell);
             UpdateV(*cur_cell);
-            if (cur_cell->r.V.size()!=0) ave_vertex=(ave_vertex+ (float) cur_cell->r.V.size())/2.0;
+            if (cur_cell->r.V.size()==0) cnt++;
+            ave_vertex=ave_vertex+ cur_cell->r.V.size();
             utk_set.insert(cur_cell->objID);
         }
+        ave_vertex=ave_vertex/this_level.size();
         idx.emplace_back(this_level);
 
         print_info(k,cur_time,ave_S1,ave_Sk,ave_vertex, utk_set,log);
@@ -179,12 +183,13 @@ bool level::VerifyDuplicate(int p, kcell &cur_cell, vector<int>& Sk, vector<kcel
         if (r->objID!=p) continue;
         if (r->topk.find(p)==r->topk.end()) continue;
         bool found=true;
-        for (auto it=r->topk.begin();it!=r->topk.end();it++){
-            if(cur_cell.topk.find(*it)==cur_cell.topk.end()){
+        for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++){
+            if (r->topk.find(*it)==r->topk.end()){
                 found=false;
                 break;
             }
         }
+
         if (found) {
             flag = true;
             for (auto it = Sk.begin(); it != Sk.end(); it++) {
@@ -193,7 +198,6 @@ bool level::VerifyDuplicate(int p, kcell &cur_cell, vector<int>& Sk, vector<kcel
             break;
         }
     }
-
     return flag;
 }
 
@@ -208,6 +212,7 @@ void level::CreateNewCell(int p, vector<int> &S1, vector<int> &Sk, kcell &cur_ce
 
     // just for verification whether p can top-1 in cur_cell
     newcell.r.V.clear();
+    newcell.r.H.clear();
     newcell.r.H=cur_cell.r.H;
 
     for (auto it = S1.begin(); it != S1.end(); it++) {

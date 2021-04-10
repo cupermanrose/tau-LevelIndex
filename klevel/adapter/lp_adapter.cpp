@@ -50,6 +50,7 @@ void lp_adapter::lpModel(vector<halfspace>& H, lprec * lp, int dim) {
 
 void lp_adapter::addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator) {
     double row[Max_Dimension];
+    float EPS=0.000001;
     row[0] = 0;
     for (int d = 1; d <= dim; d++)
     {
@@ -57,13 +58,13 @@ void lp_adapter::addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator
     }
     if (sideindicator == false) // o1 <= o2
     {
-        //add_constraint(lp, row, LE, HP[dim] - EPS);
-        add_constraint(lp, row, LE, HP[dim]);
+        add_constraint(lp, row, LE, HP[dim] - EPS);
+        //add_constraint(lp, row, LE, HP[dim]);
     }
     else if (sideindicator == true) /// o1>=o2
     {
-        //add_constraint(lp, row, GE, HP[dim] + EPS);
-        add_constraint(lp, row, GE, HP[dim]);
+        add_constraint(lp, row, GE, HP[dim] + EPS);
+        //add_constraint(lp, row, GE, HP[dim]);
     }
     else
     {
@@ -84,7 +85,7 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
     //set_verbose(lp, IMPORTANT);
     set_verbose(lp, SEVERE);
     set_scaling(lp, SCALE_GEOMETRIC + SCALE_EQUILIBRATE + SCALE_INTEGERS);
-    set_presolve(lp, PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
+    //set_presolve(lp, PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
 
     double var[Max_Dimension], var1[Max_Dimension];
     // for enumerate dimension
@@ -119,8 +120,8 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
             ret = solve(lp);
             get_variables(lp, var1);
             for (int i = 0; i < dim; i++) var[i] = (var[i] + var1[i]) / 2.0;
-        }*/
-        /*if (dim > 2) {
+        }
+        if (dim > 2) {
             row[2] = 0.0; row[3] = 1.0;
             set_obj_fn(lp, row);
             ret = solve(lp);

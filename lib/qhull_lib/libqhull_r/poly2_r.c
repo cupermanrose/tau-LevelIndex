@@ -2302,8 +2302,8 @@ void qh_initialhull(qhT *qh, setT *vertices) {
       }else {
         qh_joggle_restart(qh, "initial simplex is flat");
         /*jiahao*/
-        /*qh_fprintf(qh, qh->ferr, 6154, "Qhull precision error: Initial simplex is flat (facet %d is coplanar with the interior point)\n",
-                   facet->id);*/
+        qh_fprintf(qh, qh->ferr, 6154, "Qhull precision error: Initial simplex is flat (facet %d is coplanar with the interior point)\n",
+                   facet->id);
         qh_errexit(qh, qh_ERRsingular, NULL, NULL);  /* calls qh_printhelp_singular */
       }
     }

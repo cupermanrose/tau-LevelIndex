@@ -2047,7 +2047,7 @@ boolT qh_sethalfspace(qhT *qh, int dim, coordT *coords, coordT **nextp,
   return True;
 LABELerroroutside:
 
-	return False;/*Jiahao*/
+    return False;/*Jiahao*/
 
   feasiblep= feasible;
   normp= normal;
@@ -2106,9 +2106,8 @@ coordT *qh_sethalfspace_all(qhT *qh, int dim, int count, coordT *halfspaces, poi
     offsetp= normalp + newdim;
     if (!qh_sethalfspace(qh, newdim, coordp, &coordp, normalp, offsetp, feasible)) {
       qh_free(newpoints);  /* feasible is not inside halfspace as reported by qh_sethalfspace */
-      /*Jiahao
-      qh_fprintf(qh, qh->ferr, 8032, "The halfspace was at index %d\n", i);
-      */
+      /*Jiahao*/
+      /*qh_fprintf(qh, qh->ferr, 8032, "The halfspace was at index %d\n", i);*/
       qh_errexit(qh, qh_ERRinput, NULL, NULL);
     }
     normalp= offsetp + 1;
