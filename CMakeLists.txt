@@ -31,6 +31,9 @@ include_directories(${CMAKE_SOURCE_DIR}/klevel/adapter)
 include_directories(${CMAKE_SOURCE_DIR}/lib/rtree)
 include_directories(${CMAKE_SOURCE_DIR}/lib/qhull_lib)
 
+
+
+
 add_executable(${PROJECT_NAME}
         main.cpp
         klevel/k_level_lib.h
@@ -165,7 +168,13 @@ add_executable(${PROJECT_NAME}
 #        lib/qhull_lib/libqhull_r/user_r.c
         )
 
-
+find_package(Boost 1.65.1)
+if(Boost_FOUND)
+    include_directories(BEFORE ${Boost_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+else()
+    message(STATUS "This program requires the boost library, and will not be compiled.")
+endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE libqhullcpp)
 
 

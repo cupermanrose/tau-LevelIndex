@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <set>
+#include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
 #include "region.h"
@@ -28,7 +29,7 @@ public:
     void GetGraph(vector<int>& offset, vector<vector<float>>& Allobj, int dim);
     static void EnumerateGrid(vector<int>&cur_offset, int cur_dim, int remains, int dim, vector<vector<float>>& Allobj, unordered_map<int, dominateG>& Grid);
     static int FindCube(point& v, int dim);
-    static void MergeG(unordered_map<int, set<int>>& G, unordered_map<int, set<int>>& G_cube, set<int>& S);
+    static void MergeG(unordered_map<int, set<int>>& G, unordered_map<int, set<int>>& G_cube, unordered_set<int>& S);
 };
 
 

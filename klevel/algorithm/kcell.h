@@ -6,19 +6,23 @@
 #define K_LEVEL_KCELL_H
 
 #include "region.h"
-#include <set>
+#include <algorithm>
+#include <unordered_set>
+#include <boost/functional/hash.hpp>
 
 class kcell {
 public:
     int curk, objID;
+    size_t hash_value;
     region r;
-    set<int> topk; // the top-kth in this region
-    set<int> Stau; // top-tau candidates set
+    unordered_set<int> topk; // the top-kth in this region
+    unordered_set<int> Stau; // top-tau candidates set
 
 public:
     kcell();
     ~kcell();
 
+    void Get_HashValue();
     void TobeRoot(vector<int>& candidates, int dim);
 };
 

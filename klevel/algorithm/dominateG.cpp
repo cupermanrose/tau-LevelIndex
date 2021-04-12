@@ -92,7 +92,7 @@ int dominateG::FindCube(point &v,int dim) {
     return offsetToID(offset,dim);
 }
 
-void dominateG::MergeG(unordered_map<int, set<int>> &G, unordered_map<int, set<int>> &G_cube, set<int> &S) {
+void dominateG::MergeG(unordered_map<int, set<int>> &G, unordered_map<int, set<int>> &G_cube, unordered_set<int> &S) {
 
     if (G.size()==0){
         for (auto i=S.begin();i!=S.end();i++){
