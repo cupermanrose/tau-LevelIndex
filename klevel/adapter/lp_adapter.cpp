@@ -49,9 +49,8 @@ void lp_adapter::lpModel(vector<halfspace>& H, lprec * lp, int dim) {
 }
 
 void lp_adapter::addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator) {
-    //float EPS_control = 0.000001;
-
     double row[Max_Dimension];
+    float EPS=0.000001;
     row[0] = 0;
     for (int d = 1; d <= dim; d++)
     {
@@ -59,11 +58,13 @@ void lp_adapter::addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator
     }
     if (sideindicator == false) // o1 <= o2
     {
-        add_constraint(lp, row, LE, HP[dim]);
+        add_constraint(lp, row, LE, HP[dim] - EPS);
+        //add_constraint(lp, row, LE, HP[dim]);
     }
     else if (sideindicator == true) /// o1>=o2
     {
-        add_constraint(lp, row, GE, HP[dim]);
+        add_constraint(lp, row, GE, HP[dim] + EPS);
+        //add_constraint(lp, row, GE, HP[dim]);
     }
     else
     {
@@ -81,30 +82,39 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
 
     lpModel(H, lp, dim);
 
-    /*for (unordered_map<int, bool>::iterator it = r.HPs.begin(); it != r.HPs.end(); it++) {
-        r.addHP(lp, dim, it->first, it->second);
-    }*/
-
     //set_verbose(lp, IMPORTANT);
     set_verbose(lp, SEVERE);
     set_scaling(lp, SCALE_GEOMETRIC + SCALE_EQUILIBRATE + SCALE_INTEGERS);
     //set_presolve(lp, PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
 
     double var[Max_Dimension], var1[Max_Dimension];
-    for (int i = 0; i < dim + 1; i++) row[i] = 0.0;
+    // for enumerate dimension
+    /*for (int i = 0; i < dim + 1; i++) row[i] = 0.0;
     row[1] = 1.0;
     set_maxim(lp);
     set_obj_fn(lp, row);
     set_timeout(lp,1);
     int ret = solve(lp);
+    get_variables(lp, var);*/
 
+    for (int i = 0; i < dim + 1; i++) row[i] = 1.0;
+    set_maxim(lp);
+    set_obj_fn(lp, row);
+    set_timeout(lp,1);
+    int ret = solve(lp);
     get_variables(lp, var);
 
     // for reduced space
 
     if (ret == 0)
     {
-        if (dim > 1) {
+        set_minim(lp);
+        set_obj_fn(lp,row);
+        set_timeout(lp,1);
+        int ret = solve(lp);
+        get_variables(lp, var1);
+        for (int i = 0; i < dim; i++) var[i] = (var[i] + var1[i]) / 2.0;
+        /*if (dim > 1) {
             row[1] = 0.0; row[2] = 1.0;
             set_obj_fn(lp, row);
             ret = solve(lp);
@@ -117,7 +127,15 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
             ret = solve(lp);
             get_variables(lp, var1);
             for (int i = 0; i < dim; i++) var[i] = (var[i] + var1[i]) / 2.0;
-        }
+        }*/
+        /*for (int i=2;i<=dim;i++){
+            row[i-1]=0.0;row[i]=1.0;
+            set_obj_fn(lp, row);
+            ret = solve(lp);
+            get_variables(lp, var1);
+            for (int i = 0; i < dim; i++) var[i] = (var[i] + var1[i]) / 2.0;
+        }*/
+
         innerPoint.clear();
         for (int i = 0; i < dim; i++) innerPoint.push_back(var[i]);
         delete_lp(lp);

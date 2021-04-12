@@ -14,6 +14,7 @@
 using namespace std;
 
 #define div_num 10
+#define EPS 0.000001
 
 class dominateG {
 public:

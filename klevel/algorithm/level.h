@@ -42,7 +42,7 @@ public:
     void UpdateH(kcell& cur_cell);
     void UpdateV(kcell& cur_cell);
 
-    void print_info(int k, clock_t& cur_time, int ave_S1, int ave_Sk, float ave_vertex, fstream& log);
+    void print_info(int k, clock_t& cur_time, int ave_S1, int ave_Sk, float ave_vertex, set<int>& utk_set, fstream& log);
 };
 
 

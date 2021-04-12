@@ -3,7 +3,7 @@ project(k_level)
 
 set(CMAKE_CXX_STANDARD 14)
 
-### add qhull
+#[[### add qhull
 include_directories(/usr/local/include/libqhullcpp)
 ### qhullstatic reentrant library
 add_library(libqhullstatic_r STATIC IMPORTED)
@@ -13,7 +13,7 @@ add_dependencies(libqhullstatic_r qhull)
 add_library(libqhullcpp STATIC IMPORTED)
 set_property(TARGET libqhullcpp PROPERTY IMPORTED_LOCATION /usr/local/lib/${CMAKE_STATIC_LIBRARY_PREFIX}qhullcpp${CMAKE_STATIC_LIBRARY_SUFFIX})
 set_property(TARGET libqhullcpp PROPERTY INTERFACE_LINK_LIBRARIES libqhullstatic_r)
-add_dependencies(libqhullcpp qhull)
+add_dependencies(libqhullcpp qhull)]]
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-as-needed -O3 -Wall -ldl")
 
@@ -29,6 +29,7 @@ include_directories(${CMAKE_SOURCE_DIR}/klevel)
 include_directories(${CMAKE_SOURCE_DIR}/klevel/algortihm)
 include_directories(${CMAKE_SOURCE_DIR}/klevel/adapter)
 include_directories(${CMAKE_SOURCE_DIR}/lib/rtree)
+include_directories(${CMAKE_SOURCE_DIR}/lib/qhull_lib)
 
 add_executable(${PROJECT_NAME}
         main.cpp
@@ -133,9 +134,38 @@ add_executable(${PROJECT_NAME}
         lib/rtree/tgs.cpp
         lib/rtree/virtualRNode.h
         lib/rtree/virtualRNode.cpp
+
+        lib/qhull_lib/libqhull_r/libqhull_r.h
+        lib/qhull_lib/libqhull_r/geom_r.h
+        lib/qhull_lib/libqhull_r/io_r.h
+        lib/qhull_lib/libqhull_r/mem_r.h
+        lib/qhull_lib/libqhull_r/merge_r.h
+        lib/qhull_lib/libqhull_r/poly_r.h
+        lib/qhull_lib/libqhull_r/qhull_ra.h
+        lib/qhull_lib/libqhull_r/qset_r.h
+        lib/qhull_lib/libqhull_r/random_r.h
+        lib/qhull_lib/libqhull_r/stat_r.h
+        lib/qhull_lib/libqhull_r/user_r.h
+        lib/qhull_lib/libqhull_r/geom2_r.c
+        lib/qhull_lib/libqhull_r/geom_r.c
+        lib/qhull_lib/libqhull_r/global_r.c
+        lib/qhull_lib/libqhull_r/io_r.c
+        lib/qhull_lib/libqhull_r/libqhull_r.c
+        lib/qhull_lib/libqhull_r/mem_r.c
+        lib/qhull_lib/libqhull_r/merge_r.c
+        lib/qhull_lib/libqhull_r/poly2_r.c
+        lib/qhull_lib/libqhull_r/poly_r.c
+        lib/qhull_lib/libqhull_r/qset_r.c
+        lib/qhull_lib/libqhull_r/random_r.c
+        lib/qhull_lib/libqhull_r/rboxlib_r.c
+        lib/qhull_lib/libqhull_r/stat_r.c
+        lib/qhull_lib/libqhull_r/usermem_r.c
+        lib/qhull_lib/libqhull_r/userprintf_r.c
+        lib/qhull_lib/libqhull_r/userprintf_rbox_r.c
+        lib/qhull_lib/libqhull_r/user_r.c
         )
 
 
-target_link_libraries(${PROJECT_NAME} PRIVATE libqhullcpp)
+###target_link_libraries(${PROJECT_NAME} PRIVATE libqhullcpp)
 
 

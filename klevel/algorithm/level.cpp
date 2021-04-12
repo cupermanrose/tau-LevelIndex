@@ -36,9 +36,9 @@ void level::LoadData(char* datafile) {
         for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
         OriginD.push_back(tmp);
 
-        if (TEST) {
+        /*if (TEST) {
             if (OriginD.size() >= 50) break;
-        }
+        }*/
         //log information
         if (OriginD.size() % 1000 == 0)
             cout << ".";
@@ -57,7 +57,7 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
     //kskyband
     vector<int> candidate_skyband, candidate_onionlayer;
     kskyband(candidate_skyband, OriginD,tau);
-    onionlayer(candidate_onionlayer, candidate_skyband,  OriginD, tau);
+    //onionlayer(candidate_onionlayer, candidate_skyband,  OriginD, tau);
     //our_filter();
     candidate=candidate_skyband;
     //k-onionlayer
@@ -92,16 +92,15 @@ void level::initIdx(fstream& log){
 void level::Build(fstream& log) {
 
     vector<int> S1,Sk;
+    set<int> utk_set; utk_set.clear();
     initIdx(log);
     clock_t cur_time=clock();
     for (int k=1;k<=tau;k++){
         int ave_Sk=0,ave_S1=0;
-        float ave_vertex=0;
+        float ave_vertex=0.0;
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
-            if(cur_cell->r.V.empty()){
-                continue;
-            }
+
             rskyband(S1,Sk,*cur_cell);
             //GridFilter(S1,Sk,*cur_cell);
             //NoFilter(S1,Sk,*cur_cell);
@@ -120,21 +119,16 @@ void level::Build(fstream& log) {
 
         //Compute V for each cell
         //discuss why we need recompute after all
-        int cnt=0;
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
             UpdateH(*cur_cell);
             UpdateV(*cur_cell);
-//            cout<<cur_cell->objID<<" "<<cur_cell->r.V.size()<<endl;
-
-            if(!cur_cell->r.V.empty()){
-                cnt++;
-                ave_vertex=ave_vertex+cur_cell->r.V.size();
-            }
+            ave_vertex=ave_vertex+cur_cell->r.V.size();
+            utk_set.insert(cur_cell->objID);
         }
-        ave_vertex/=cnt;
+        ave_vertex=ave_vertex/this_level.size();
         idx.emplace_back(this_level);
 
-        print_info(k,cur_time,ave_S1,ave_Sk,ave_vertex,log);
+        print_info(k,cur_time,ave_S1,ave_Sk,ave_vertex, utk_set,log);
     }
 }
 
@@ -148,6 +142,7 @@ void level::NoFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
 
 void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
     S1.clear();Sk.clear();
+    if (cur_cell.r.V.size()==0) return;
     for (auto i=cur_cell.Stau.begin();i!=cur_cell.Stau.end();i++){
         int cnt=0;
         for (auto j=cur_cell.Stau.begin();j!=cur_cell.Stau.end();j++){
@@ -185,8 +180,8 @@ bool level::VerifyDuplicate(int p, kcell &cur_cell, vector<int>& Sk, vector<kcel
         if (r->objID!=p) continue;
         if (r->topk.find(p)==r->topk.end()) continue;
         bool found=true;
-        for (auto it=r->topk.begin();it!=r->topk.end();it++){
-            if(cur_cell.topk.find(*it)==cur_cell.topk.end()){
+        for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++){
+            if (r->topk.find(*it)==r->topk.end()){
                 found=false;
                 break;
             }
@@ -214,6 +209,7 @@ void level::CreateNewCell(int p, vector<int> &S1, vector<int> &Sk, kcell &cur_ce
 
     // just for verification whether p can top-1 in cur_cell
     newcell.r.V.clear();
+    newcell.r.H.clear();
     newcell.r.H=cur_cell.r.H;
 
     for (auto it = S1.begin(); it != S1.end(); it++) {
@@ -248,9 +244,10 @@ void level::UpdateV(kcell &cur_cell) {
     qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
 }
 
-void level::print_info(int k, clock_t & cur_time, int ave_S1, int ave_Sk, float ave_vertex, fstream& log) {
+void level::print_info(int k, clock_t & cur_time, int ave_S1, int ave_Sk, float ave_vertex, set<int>& utk_set, fstream& log) {
     cout << "LEVEL: " << k << endl;
     cout << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
+    cout << "The option number of LEVEL 1-" << k << ": " << utk_set.size() << endl;
     cout << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
     cout << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
     cout << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)idx[k-1].size() << endl;
@@ -258,6 +255,7 @@ void level::print_info(int k, clock_t & cur_time, int ave_S1, int ave_Sk, float 
     cout << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
     log << "LEVEL: " << k << endl;
     log << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
+    log << "The option number of LEVEL 1-" << k << ": " << utk_set.size() << endl;
     log << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
     log << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
     log << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)idx[k-1].size() << endl;
