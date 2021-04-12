@@ -520,5 +520,7 @@ void onionlayer(vector<int> &ret, vector<int>& candidate, vector<vector<float>>&
         for(int id: c.get_layer(i)){
             ret.push_back(id);
         }
+        cout<<"#k="<<i<<";num="<<c.get_layer(i).size()<<endl;
     }
+    cout<<"#total="<<ret.size()<<endl;
 }

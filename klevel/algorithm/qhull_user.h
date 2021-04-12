@@ -13,18 +13,18 @@
 #include "QhullVertex.h"
 #include "QhullVertexSet.h"
 #include "Qhull.h"
-
-#include <cstdio>   /* for printf() of help message */
+#include <iostream>
 #include <iomanip> // setw
-#include <ostream>
-#include <stdexcept>
-#include <vector>
+#include <unordered_map>
+#include <unordered_set>
 //TODO merge to qhull_adapter
 using std::cerr;
 using std::cin;
 using std::cout;
 using std::endl;
-
+using std::cout;
+using std::endl;
+using std::string;
 using orgQhull::Qhull;
 using orgQhull::QhullError;
 using orgQhull::QhullFacet;
@@ -37,7 +37,7 @@ using orgQhull::QhullUser;
 using orgQhull::QhullVertex;
 using orgQhull::QhullVertexSet;
 using orgQhull::RboxPoints;
-
+using orgQhull::Coordinates;
 
 class qhull_user{
 
@@ -45,6 +45,39 @@ class qhull_user{
 #define REGION std::vector<std::vector<double>>
 public:
     qhull_user(){
+    }
+    static void points_at_half_inter(std::vector<std::vector<float>> &ret, const realT *pointCoordinates, int p_num, vector<float> &innerPoint){
+        int dim=innerPoint.size();
+        Qhull q;
+        Coordinates feasible;
+        for (float i:innerPoint) {
+            feasible << i;
+        }
+//        cout<<innerPoint.size()<<endl;
+        q.setFeasiblePoint(feasible);
+
+//        q.setOutputStream(&cout);
+
+        try {
+            std::stringstream output;
+            q.setOutputStream(&output);
+            q.runQhull("normals of square", dim+1, p_num, pointCoordinates, "QJ H Pp"); // halfspace intersect
+
+            q.outputQhull("Fp");
+            int UNUSED;
+            output>>UNUSED;
+            int num_out;
+            output>>num_out;
+            for (int i = 0; i < num_out; ++i){
+                std::vector<float> vs(dim);
+                for (int j = 0; j < dim; ++j){
+                    output>>vs[j];
+                }
+                ret.push_back(vs);
+            }
+        } catch (exception) {
+
+        }
     }
 
     void get_neiVT_of_VT(Qhull &q, const std::vector<int>&pd_ids, std::unordered_map<int, std::vector<int>> &ret){

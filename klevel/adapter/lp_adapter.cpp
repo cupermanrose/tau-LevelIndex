@@ -49,7 +49,6 @@ void lp_adapter::lpModel(vector<halfspace>& H, lprec * lp, int dim) {
 }
 
 void lp_adapter::addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator) {
-    // EPS
     //float EPS_control = 0.000001;
 
     double row[Max_Dimension];
@@ -60,11 +59,11 @@ void lp_adapter::addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator
     }
     if (sideindicator == false) // o1 <= o2
     {
-        add_constraint(lp, row, LE, HP[dim] - EPS);
+        add_constraint(lp, row, LE, HP[dim]);
     }
     else if (sideindicator == true) /// o1>=o2
     {
-        add_constraint(lp, row, GE, HP[dim] + EPS);
+        add_constraint(lp, row, GE, HP[dim]);
     }
     else
     {

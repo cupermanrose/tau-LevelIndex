@@ -36,9 +36,9 @@ void level::LoadData(char* datafile) {
         for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
         OriginD.push_back(tmp);
 
-//        if (TEST) {
-//            if (OriginD.size() >= 50) break;
-//        }
+        if (TEST) {
+            if (OriginD.size() >= 50) break;
+        }
         //log information
         if (OriginD.size() % 1000 == 0)
             cout << ".";
@@ -95,10 +95,13 @@ void level::Build(fstream& log) {
     initIdx(log);
     clock_t cur_time=clock();
     for (int k=1;k<=tau;k++){
-        int ave_Sk=0,ave_S1=0, ave_vertex=0;
+        int ave_Sk=0,ave_S1=0;
+        float ave_vertex=0;
         vector<kcell> this_level;  this_level.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
-
+            if(cur_cell->r.V.empty()){
+                continue;
+            }
             rskyband(S1,Sk,*cur_cell);
             //GridFilter(S1,Sk,*cur_cell);
             //NoFilter(S1,Sk,*cur_cell);
@@ -108,8 +111,9 @@ void level::Build(fstream& log) {
                 if (!VerifyDuplicate(*p,*cur_cell,Sk, this_level)){ // merge s_tau
                     kcell newcell;
                     CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
-                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) // compute innerPoint
+                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) { // compute innerPoint
                         this_level.emplace_back(newcell);
+                    }
                 }
             }
         }
@@ -118,11 +122,16 @@ void level::Build(fstream& log) {
         //discuss why we need recompute after all
         int cnt=0;
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
-            cout << cnt << endl; cnt++;
             UpdateH(*cur_cell);
             UpdateV(*cur_cell);
-            ave_vertex=ave_vertex+cur_cell->r.V.size();
+//            cout<<cur_cell->objID<<" "<<cur_cell->r.V.size()<<endl;
+
+            if(!cur_cell->r.V.empty()){
+                cnt++;
+                ave_vertex=ave_vertex+cur_cell->r.V.size();
+            }
         }
+        ave_vertex/=cnt;
         idx.emplace_back(this_level);
 
         print_info(k,cur_time,ave_S1,ave_Sk,ave_vertex,log);
@@ -239,19 +248,19 @@ void level::UpdateV(kcell &cur_cell) {
     qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
 }
 
-void level::print_info(int k, clock_t & cur_time, int ave_S1, int ave_Sk, int ave_vertex, fstream& log) {
+void level::print_info(int k, clock_t & cur_time, int ave_S1, int ave_Sk, float ave_vertex, fstream& log) {
     cout << "LEVEL: " << k << endl;
     cout << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
     cout << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
     cout << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
     cout << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)idx[k-1].size() << endl;
-    cout << "Average verterices of region in LEVEL" << ": " << ave_vertex / (float)idx[k].size() << endl;
+    cout << "Average verterices of region in LEVEL" << ": " << ave_vertex << endl;
     cout << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
     log << "LEVEL: " << k << endl;
     log << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
     log << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
     log << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
     log << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)idx[k-1].size() << endl;
-    log << "Average verterices of region in LEVEL" << ": " << ave_vertex / (float)idx[k].size() << endl;
+    log << "Average verterices of region in LEVEL" << ": " << ave_vertex << endl;
     log << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
 }

@@ -30,6 +30,7 @@ public:
     static void addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator); // add a hyperplane into the lp model;
     static bool is_Feasible(vector<halfspace>& H, vector<float>& innnerPoint, int dim); // r is non-empty
     static void ComputeHP(vector<float>& o1, vector<float>& o2, vector<float>& w, int dim);
+
 };
 
 #endif //K_LEVEL_LPADAPTER_H
