@@ -41,7 +41,7 @@ using orgQhull::Coordinates;
 
 int main(int argc, char* argv[]) {
     int dim=4;
-    int tau=10;
+    int tau=40;
     char* datafile="/home/jiahaozhang/data/klevel/U100K4.dat";// TODO 改成相对路径
     char* logfile="/home/jiahaozhang/projects/klevel/debug.log";// TODO 改成相对路径
     k_level_lib::BuildIdx(dim, tau, datafile, logfile);

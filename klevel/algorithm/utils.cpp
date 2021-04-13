@@ -7,7 +7,7 @@
 #include "tgs.h"
 #include "rtree_adapter.h"
 #include <chrono>
-#include "qhull_user.h"
+#include "qhull_adapter.h"
 using namespace std;
 
 template<typename V1, typename V2>

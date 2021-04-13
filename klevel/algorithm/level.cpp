@@ -101,6 +101,11 @@ void level::Build(fstream& log) {
     initIdx(log);
     clock_t level_zero_time=clock();
     for (int k=1;k<=tau;k++){
+        // tmp free
+        if(k-2>=1){
+            idx[k-2].clear();
+            vector<kcell>().swap(idx[k-2]);
+        }
         clock_t level_k_time=clock();
 
         vector<kcell> this_level;  this_level.clear(); region_map.clear();
@@ -136,6 +141,16 @@ void level::Build(fstream& log) {
                     }
                 }
             }
+
+            // tmp free
+            cur_cell->Stau.clear();
+            cur_cell->topk.clear();
+            cur_cell->r.H.clear();
+            vector<halfspace>().swap(cur_cell->r.H);
+            cur_cell->r.V.clear();
+            vector<point>().swap(cur_cell->r.V);
+            cur_cell->r.innerPoint.clear();
+            vector<float>().swap(cur_cell->r.innerPoint);
         }
 
         //Compute V for each cell
