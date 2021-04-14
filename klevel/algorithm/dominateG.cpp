@@ -3,7 +3,7 @@
 //
 
 #include "dominateG.h"
-
+#include "utils.h"
 int dominateG::offsetToID(vector<int> &offset, int dim) {
     int sum=0; int res=1;
     for (int i=1;i<=dim-1;i++){
@@ -28,24 +28,8 @@ void dominateG::GetCube(vector<point> &cube, vector<int> &offset, int pos, int d
     cube.emplace_back(p);
 }
 
-float dominateG::GetScore(vector<float> &w, vector<float> &p, int dim) { // w[dim-1]=1.0-sigma(w[0] to w[dim-2])
-    float score=0.0;
-    float res=1.0;
-    for (int i=0;i<dim-1;i++) {
-        score=score+w[i]*p[i];
-        res=res-w[i];
-    }
-    score=score+res*p[dim-1];
-    return score;
-}
-
 // return true if oi<oj in every point of V
-bool dominateG::RegionDominate(vector<point> &V, vector<float> &oi, vector<float> &oj, int dim) {
-    for (auto it=V.begin();it!=V.end();it++){
-        if (GetScore(it->w,oi,dim)>GetScore(it->w,oj,dim)) return false;
-    }
-    return true;
-}
+
 
 void dominateG::GetGraph(vector<int> &offset, vector<vector<float>> &Allobj, int dim) {
     Gid=offsetToID(offset,dim);
