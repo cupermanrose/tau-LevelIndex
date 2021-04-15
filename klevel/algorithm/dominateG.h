@@ -23,8 +23,8 @@ public:
     unordered_map<int, set<int>> G;
 public:
     static int offsetToID(vector<int>& offset, int dim);
-    static float GetScore(vector<float>& w, vector<float>& p, int dim);
-    static bool RegionDominate(vector<point>& V, vector<float>& oi, vector<float>& oj, int dim); //true if oi<oj always in region
+//    static float GetScore(vector<float>& w, vector<float>& p, int dim);
+//    static bool RegionDominate(vector<point>& V, vector<float>& oi, vector<float>& oj, int dim); //true if oi<oj always in region
     static void GetCube(vector<point>& cube, vector<int>& offset, int pos, int dim);// compute vertices of the grid
     void GetGraph(vector<int>& offset, vector<vector<float>>& Allobj, int dim);
     static void EnumerateGrid(vector<int>&cur_offset, int cur_dim, int remains, int dim, vector<vector<float>>& Allobj, unordered_map<int, dominateG>& Grid);

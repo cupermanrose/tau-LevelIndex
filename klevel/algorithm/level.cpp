@@ -101,6 +101,11 @@ void level::Build(fstream& log) {
     initIdx(log);
     clock_t level_zero_time=clock();
     for (int k=1;k<=tau;k++){
+        // tmp free
+        if(k-2>=1){
+            idx[k-2].clear();
+            vector<kcell>().swap(idx[k-2]);
+        }
         clock_t level_k_time=clock();
 
         vector<kcell> this_level;  this_level.clear(); region_map.clear();
@@ -136,6 +141,16 @@ void level::Build(fstream& log) {
                     }
                 }
             }
+
+            // tmp free
+            cur_cell->Stau.clear();
+            cur_cell->topk.clear();
+            cur_cell->r.H.clear();
+            vector<halfspace>().swap(cur_cell->r.H);
+            cur_cell->r.V.clear();
+            vector<point>().swap(cur_cell->r.V);
+            cur_cell->r.innerPoint.clear();
+            vector<float>().swap(cur_cell->r.innerPoint);
         }
 
         //Compute V for each cell
@@ -176,13 +191,15 @@ void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
         int cnt=0;
         for (auto j=cur_cell.Stau.begin();j!=cur_cell.Stau.end();j++){
             if (*i==*j) continue;
-            if (dominateG::RegionDominate(cur_cell.r.V,Allobj[*i],Allobj[*j],dim)) cnt++;
+            if (RegionDominate(cur_cell.r.V,Allobj[*i],Allobj[*j],dim)) cnt++;
             if (cnt>=(tau-cur_cell.curk)) break;
         }
         if (cnt==0) S1.push_back(*i);
         if (cnt<(tau-cur_cell.curk)) Sk.push_back(*i);
     }
 }
+
+
 
 void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
     unordered_map<int, set<int>> G; G.clear();
