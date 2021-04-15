@@ -214,19 +214,6 @@ bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
         }
     }
 
-    /*for (auto r=this_level.begin();r!=this_level.end();r++){
-        if (r->objID!=newcell.objID) continue;
-        if (r->topk.find(newcell.objID)==r->topk.end()) continue;
-
-        if (r->hash_value==newcell.hash_value){
-            flag = true;
-            for (auto it = newcell.Stau.begin(); it != newcell.Stau.end(); it++) {
-                r->Stau.insert(*it);
-            }
-            break;
-        }
-    }*/
-
     return flag;
 }
 
@@ -374,15 +361,15 @@ void level::print_system_info(fstream &log) {
 
 void level::profiling(int k, clock_t &level_zero_time, double &rskyband_time, double &verify_time,
                       double &isFeasible_time, double &updateV_time, fstream &log) {
-    cout << "rskyband time of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    cout << "Verify Duplicate time of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    cout << "Is_Feasible time of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    cout << "UpdateV time of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
+    cout << "rskyband time (%) of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 <<endl;
+    cout << "Verify Duplicate time (%) of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 << endl;
+    cout << "Is_Feasible time (%) of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << endl;
+    cout << "UpdateV time (%) of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 << endl;
     cout << endl;
-    log << "rskyband time of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    log << "Verify Duplicate time of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    log << "Is_Feasible time of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    log << "UpdateV time of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
+    log << "rskyband time (%) of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 << endl;
+    log << "Verify Duplicate time (%) of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 <<endl;
+    log << "Is_Feasible time (%) of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << endl;
+    log << "UpdateV time (%) of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 <<  endl;
     log << endl;
 
 }
