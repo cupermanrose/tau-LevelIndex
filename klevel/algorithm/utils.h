@@ -34,7 +34,7 @@ float GetScore(vector<float> &w, vector<float> &p, int dim); // w[dim-1]=1.0-sig
 template<typename POINT>
 bool RegionDominate(vector<POINT> &V, vector<float> &oi, vector<float> &oj, int dim) {
     for (auto it=V.begin();it!=V.end();it++){
-        if (GetScore(it->w,oi,dim)>GetScore(it->w,oj,dim)) return false;
+        if (GetScore(*it,oi,dim)>GetScore(*it,oj,dim)) return false;
     }
     return true;
 }

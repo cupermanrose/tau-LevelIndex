@@ -11,25 +11,99 @@ region::region() {
 }
 
 region::~region() {
+    for (auto it=H.begin();it!=H.end();it++){
+        it->w.clear();
+        vector<float>().swap(it->w);
+    }
     H.clear();
     vector<halfspace>().swap(H);
     V.clear();
-    vector<point>().swap(V);
+    vector<vector<float>>().swap(V);
     innerPoint.clear();
     vector<float>().swap(innerPoint);
+}
+
+void region::WriteToDisk(ofstream &Outfile) {
+    int size=H.size();
+    Outfile.write((char*) &size, sizeof(int));
+    for(auto it=H.begin();it!=H.end();it++){
+        int w_size=it->w.size();
+        Outfile.write((char*) &w_size,sizeof(int));
+        for (auto itt=it->w.begin();itt!=it->w.end();itt++){
+            Outfile.write((char*) &(*itt),sizeof(float));
+        }
+        Outfile.write((char*) &(it->side), sizeof(bool));
+    }
+    size=V.size();
+    Outfile.write((char*)&size, sizeof(int));
+    for (auto it=V.begin();it!=V.end();it++){
+        int w_size=it->size();
+        Outfile.write((char*) &w_size,sizeof(int));
+        for (auto itt=it->begin();itt!=it->end();itt++){
+            Outfile.write((char*) &(*itt),sizeof(float));
+        }
+    }
+    size=innerPoint.size();
+    Outfile.write((char*)&size,sizeof(int));
+    for (auto it=innerPoint.begin();it!=innerPoint.end();it++){
+        Outfile.write((char*) &(*it),sizeof(float));
+    }
+}
+
+void region::ReadFromDisk(ifstream &Infile) {
+    // Read H
+    int size;
+    Infile.read((char*) &size, sizeof(int));
+    H.clear();
+    for (int i=0;i<size;i++){
+        int w_size;
+        Infile.read((char*) &w_size, sizeof(int));
+        halfspace HS;
+        HS.w.clear();
+        for (int j=0;j<w_size;j++){
+            float w_value;
+            Infile.read((char*) &w_value,sizeof(float));
+            HS.w.push_back(w_value);
+        }
+        Infile.read((char*) &(HS.side),sizeof(bool));
+        H.emplace_back(HS);
+    }
+    // Read V
+    Infile.read((char*)&size, sizeof(int));
+    V.clear();
+    for (int i=0;i<size;i++){
+        int w_size;
+        Infile.read((char*) &w_size, sizeof(int));
+        vector<float> point;
+        point.clear();
+        for (int j=0;j<w_size;j++){
+            float w_value;
+            Infile.read((char*) &w_value,sizeof(float));
+            point.push_back(w_value);
+        }
+        V.emplace_back(point);
+    }
+    // Read innerPoint
+    Infile.read((char*) &size, sizeof(int));
+    innerPoint.clear();
+    for (int i=0;i<size;i++){
+        float w_value;
+        Infile.read((char*) &w_value,sizeof(float));
+        innerPoint.push_back(w_value);
+    }
 }
 
 void region::ToBeRoot(int dim) {
     H.clear();
     V.clear();
     //Generate vertices for the whole space
-    point origin; origin.w.clear();
-    for (int d = 0; d < dim - 1; d++) origin.w.push_back(0);
+    vector<float> origin; origin.clear();
+    for (int d = 0; d < dim - 1; d++) origin.push_back(0);
     V.push_back(origin);
     for (int d = 0; d < dim - 1; d++) {
-        origin.w[d] = 1.0;
+        origin[d] = 1.0;
         V.push_back(origin);
-        origin.w[d] = 0.0;
+        origin[d] = 0.0;
     }
     innerPoint.clear();
     for (int d = 0; d < dim - 1; d++) innerPoint.push_back(1.0 / (float)dim);

@@ -28,6 +28,7 @@ include_directories(${CMAKE_SOURCE_DIR}/lib/lp_lib)
 include_directories(${CMAKE_SOURCE_DIR}/klevel)
 include_directories(${CMAKE_SOURCE_DIR}/klevel/algortihm)
 include_directories(${CMAKE_SOURCE_DIR}/klevel/adapter)
+include_directories(${CMAKE_SOURCE_DIR}/klevel/operator)
 include_directories(${CMAKE_SOURCE_DIR}/lib/rtree)
 include_directories(${CMAKE_SOURCE_DIR}/lib/qhull_lib)
 
@@ -47,8 +48,8 @@ add_executable(${PROJECT_NAME}
         klevel/algorithm/level.cpp
         klevel/algorithm/utils.h
         klevel/algorithm/utils.cpp
-        klevel/algorithm/dominateG.h
-        klevel/algorithm/dominateG.cpp
+        #[[klevel/algorithm/dominateG.h
+        klevel/algorithm/dominateG.cpp]]
 
         klevel/adapter/lp_adapter.h
         klevel/adapter/lp_adapter.cpp
@@ -56,6 +57,11 @@ add_executable(${PROJECT_NAME}
         klevel/adapter/qhull_adapter.cpp
         klevel/adapter/rtree_adapter.h
         klevel/adapter/rtree_adapter.cpp
+
+        klevel/operator/kspr.h
+        klevel/operator/kspr.cpp
+        klevel/operator/utk.h
+        klevel/operator/utk.cpp
 
 
         lib/lp_lib/bfp/bfp_LUSOL/lp_LUSOL.h

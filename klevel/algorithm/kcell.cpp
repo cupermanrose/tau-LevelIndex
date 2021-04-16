@@ -12,6 +12,47 @@ kcell::kcell() {
 }
 
 kcell::~kcell() {
+    topk.clear();
+    Stau.clear();
+    r.region::~region();
+}
+
+void kcell::WriteToDisk(ofstream& Outfile) {
+    Outfile.write((char*) &curk,sizeof(int));
+    Outfile.write((char*) &objID,sizeof(int));
+    r.WriteToDisk(Outfile);
+    int size=topk.size();
+    Outfile.write((char*) &size,sizeof(int));
+    for (auto it=topk.begin();it!=topk.end();it++){
+        Outfile.write((char*) &(*it),sizeof(int));
+    }
+    size=Stau.size();
+    Outfile.write((char*) &size,sizeof(int));
+    for (auto it=Stau.begin();it!=Stau.end();it++){
+        Outfile.write((char*) &(*it),sizeof(int));
+    }
+}
+
+void kcell::ReadFromDisk(ifstream& Infile) {
+    Infile.read((char*) &curk,sizeof(int));
+    Infile.read((char*) &objID,sizeof(int));
+    r.ReadFromDisk(Infile);
+    int size;
+    Infile.read((char*) &size,sizeof(int));
+    topk.clear();
+    for (int i=0;i<size;i++){
+        int cur;
+        Infile.read((char*) &cur,sizeof(int));
+        topk.insert(cur);
+    }
+    Infile.read((char*) &size,sizeof(int));
+    Stau.clear();
+    for (int i=0;i<size;i++){
+        int cur;
+        Infile.read((char*) &cur,sizeof(int));
+        Stau.insert(cur);
+    }
+    Get_HashValue();
 }
 
 void kcell::TobeRoot(vector<int> &candidates, int dim) {

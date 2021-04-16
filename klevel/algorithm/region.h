@@ -6,6 +6,7 @@
 #define K_LEVEL_REGION_H
 
 #include <vector>
+#include <fstream>
 #include "lp_adapter.h"
 #include "qhull_adapter.h"
 
@@ -15,13 +16,15 @@ class region {
 public:
 
     vector<halfspace> H; // halfspace representation
-    vector<point> V; // vertice representation
+    vector<vector<float>> V; // vertice representation
     vector<float> innerPoint;
 
 public:
     region();
     ~region();
 
+    void WriteToDisk(ofstream& Outfile);
+    void ReadFromDisk(ifstream& Infile);
     void ToBeRoot(int dim);
     void ComputeHP(vector<float>& w, vector<float>& o1, vector<float>& o2, int dim);
 };

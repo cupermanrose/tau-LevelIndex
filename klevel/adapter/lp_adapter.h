@@ -17,10 +17,6 @@ struct halfspace {
     bool side;
 };
 
-struct point{
-    vector<float> w;
-};
-
 class lp_adapter{
 
 public:

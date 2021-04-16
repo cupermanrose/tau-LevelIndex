@@ -9,12 +9,7 @@
 #include <iostream>
 #include <fstream>
 
-class k_level_lib {
-public:
-    k_level_lib();
-    ~k_level_lib();
-    static void BuildIdx(int dim, int tau, char* datafile, char* logfile);
-};
-
+void BuildIndex(level& idx, char* datafile, fstream& log, string idxfile);
+void LoadIndex(level& idx, char* datafile, fstream& log, string idxfile);
 
 #endif //K_LEVEL_K_LEVEL_LIB_H

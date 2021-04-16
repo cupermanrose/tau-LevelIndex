@@ -7,8 +7,11 @@
 
 #include "region.h"
 #include <algorithm>
+#include <fstream>
 #include <unordered_set>
 #include <boost/functional/hash.hpp>
+
+using namespace std;
 
 class kcell {
 public:
@@ -22,6 +25,8 @@ public:
     kcell();
     ~kcell();
 
+    void WriteToDisk(ofstream& Outfile);
+    void ReadFromDisk(ifstream& Infile);
     void Get_HashValue();
     void TobeRoot(vector<int>& candidates, int dim);
 };

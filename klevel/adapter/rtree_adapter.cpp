@@ -1,7 +1,6 @@
 #include "rtree_adapter.h"
-void release_rtree(Rtree *rt){
 
-}
+void release_rtree(Rtree *rt){}
 
 void rtreeRAM(const Rtree& rt, unordered_map<long int, RtreeNode*>& ramTree)
 {
