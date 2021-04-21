@@ -13,6 +13,7 @@ int countRecords(Rtree& a_rtree, int pageID);
 
 void aggregateRecords(Rtree& a_rtree);
 
+
 template<typename VVF>
 void build_rtree(Rtree *&rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VVF &data){
     if(data.empty()){

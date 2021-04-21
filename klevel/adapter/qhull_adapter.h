@@ -29,7 +29,7 @@ class qhull_adapter{
 public:
     qhull_adapter();
     ~qhull_adapter();
-    static void ComputeVertex(vector<halfspace>& H, vector<point>& V, vector<float>& innerPoint, int& dim);
+    static void ComputeVertex(vector<halfspace>& H, vector<vector<float>>& V, vector<float>& innerPoint, int& dim);
 };
 
 

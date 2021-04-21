@@ -9,7 +9,7 @@ level::level(int a_dim, int a_tau){
     tau=a_tau;
     idx.clear();
     Allobj.clear();
-    Grid.clear();
+    //Grid.clear();
 }
 
 level::~level() {
@@ -51,6 +51,12 @@ void level::LoadData(char* datafile) {
     return;
 }
 
+void level::FreeMem(int k){
+    if (k<1) return;
+    idx[k-1].clear();
+    vector<kcell>().swap(idx[k-1]);
+}
+
 void level::GlobalFilter(fstream& log, vector<int> &candidate) {
     candidate.clear();
     //for (int i=0;i<OriginD.size();i++) candidate.push_back(i);
@@ -76,9 +82,9 @@ void level::initIdx(fstream& log){
     GlobalFilter(log,candidate);
 
     // Initial Grid
-    vector<int> offset(dim,0);
-    //dominateG::EnumerateGrid(offset,0,div_num,dim,Allobj,Grid);
-    std::cout << "Init Grid done!" << std::endl;
+    /*vector<int> offset(dim,0);
+    dominateG::EnumerateGrid(offset,0,div_num,dim,Allobj,Grid);
+    std::cout << "Init Grid done!" << std::endl;*/
 
     idx.clear();
     kcell rootcell; rootcell.TobeRoot(candidate, dim); rootcell.Get_HashValue();
@@ -89,7 +95,7 @@ void level::initIdx(fstream& log){
     cout << "Init done!" << endl;
 }
 
-void level::Build(fstream& log) {
+void level::Build(fstream& log, ofstream& idxout) {
     vector<int> S1,Sk;
     set<int> utk_set; utk_set.clear();
     int ave_S1=0,ave_Sk=0,ave_vertex=0;
@@ -101,11 +107,7 @@ void level::Build(fstream& log) {
     initIdx(log);
     clock_t level_zero_time=clock();
     for (int k=1;k<=tau;k++){
-        // tmp free
-        if(k-2>=1){
-            idx[k-2].clear();
-            vector<kcell>().swap(idx[k-2]);
-        }
+
         clock_t level_k_time=clock();
 
         vector<kcell> this_level;  this_level.clear(); region_map.clear();
@@ -127,8 +129,6 @@ void level::Build(fstream& log) {
                 verify_time+=(clock()-tmp_profiling);
                 if (!verify){ // just for profiling
                 //if (!VerifyDuplicate(*p,*cur_cell,Sk, this_level)){ // merge s_tau
-
-
                     bool isFeasible;
                     tmp_profiling=clock();
                     isFeasible=lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim);
@@ -142,15 +142,6 @@ void level::Build(fstream& log) {
                 }
             }
 
-            // tmp free
-            cur_cell->Stau.clear();
-            cur_cell->topk.clear();
-            cur_cell->r.H.clear();
-            vector<halfspace>().swap(cur_cell->r.H);
-            cur_cell->r.V.clear();
-            vector<point>().swap(cur_cell->r.V);
-            cur_cell->r.innerPoint.clear();
-            vector<float>().swap(cur_cell->r.innerPoint);
         }
 
         //Compute V for each cell
@@ -164,8 +155,10 @@ void level::Build(fstream& log) {
 
         idx.emplace_back(this_level);
 
+        WriteToDisk(k, idxout);
         print_info(k,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, utk_set,log);
         profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
+        FreeMem(k);
     }
 }
 
@@ -199,8 +192,7 @@ void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
     }
 }
 
-
-
+/*
 void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
     unordered_map<int, set<int>> G; G.clear();
     set<int> id; id.clear();
@@ -219,6 +211,7 @@ void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
         if (p->second.size()<(tau-cur_cell.curk)) Sk.push_back(p->first);
     }
 }
+*/
 
 bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
     bool flag = false;
@@ -230,19 +223,6 @@ bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
             this_level[r_id->second].Stau.insert(*it);
         }
     }
-
-    /*for (auto r=this_level.begin();r!=this_level.end();r++){
-        if (r->objID!=newcell.objID) continue;
-        if (r->topk.find(newcell.objID)==r->topk.end()) continue;
-
-        if (r->hash_value==newcell.hash_value){
-            flag = true;
-            for (auto it = newcell.Stau.begin(); it != newcell.Stau.end(); it++) {
-                r->Stau.insert(*it);
-            }
-            break;
-        }
-    }*/
 
     return flag;
 }
@@ -383,23 +363,42 @@ void level::print_system_info(fstream &log) {
     vm_usage     = vsize / 1024.0 /1024.0; //MB
     resident_set = rss * page_size_kb /1024.0; //MB
 
-    cout << "Virtual Set Size(VSS) Cost: " << vm_usage << " MB" << endl;
+    //cout << "Virtual Set Size(VSS) Cost: " << vm_usage << " MB" << endl;
     cout << "Resident Set Size(RSS) Cost: " << resident_set << " MB"  << endl;
-    log << "Virtual Set Size(VSS) Cost: " << vm_usage << " MB" << endl;
+    //log << "Virtual Set Size(VSS) Cost: " << vm_usage << " MB" << endl;
     log << "Resident Set Size(RSS) Cost: " << resident_set << " MB"  << endl;
 }
 
 void level::profiling(int k, clock_t &level_zero_time, double &rskyband_time, double &verify_time,
                       double &isFeasible_time, double &updateV_time, fstream &log) {
-    cout << "rskyband time of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    cout << "Verify Duplicate time of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    cout << "Is_Feasible time of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    cout << "UpdateV time of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
+    cout << "rskyband time (%) of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 <<endl;
+    cout << "Verify Duplicate time (%) of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 << endl;
+    cout << "Is_Feasible time (%) of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << endl;
+    cout << "UpdateV time (%) of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 << endl;
     cout << endl;
-    log << "rskyband time of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    log << "Verify Duplicate time of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    log << "Is_Feasible time of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
-    log << "UpdateV time of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 << "%" << endl;
+    log << "rskyband time (%) of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 << endl;
+    log << "Verify Duplicate time (%) of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 <<endl;
+    log << "Is_Feasible time (%) of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << endl;
+    log << "UpdateV time (%) of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 <<  endl;
     log << endl;
 
+}
+
+void level::WriteToDisk(int k, ofstream &idxout) {
+    int size=idx[k].size();
+    idxout.write((char*) &size, sizeof(int));
+    for (auto it=idx[k].begin();it!=idx[k].end();it++){
+        it->WriteToDisk(idxout);
+    }
+}
+
+void level::ReadFromDisk(int k, ifstream &idxin) {
+    int size;
+    idxin.read((char*) &size, sizeof(int));
+    idx[k].clear();
+    for (int i=0;i<size;i++){
+        kcell tmp;
+        tmp.ReadFromDisk(idxin);
+        idx[k].emplace_back(tmp);
+    }
 }

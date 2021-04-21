@@ -4,7 +4,7 @@ qhull_adapter::qhull_adapter() {}
 
 qhull_adapter::~qhull_adapter() {}
 
-void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<point>& V, vector<float>& innerPoint, int& dim) {
+void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<vector<float>>& V, vector<float>& innerPoint, int& dim) {
     const int numpoints = H.size() + (dim - 1) * 2 + 1;            /* number of points */
     //coordT* halfspaces = (coordT*)malloc(dim * numpoints * sizeof(coordT)); /* array of coordinates for each point */
     coordT* halfspaces = new coordT[dim*numpoints];
@@ -83,8 +83,8 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<point>& V, vector
     vector<vector<float>> ret;
     qhull_user::points_at_half_inter(ret, halfspaces, numpoints, innerPoint);
     for (auto &i1:ret) {
-        point tmp;
-        tmp.w=i1;
+        vector<float> tmp;
+        tmp=i1;
         V.push_back(tmp);
     }
 //    cout<<V.size()<<endl;

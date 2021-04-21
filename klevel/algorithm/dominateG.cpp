@@ -13,7 +13,7 @@ int dominateG::offsetToID(vector<int> &offset, int dim) {
     return sum;
 }
 
-void dominateG::GetCube(vector<point> &cube, vector<int> &offset, int pos, int dim) {
+void dominateG::GetCube(vector<vector<float>> &cube, vector<int> &offset, int pos, int dim) {
     float w_offset=1.0/div_num; // side length of the cube
     vector<float> w(dim,0);
     w[dim-1]=1.0;
@@ -24,7 +24,7 @@ void dominateG::GetCube(vector<point> &cube, vector<int> &offset, int pos, int d
         w[i]=(offset[i]+pos_i)*w_offset;
     }
     if (w[dim-1]<-EPS) return; // invalid vertex, some grid are not cubes
-    point p; p.w=w;
+    vector<float> p; p=w;
     cube.emplace_back(p);
 }
 
@@ -33,7 +33,7 @@ void dominateG::GetCube(vector<point> &cube, vector<int> &offset, int pos, int d
 
 void dominateG::GetGraph(vector<int> &offset, vector<vector<float>> &Allobj, int dim) {
     Gid=offsetToID(offset,dim);
-    vector<point> cube; // (dim-1)-dimensional cube
+    vector<vector<float>> cube; // (dim-1)-dimensional cube
     for (int i=0;i<1<<(dim-1);i++)
         GetCube(cube,offset, i, dim);
 
@@ -65,11 +65,11 @@ void dominateG::EnumerateGrid(vector<int> &cur_offset, int cur_dim, int remains,
     }
 }
 
-int dominateG::FindCube(point &v,int dim) {
+int dominateG::FindCube(vector<float> &v,int dim) {
     float w_offset=1.0/div_num+EPS;
     vector<int> offset(dim,0);
     for (int d=0;d<dim-1;d++){
-        offset[d]=floor(v.w[d]/w_offset);
+        offset[d]=floor(v[d]/w_offset);
         offset[d]=max(0,offset[d]);
     }
 
