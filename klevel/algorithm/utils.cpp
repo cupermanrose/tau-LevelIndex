@@ -205,8 +205,7 @@ void build_qhull(const vector<int> &opt_idxes, VVF &PG, vector<vector<double>> &
     q_ptr->runQhull(rbox, "QJ");
 }
 
-
-void onionlayer(vector<int> &ret, vector<int> &candidate, vector<vector<float>> &data, int k) {
+void onionlayer(vector<int> &ret, vector<int>& ret_layer ,vector<int> &candidate, vector<vector<float>> &data, int k) {
     if (data.empty()) {
         return;
     }
@@ -215,6 +214,7 @@ void onionlayer(vector<int> &ret, vector<int> &candidate, vector<vector<float>> 
     for (int i = 1; i <= k; ++i) {
         for (int id: c.get_layer(i)) {
             ret.push_back(id);
+            ret_layer.push_back(i);
         }
         cout << "#k=" << i << ";num=" << c.get_layer(i).size() << endl;
     }

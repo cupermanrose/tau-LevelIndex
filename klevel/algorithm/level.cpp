@@ -34,6 +34,7 @@ void level::LoadData(char* datafile) {
         for (int d = 0; d < dim; d++) fin >> cl[d];
         for (int d = 0; d < dim; d++) fin >> cu[d];
         for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
+
         OriginD.push_back(tmp);
 
         /*if (TEST) {
@@ -59,17 +60,24 @@ void level::FreeMem(int k){
 
 void level::GlobalFilter(fstream& log, vector<int> &candidate) {
     candidate.clear();
-    //for (int i=0;i<OriginD.size();i++) candidate.push_back(i);
+
     //kskyband
     vector<int> candidate_skyband, candidate_onionlayer;
     kskyband(candidate_skyband, OriginD,tau);
-    //onionlayer(candidate_onionlayer, candidate_skyband,  OriginD, tau);
-    //our_filter();
-    candidate=candidate_skyband;
+    cout << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
+    log << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
     //k-onionlayer
+    vector<int> layer; layer.clear();
+    onionlayer(candidate_onionlayer, layer,  candidate_skyband,  OriginD, tau);
+    candidate=candidate_onionlayer;
+
     Allobj.clear();
     for (auto it=candidate.begin();it!=candidate.end();it++){
         Allobj.push_back(OriginD[*it]);
+    }
+    global_layer.clear();
+    for(auto it=layer.begin();it!=layer.end();it++){
+        global_layer.push_back(*it);
     }
 
     cout << "The number of options for building: " << Allobj.size() << std::endl;
@@ -178,6 +186,7 @@ void level::NoFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
 }
 
 void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+    int nextk=cur_cell.curk+1;
     S1.clear();Sk.clear();
     if (cur_cell.r.V.size()==0) return;
     for (auto i=cur_cell.Stau.begin();i!=cur_cell.Stau.end();i++){
@@ -187,7 +196,7 @@ void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
             if (RegionDominate(cur_cell.r.V,Allobj[*i],Allobj[*j],dim)) cnt++;
             if (cnt>=(tau-cur_cell.curk)) break;
         }
-        if (cnt==0) S1.push_back(*i);
+        if ((cnt==0)&&(global_layer[*i]<=nextk)) S1.push_back(*i);
         if (cnt<(tau-cur_cell.curk)) Sk.push_back(*i);
     }
 }

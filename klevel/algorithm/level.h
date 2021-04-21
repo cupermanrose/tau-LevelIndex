@@ -26,6 +26,7 @@ public:
     vector<vector<kcell>> idx;
     unordered_map<size_t,int> region_map;
     vector<vector<float>> Allobj, OriginD;
+    vector<int> global_layer;
     //unordered_map<int, dominateG> Grid;
 
 public:

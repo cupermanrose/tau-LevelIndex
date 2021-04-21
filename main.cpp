@@ -40,32 +40,35 @@ using orgQhull::Coordinates;
 #include "kspr.h"
 #include "utk.h"
 
-#define building 0
+#define building 1
 
 enum query_type{kspr, utk};
 
 int main(int argc, char* argv[]) {
     int dim=4;
-    int tau=20;
-    int k=10;
-    int q_num=20;
-    float utk_side_length=0.01;
-    char* datafile="/home/jiahaozhang/data/klevel/data/inde/U400K4.dat";// TODO 改成相对路径
-    char* logfile="/home/jiahaozhang/data/klevel/results/debug.log";// TODO 改成相对路径
+    int tau=10;
+    char* datafile="/home/jiahaozhang/data/klevel/data/anti/ANTI400K4.dat";// TODO 改成相对路径
+    string logfile="/home/jiahaozhang/data/klevel/results/ANTI400K_d"+to_string(dim)+"_tau"+to_string(tau)+".log";// TODO 改成相对路径
     fstream log(logfile, ios::out);
-    string idxfile="/home/jiahaozhang/data/klevel/results/U400K4_"+to_string(tau)+".idx";// TODO 改成相对路径
-    query_type query=utk;
+    string idxfile="/home/jiahaozhang/data/klevel/results/ANTI400K_d"+to_string(dim)+"_tau"+to_string(tau)+".idx";// TODO 改成相对路径
+
     level idx(dim,tau);
     if (building){
         BuildIndex(idx, datafile, log, idxfile);
     }
     else{
         LoadIndex(idx, datafile, log, idxfile);
+
+        query_type query=utk;
+        int k=10;
+        int q_num=20;
+
         switch (query) {
             case kspr:
                 kspr::multiple_query(idx, k, q_num, log);
                 break;
             case utk:
+                float utk_side_length=0.01;
                 utk::multiple_query(idx, k, q_num, utk_side_length, log);
                 break;
         }

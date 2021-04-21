@@ -69,11 +69,9 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
 
 int utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) {
     unordered_set<int> results; results.clear();
-    int cnt=0;
     for (auto it=idx.idx[k].begin();it!=idx.idx[k].end();it++){
-        cout << cnt++ << endl;
         if (Intersect(Qregion,it->r, idx.dim)){
-            for (auto p=it->topk.begin();p!=it->topk.end();it++){
+            for (auto p=it->topk.begin();p!=it->topk.end();p++){
                 results.insert(*p);
             }
         }
