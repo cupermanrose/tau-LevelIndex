@@ -26,11 +26,12 @@ void kskyband_nortree(
         const vector<vector<float>> &data,
         const int k);
 
-void onionlayer(vector<int> &ret, vector<int>& candidate, vector<vector<float>>& data, int k);
+void onionlayer(vector<int> &ret, vector<int>& ret_layer, vector<int>& candidate, vector<vector<float>>& data, int k);
 
 float GetScore(vector<float> &w, vector<float> &p, int dim); // w[dim-1]=1.0-sigma(w[0] to w[dim-2])
 
 
+// Return true: oj dominates oi in this region;
 template<typename POINT>
 bool RegionDominate(vector<POINT> &V, vector<float> &oi, vector<float> &oj, int dim) {
     for (auto it=V.begin();it!=V.end();it++){
