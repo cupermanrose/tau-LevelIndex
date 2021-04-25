@@ -22,10 +22,11 @@ level::~level() {
 void level::LoadData(char* datafile) {
     fstream fin(datafile, ios::in);
     OriginD.clear();
+    vector<float> cl(dim);
+    vector<float> cu(dim);
     while (true) {
         int id;
-        float *cl = new float[dim];
-        float *cu = new float[dim];
+
         fin >> id;
         if (fin.eof())
             break;

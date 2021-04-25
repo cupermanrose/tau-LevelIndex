@@ -77,8 +77,8 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<vector<float>>& V
     strcpy(qhull_cmd, s.c_str());
 
 //
-    coordT* feasible_point = new coordT[dim - 1];
-    for (int i = 0; i < dim - 1; i++) feasible_point[i] = innerPoint[i];
+//    coordT* feasible_point = new coordT[dim - 1];
+//    for (int i = 0; i < dim - 1; i++) feasible_point[i] = innerPoint[i];
 //    exitcode = qh_new_qhull_klevel(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, feasible_point, NULL, NULL);
     vector<vector<float>> ret;
     qhull_user::points_at_half_inter(ret, halfspaces, numpoints, innerPoint);
@@ -87,6 +87,7 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<vector<float>>& V
         tmp=i1;
         V.push_back(tmp);
     }
+    delete [] (halfspaces);
 //    cout<<V.size()<<endl;
 //    exitcode = qh_new_qhull(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, NULL, NULL);
 //
