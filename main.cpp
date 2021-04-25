@@ -45,7 +45,7 @@ using orgQhull::Coordinates;
 enum query_type{kspr, utk};
 
 int main(int argc, char* argv[]) {
-    int dim=4;
+    int dim=6;
     int tau=20;
     char* datafile="/home/kemingli/klevel/data/inde/U400K4.dat";// TODO 改成相对路径
     string logfile="/home/kemingli/klevel/result/idx/U400K"+to_string(dim)+"_tau"+to_string(tau)+".log";// TODO 改成相对路径
