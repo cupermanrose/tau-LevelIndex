@@ -45,14 +45,16 @@ using orgQhull::Coordinates;
 enum query_type{kspr, utk};
 
 int main(int argc, char* argv[]) {
-    int dim=4;
+    int dim=8;
     int tau=10;
-    char* datafile="/home/jiahaozhang/data/klevel/data/anti/ANTI400K4.dat";// TODO 改成相对路径
-    string logfile="/home/jiahaozhang/data/klevel/results/ANTI400K_d"+to_string(dim)+"_tau"+to_string(tau)+".log";// TODO 改成相对路径
+    char* datafile="/home/jiahaozhang/data/klevel/data/real/NBA8D.dat";// TODO 改成相对路径
+    string logfile="/home/jiahaozhang/data/klevel/results/NBA_d"+to_string(dim)+"_tau"+to_string(tau)+".log";// TODO 改成相对路径
+    string idxfile="/home/jiahaozhang/data/klevel/results/NBA_d"+to_string(dim)+"_tau"+to_string(tau)+".idx";// TODO 改成相对路径
+
     fstream log(logfile, ios::out);
-    string idxfile="/home/jiahaozhang/data/klevel/results/ANTI400K_d"+to_string(dim)+"_tau"+to_string(tau)+".idx";// TODO 改成相对路径
 
     level idx(dim,tau);
+
     if (building){
         BuildIndex(idx, datafile, log, idxfile);
     }

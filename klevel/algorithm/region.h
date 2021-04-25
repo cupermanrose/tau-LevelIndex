@@ -25,6 +25,7 @@ public:
 
     void WriteToDisk(ofstream& Outfile);
     void ReadFromDisk(ifstream& Infile);
+    void FreeMem();
     void ToBeRoot(int dim);
     void ComputeHP(vector<float>& w, vector<float>& o1, vector<float>& o2, int dim);
 };
