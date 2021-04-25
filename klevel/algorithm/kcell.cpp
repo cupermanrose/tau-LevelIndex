@@ -12,9 +12,6 @@ kcell::kcell() {
 }
 
 kcell::~kcell() {
-//    topk.clear();
-//    Stau.clear();
-//    r.region::~region();
 }
 
 void kcell::WriteToDisk(ofstream& Outfile) {
@@ -43,14 +40,14 @@ void kcell::ReadFromDisk(ifstream& Infile) {
     for (int i=0;i<size;i++){
         int cur;
         Infile.read((char*) &cur,sizeof(int));
-        topk.insert(cur);
+        topk.push_back(cur);
     }
     Infile.read((char*) &size,sizeof(int));
     Stau.clear();
     for (int i=0;i<size;i++){
         int cur;
         Infile.read((char*) &cur,sizeof(int));
-        Stau.insert(cur);
+        Stau.push_back(cur);
     }
     Get_HashValue();
 }
@@ -59,7 +56,7 @@ void kcell::TobeRoot(vector<int> &candidates, int dim) {
     curk=0;
     objID=-1;
     topk.clear();
-    for (int i=0;i!=candidates.size();i++) Stau.insert(i);
+    for (int i=0;i!=candidates.size();i++) Stau.push_back(i);
     r.ToBeRoot(dim);
 }
 

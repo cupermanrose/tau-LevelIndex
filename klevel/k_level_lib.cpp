@@ -18,7 +18,7 @@ void LoadIndex(level& idx, char* datafile, fstream& log, string idxfile) {
     vector<int> candidate;
     idx.GlobalFilter(log,candidate);
 
-    deque<kcell> empty_level; empty_level.clear();
+    vector<kcell> empty_level; empty_level.clear();
     idx.idx.emplace_back(empty_level);
     for (int k=1;k<=idx.tau;k++){
         idx.idx.push_back(empty_level);

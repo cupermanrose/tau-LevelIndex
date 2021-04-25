@@ -14,7 +14,7 @@ level::level(int a_dim, int a_tau){
 
 level::~level() {
     idx.clear();
-    deque<deque<kcell>>().swap(idx);
+    vector<vector<kcell>>().swap(idx);
     Allobj.clear();
     vector<vector<float>>().swap(Allobj);
 }
@@ -57,13 +57,13 @@ void level::FreeMem(int k){
     if (k<0) return;
     for (auto it=idx[k].begin();it!=idx[k].end();it++){
         it->Stau.clear();
-        unordered_set<int>().swap(it->Stau);
+        vector<int>().swap(it->Stau);
         it->topk.clear();
-        unordered_set<int>().swap(it->topk);
+        vector<int>().swap(it->topk);
         it->r.FreeMem();
     }
     idx[k].clear();
-    deque<kcell>().swap(idx[k]);
+    vector<kcell>().swap(idx[k]);
 }
 
 void level::GlobalFilter(fstream& log, vector<int> &candidate) {
@@ -114,7 +114,7 @@ void level::initIdx(fstream& log){
 
     idx.clear();
     kcell rootcell; rootcell.TobeRoot(candidate, dim); rootcell.Get_HashValue();
-    deque<kcell> Lzero;
+    vector<kcell> Lzero;
     Lzero={rootcell};
     idx.push_back(Lzero);
 
@@ -136,7 +136,7 @@ void level::Build(fstream& log, ofstream& idxout) {
 
         clock_t level_k_time=clock();
 
-        deque<kcell> this_level;  this_level.clear(); region_map.clear();
+        vector<kcell> this_level;  this_level.clear(); region_map.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
             tmp_profiling=clock();
@@ -240,14 +240,21 @@ void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
 }
 */
 
-bool level::VerifyDuplicate(kcell &newcell, deque<kcell> &this_level) {
+bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
     bool flag = false;
 
     auto r_id=region_map.find(newcell.hash_value);
     if (r_id!=region_map.end()){
         flag=true;
         for (auto it = newcell.Stau.begin(); it != newcell.Stau.end(); it++) {
-            this_level[r_id->second].Stau.insert(*it);
+            bool foundInStau=false;
+            for (auto p=this_level[r_id->second].Stau.begin();p!=this_level[r_id->second].Stau.end();p++){
+                if (*p==*it) {
+                    foundInStau=true;
+                    break;
+                }
+            }
+            if (!foundInStau) this_level[r_id->second].Stau.push_back(*it);
         }
     }
 
@@ -285,11 +292,11 @@ bool level::VerifyDuplicate(int p, kcell &cur_cell, vector<int>& Sk, vector<kcel
 void level::CreateNewCell(int p, vector<int> &S1, vector<int> &Sk, kcell &cur_cell, kcell &newcell) {
     newcell.curk=cur_cell.curk+1;
     newcell.objID=p;
-    newcell.topk=cur_cell.topk; newcell.topk.insert(p);
+    newcell.topk=cur_cell.topk; newcell.topk.push_back(p);
     newcell.Get_HashValue();
     newcell.Stau.clear();
     for (auto it=Sk.begin();it!=Sk.end();it++){
-        if (*it!=p) newcell.Stau.insert(*it);
+        if (*it!=p) newcell.Stau.push_back(*it);
     }
 
     // just for verification whether p can top-1 in cur_cell
