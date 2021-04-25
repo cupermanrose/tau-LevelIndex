@@ -10,6 +10,17 @@ void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     for (int i=0;i<q_num;i++){
         q_list.push_back(rand()%idx.Allobj.size());
     }
+    cout<<"begin generate query of original id:";
+    for(int &i: q_list){
+        cout<<idx.levelId_2_dataId[i]<<"\n";
+    }
+    cout<<"end generate query of original id"<<endl;
+
+    cout<<"begin generate query of k-level id:";
+    for(int &i: q_list){
+        cout<<i<<"\n";
+    }
+    cout<<"end generate query of k-level id"<<endl;
     return;
 }
 

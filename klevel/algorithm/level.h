@@ -27,6 +27,7 @@ public:
     unordered_map<size_t,int> region_map;
     vector<vector<float>> Allobj, OriginD;
     vector<int> global_layer;
+    unordered_map<int, int> levelId_2_dataId;
     //unordered_map<int, dominateG> Grid;
 
 public:

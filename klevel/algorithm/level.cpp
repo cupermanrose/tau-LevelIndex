@@ -3,7 +3,7 @@
 //
 
 #include "level.h"
-
+#include <chrono>
 level::level(int a_dim, int a_tau){
     dim=a_dim;
     tau=a_tau;
@@ -63,17 +63,29 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
 
     //kskyband
     vector<int> candidate_skyband, candidate_onionlayer;
+//    candidate_skyband.resize(OriginD.size());
+//    iota(candidate_skyband.begin(), candidate_skyband.end(), 0);
     kskyband(candidate_skyband, OriginD,tau);
     cout << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
     log << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
     //k-onionlayer
     vector<int> layer; layer.clear();
+    auto begin = chrono::steady_clock::now();
+
     onionlayer(candidate_onionlayer, layer,  candidate_skyband,  OriginD, tau);
+
+    auto now = chrono::steady_clock::now();
+    chrono::duration<double> elapsed_seconds= now-begin;
+    cout<<"onion layer uses "<< elapsed_seconds.count() <<"secs"<<endl;
+
     candidate=candidate_onionlayer;
 
     Allobj.clear();
+    int cnt=0;
     for (auto it=candidate.begin();it!=candidate.end();it++){
         Allobj.push_back(OriginD[*it]);
+        levelId_2_dataId[cnt]=*it;
+        ++cnt;
     }
     global_layer.clear();
     for(auto it=layer.begin();it!=layer.end();it++){

@@ -84,7 +84,11 @@ void kskyband(
         const int k,
         bool rtree,
         const Rtree *rtree_rt) {
+    auto begin = chrono::steady_clock::now();
+    auto now = chrono::steady_clock::now();
+    chrono::duration<double> elapsed_seconds= now-begin;
     if (rtree) {
+        cout<<"using k-skyband with rtree"<<endl;
         if (rtree_rt) {
             unordered_map<long int, RtreeNode *> ramTree;
             rtreeRAM(*rtree_rt, ramTree);
@@ -97,9 +101,12 @@ void kskyband(
             // TODO release mem of rtree
         }
     } else {
+        cout<<"using k-skyband without rtree"<<endl;
         kskyband_nortree(ret, data, k);
     }
-
+    now = chrono::steady_clock::now();
+    elapsed_seconds= now-begin;
+    cout<< "using "<<elapsed_seconds.count() <<" sec to apply k-skyband"<<endl;
 }
 
 void kskyband_nortree(
