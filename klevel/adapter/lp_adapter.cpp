@@ -90,14 +90,6 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
     //set_presolve(lp, PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
 
     double var[Max_Dimension], var1[Max_Dimension];
-    // for enumerate dimension
-    /*for (int i = 0; i < dim + 1; i++) row[i] = 0.0;
-    row[1] = 1.0;
-    set_maxim(lp);
-    set_obj_fn(lp, row);
-    set_timeout(lp,1);
-    int ret = solve(lp);
-    get_variables(lp, var);*/
 
     for (int i = 0; i < dim + 1; i++) row[i] = 1.0;
     set_maxim(lp);
@@ -117,31 +109,9 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
         get_variables(lp, var1);
         for (int i = 0; i < dim; i++) {
             var[i] = (var[i] + var1[i]) / 2.0;
-            if (var[i]<EPS) var[i]=EPS;
-            if (var[i]>1.0-EPS) var[i]=1-EPS;
+            /*if (var[i]<EPS) var[i]=EPS; // for dimension 8
+            if (var[i]>1.0-EPS) var[i]=1-EPS;*/
         }
-        /*if (dim > 1) {
-            row[1] = 0.0; row[2] = 1.0;
-            set_obj_fn(lp, row);
-            ret = solve(lp);
-            get_variables(lp, var1);
-            for (int i = 0; i < dim; i++) var[i] = (var[i] + var1[i]) / 2.0;
-        }
-        if (dim > 2) {
-            row[2] = 0.0; row[3] = 1.0;
-            set_obj_fn(lp, row);
-            ret = solve(lp);
-            get_variables(lp, var1);
-            for (int i = 0; i < dim; i++) var[i] = (var[i] + var1[i]) / 2.0;
-        }*/
-        /*for (int i=2;i<=dim;i++){
-            row[i-1]=0.0;row[i]=1.0;
-            set_obj_fn(lp, row);
-            ret = solve(lp);
-            get_variables(lp, var1);
-            for (int i = 0; i < dim; i++) var[i] = (var[i] + var1[i]) / 2.0;
-        }*/
-
         innerPoint.clear();
         for (int i = 0; i < dim; i++) innerPoint.push_back(var[i]);
         delete_lp(lp);

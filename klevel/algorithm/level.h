@@ -23,7 +23,7 @@
 class level {
 public:
     int dim, tau;
-    deque<deque<kcell>> idx;
+    vector<vector<kcell>> idx;
     unordered_map<size_t,int> region_map;
     vector<vector<float>> Allobj, OriginD;
     vector<int> global_layer;
@@ -45,7 +45,7 @@ public:
 
     void initIdx(fstream& log);
     void Build(fstream& log, ofstream& idxout);
-    bool VerifyDuplicate(kcell& newcell, deque<kcell>& this_level); // hash version
+    bool VerifyDuplicate(kcell& newcell, vector<kcell>& this_level); // hash version
     //bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level); // for-loop version
     void CreateNewCell(int p, vector<int>& S1, vector<int>& Sk, kcell& cur_cell,kcell& newcell);
     void AddHS(int o1, int o2, bool side, vector<halfspace>& H);

@@ -18,8 +18,8 @@ public:
     int curk, objID;
     size_t hash_value;
     region r;
-    unordered_set<int> topk; // the top-kth in this region
-    unordered_set<int> Stau; // top-tau candidates set
+    vector<int> topk; // the top-kth in this region
+    vector<int> Stau; // top-tau candidates set
 
 public:
     kcell();

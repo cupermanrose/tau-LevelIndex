@@ -27,7 +27,10 @@ void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
 int kspr::single_query(level &idx, int k, int q_id, fstream &log) {
     int cnt=0;
     for (auto it=idx.idx[k].begin();it!=idx.idx[k].end();it++){
-        if (it->topk.find(q_id)!=it->topk.end()) cnt++;
+        bool find=false;
+        for (auto p=it->topk.begin();p!=it->topk.end();p++)
+                if (*p==q_id) find=true;
+        if (find) cnt++;
     }
     return cnt;
 }
