@@ -40,7 +40,7 @@ using orgQhull::Coordinates;
 #include "kspr.h"
 #include "utk.h"
 
-#define building 1
+#define building 0
 
 enum query_type{kspr, utk};
 
