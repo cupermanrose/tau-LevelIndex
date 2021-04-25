@@ -14,7 +14,7 @@ level::level(int a_dim, int a_tau){
 
 level::~level() {
     idx.clear();
-    vector<vector<kcell>>().swap(idx);
+    deque<deque<kcell>>().swap(idx);
     Allobj.clear();
     vector<vector<float>>().swap(Allobj);
 }
@@ -62,7 +62,7 @@ void level::FreeMem(int k){
         it->r.FreeMem();
     }
     idx[k].clear();
-    vector<kcell>().swap(idx[k]);
+    deque<kcell>().swap(idx[k]);
 }
 
 void level::GlobalFilter(fstream& log, vector<int> &candidate) {
@@ -113,7 +113,7 @@ void level::initIdx(fstream& log){
 
     idx.clear();
     kcell rootcell; rootcell.TobeRoot(candidate, dim); rootcell.Get_HashValue();
-    vector<kcell> Lzero;
+    deque<kcell> Lzero;
     Lzero={rootcell};
     idx.push_back(Lzero);
 
@@ -135,7 +135,7 @@ void level::Build(fstream& log, ofstream& idxout) {
 
         clock_t level_k_time=clock();
 
-        vector<kcell> this_level;  this_level.clear(); region_map.clear();
+        deque<kcell> this_level;  this_level.clear(); region_map.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
             tmp_profiling=clock();
@@ -239,7 +239,7 @@ void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
 }
 */
 
-bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
+bool level::VerifyDuplicate(kcell &newcell, deque<kcell> &this_level) {
     bool flag = false;
 
     auto r_id=region_map.find(newcell.hash_value);
