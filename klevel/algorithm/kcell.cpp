@@ -12,9 +12,9 @@ kcell::kcell() {
 }
 
 kcell::~kcell() {
-    topk.clear();
-    Stau.clear();
-    r.region::~region();
+//    topk.clear();
+//    Stau.clear();
+//    r.region::~region();
 }
 
 void kcell::WriteToDisk(ofstream& Outfile) {
