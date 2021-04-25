@@ -53,9 +53,16 @@ void level::LoadData(char* datafile) {
 }
 
 void level::FreeMem(int k){
-    if (k<1) return;
-    idx[k-1].clear();
-    vector<kcell>().swap(idx[k-1]);
+    if (k<0) return;
+    for (auto it=idx[k].begin();it!=idx[k].end();it++){
+        it->Stau.clear();
+        unordered_set<int>().swap(it->Stau);
+        it->topk.clear();
+        unordered_set<int>().swap(it->topk);
+        it->r.FreeMem();
+    }
+    idx[k].clear();
+    vector<kcell>().swap(idx[k]);
 }
 
 void level::GlobalFilter(fstream& log, vector<int> &candidate) {
@@ -63,20 +70,18 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
 
     //kskyband
     vector<int> candidate_skyband, candidate_onionlayer;
-//    candidate_skyband.resize(OriginD.size());
-//    iota(candidate_skyband.begin(), candidate_skyband.end(), 0);
+    clock_t st=clock();
     kskyband(candidate_skyband, OriginD,tau);
     cout << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
     log << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
+    cout << "kskyband Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC << endl;
+    log << "kskyband Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC  << endl;
     //k-onionlayer
     vector<int> layer; layer.clear();
-    auto begin = chrono::steady_clock::now();
-
+    st=clock();
     onionlayer(candidate_onionlayer, layer,  candidate_skyband,  OriginD, tau);
-
-    auto now = chrono::steady_clock::now();
-    chrono::duration<double> elapsed_seconds= now-begin;
-    cout<<"onion layer uses "<< elapsed_seconds.count() <<"secs"<<endl;
+    cout << "onionlayer Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC << endl;
+    log << "onionlayer Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC  << endl;
 
     candidate=candidate_onionlayer;
 
@@ -178,7 +183,7 @@ void level::Build(fstream& log, ofstream& idxout) {
         WriteToDisk(k, idxout);
         print_info(k,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, utk_set,log);
         profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
-        FreeMem(k);
+        FreeMem(k-1);
     }
 }
 
