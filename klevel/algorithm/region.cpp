@@ -11,6 +11,12 @@ region::region() {
 }
 
 region::~region() {
+    H.clear();
+    vector<halfspace>().swap(H);
+    V.clear();
+    vector<vector<float>>().swap(V);
+    innerPoint.clear();
+    vector<float>().swap(innerPoint);
 }
 
 void region::FreeMem() {

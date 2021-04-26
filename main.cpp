@@ -45,11 +45,11 @@ using orgQhull::Coordinates;
 enum query_type{kspr, utk};
 
 int main(int argc, char* argv[]) {
-    int dim=6;
-    int tau=20;
-    char* datafile="/home/kemingli/klevel/data/inde/U400K4.dat";// TODO 改成相对路径
-    string logfile="/home/kemingli/klevel/result/idx/U400K"+to_string(dim)+"_tau"+to_string(tau)+".log";// TODO 改成相对路径
-    string idxfile="/home/kemingli/klevel/result/idx/U400K"+to_string(dim)+"_"+to_string(tau)+".idx";// TODO 改成相对路径
+    int dim=8;
+    int tau=5;
+    char* datafile="/home/kemingli/klevel/data/real/NBA8D.dat";// TODO 改成相对路径
+    string logfile="/home/kemingli/klevel/result/idx/NBA8D"+to_string(dim)+"_tau"+to_string(tau)+".log";// TODO 改成相对路径
+    string idxfile="/home/kemingli/klevel/result/idx/NBA8D"+to_string(dim)+"_"+to_string(tau)+".idx";// TODO 改成相对路径
     cout<<"dim"<<dim<<endl;
     cout<<"tau"<<tau<<endl;
     cout<<string(datafile)<<endl;
