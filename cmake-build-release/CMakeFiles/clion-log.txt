@@ -1,5 +1,0 @@
-/usr/bin/cmake -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - Unix Makefiles" /home/jiahaozhang/projects/klevel
--- Boost version: 1.65.1
--- Configuring done
--- Generating done
--- Build files have been written to: /home/jiahaozhang/projects/klevel/cmake-build-release
