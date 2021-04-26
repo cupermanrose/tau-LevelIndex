@@ -19,19 +19,6 @@ region::~region() {
     vector<float>().swap(innerPoint);
 }
 
-void region::FreeMem() {
-    for (auto it=H.begin();it!=H.end();it++){
-        it->w.clear();
-        vector<float>().swap(it->w);
-    }
-    H.clear();
-    vector<halfspace>().swap(H);
-    V.clear();
-    vector<vector<float>>().swap(V);
-    innerPoint.clear();
-    vector<float>().swap(innerPoint);
-}
-
 void region::WriteToDisk(ofstream &Outfile) {
     int size=H.size();
     Outfile.write((char*) &size, sizeof(int));

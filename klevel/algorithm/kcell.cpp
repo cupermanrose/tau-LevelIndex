@@ -12,6 +12,10 @@ kcell::kcell() {
 }
 
 kcell::~kcell() {
+    Stau.clear();
+    vector<int>().swap(Stau);
+    topk.clear();
+    vector<int>().swap(topk);
 }
 
 void kcell::WriteToDisk(ofstream& Outfile) {

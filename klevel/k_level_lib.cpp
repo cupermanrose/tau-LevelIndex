@@ -4,7 +4,7 @@
 
 #include "k_level_lib.h"
 
-void BuildIndex(level& idx, char* datafile, fstream& log, string idxfile) {
+void BuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
     idx.Build(log,idxout);
@@ -12,7 +12,7 @@ void BuildIndex(level& idx, char* datafile, fstream& log, string idxfile) {
     idxout.close();
 }
 
-void LoadIndex(level& idx, char* datafile, fstream& log, string idxfile) {
+void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
     ifstream idxin(idxfile);
     idx.LoadData(datafile);
     vector<int> candidate;
