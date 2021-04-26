@@ -19,7 +19,7 @@ level::~level() {
     vector<vector<float>>().swap(Allobj);
 }
 
-void level::LoadData(char* datafile) {
+void level::LoadData(string datafile) {
     fstream fin(datafile, ios::in);
     OriginD.clear();
     vector<float> cl(dim);
@@ -55,13 +55,6 @@ void level::LoadData(char* datafile) {
 
 void level::FreeMem(int k){
     if (k<0) return;
-    for (auto it=idx[k].begin();it!=idx[k].end();it++){
-        it->Stau.clear();
-        vector<int>().swap(it->Stau);
-        it->topk.clear();
-        vector<int>().swap(it->topk);
-        it->r.FreeMem();
-    }
     idx[k].clear();
     vector<kcell>().swap(idx[k]);
 }

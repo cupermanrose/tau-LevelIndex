@@ -34,7 +34,7 @@ public:
     level(int a_dim, int a_tau);
     ~level();
 
-    void LoadData(char* datafile);
+    void LoadData(string datafile);
     void GlobalFilter(fstream& log, vector<int>& candidate);
     void FreeMem(int k);
 

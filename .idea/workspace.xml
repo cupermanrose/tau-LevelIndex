@@ -15,14 +15,16 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="081e37e1-301e-4be0-8b9e-4f1bf1a1f4e0" name="Default Changelist" comment="FreeMem optimization">
+    <list default="true" id="081e37e1-301e-4be0-8b9e-4f1bf1a1f4e0" name="Default Changelist" comment="Change Stau and topk into vector for memory optimization">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klevel/adapter/lp_adapter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/adapter/lp_adapter.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klevel/algorithm/kcell.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/algorithm/kcell.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klevel/algorithm/kcell.h" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/algorithm/kcell.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klevel/algorithm/level.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/algorithm/level.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klevel/algorithm/level.h" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/algorithm/level.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klevel/algorithm/region.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/algorithm/region.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klevel/algorithm/region.h" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/algorithm/region.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klevel/k_level_lib.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/k_level_lib.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klevel/operator/kspr.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/operator/kspr.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klevel/k_level_lib.h" beforeDir="false" afterPath="$PROJECT_DIR$/klevel/k_level_lib.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -34,7 +36,7 @@
     <option name="clangTidyViaClangd" value="false" />
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -67,14 +69,14 @@
     <property name="settings.editor.selected.configurable" value="configurable.group.build" />
   </component>
   <component name="RunManager">
-    <configuration name="k_level" type="CMakeRunConfiguration" factoryName="Application" singleton="false" REDIRECT_INPUT="false" ELEVATE="false" WORKING_DIR="file:///home/jiahaozhang/projects/klevel/" PASS_PARENT_ENVS_2="true" PROJECT_NAME="k_level" TARGET_NAME="k_level" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="k_level" RUN_TARGET_NAME="k_level">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
+    <configuration name="k_level" type="CMakeRunConfiguration" factoryName="Application" singleton="false" REDIRECT_INPUT="false" ELEVATE="false" WORKING_DIR="file:///home/jiahaozhang/projects/klevel/" PASS_PARENT_ENVS_2="true" PROJECT_NAME="k_level" TARGET_NAME="k_level" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="k_level" RUN_TARGET_NAME="k_level">
       <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -121,7 +123,8 @@
       <workItem from="1618968251269" duration="14688000" />
       <workItem from="1619059789994" duration="13108000" />
       <workItem from="1619160186278" duration="2051000" />
-      <workItem from="1619315799774" duration="12719000" />
+      <workItem from="1619315799774" duration="14003000" />
+      <workItem from="1619399810870" duration="9286000" />
     </task>
     <task id="LOCAL-00001" summary="class level, kcell and region are almost finished.&#10;Global&amp;local filter and ComputeVertex are on working">
       <created>1617179307188</created>
@@ -242,7 +245,21 @@
       <option name="project" value="LOCAL" />
       <updated>1619336341256</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Change Stau and topk into vector">
+      <created>1619340958636</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1619340958636</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Change Stau and topk into vector for memory optimization">
+      <created>1619340979615</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1619340979615</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -288,7 +305,9 @@
     <MESSAGE value="KSPR&amp;UTK query updated;&#10;&#10;utk still has bugs." />
     <MESSAGE value="enable onion_layer and global_layer" />
     <MESSAGE value="FreeMem optimization" />
-    <option name="LAST_COMMIT_MESSAGE" value="FreeMem optimization" />
+    <MESSAGE value="Change Stau and topk into vector" />
+    <MESSAGE value="Change Stau and topk into vector for memory optimization" />
+    <option name="LAST_COMMIT_MESSAGE" value="Change Stau and topk into vector for memory optimization" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -312,6 +331,11 @@
           <url>rvfs:///home/jiahaozhang/projects/klevel/lib/qhull_lib/libqhull_r/geom2_r.c</url>
           <line>2095</line>
           <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/klevel/algorithm/level.cpp</url>
+          <line>177</line>
+          <option name="timeStamp" value="31" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

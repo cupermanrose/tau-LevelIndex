@@ -40,42 +40,75 @@ using orgQhull::Coordinates;
 #include "kspr.h"
 #include "utk.h"
 
-#define building 1
+enum func_type{buildidx, loadidx};
+enum query_type{kspr, utk, oru};
 
-enum query_type{kspr, utk};
+void Config(int dim, int tau, string root_directory, string filename,
+            string& datafile, string& logfile, string& idxfile, fstream& log,
+            string func_str, func_type& func, string query_str, query_type& query){
+
+    datafile=root_directory+"data/"+filename+".dat";
+    logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+".log";
+    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+".idx";
+    log.open(logfile, ios::out);
+
+    if (func_str=="buildidx") func=buildidx;
+    else if (func_str=="loadidx") func=loadidx;
+    else cout << "Unknown function!" << endl;
+
+    if (query_str=="kspr") query=kspr;
+    else if (query_str=="utk") query=utk;
+    else if (query_str=="oru") query=oru;
+    else cout << "Unknown query!" << endl;
+}
+
+void ParameterInput(int argc, char* argv[], int& dim, int& tau,
+                    string& root_directory, string& filename, string& func_str, int& q_num, int& k, string& query_str){
+    dim=4;
+    tau=20;
+    root_directory="/home/jiahaozhang/data/klevel/";
+    filename="inde/U400K4";
+    func_str="buildidx";
+
+    q_num=20;
+    k=10;
+    query_str="kspr";
+
+}
 
 int main(int argc, char* argv[]) {
-    int dim=4;
-    int tau=10;
-    char* datafile="/home/jiahaozhang/data/klevel/data/inde/U400K4.dat";// TODO 改成相对路径
-    string logfile="/home/jiahaozhang/data/klevel/results/U400K_d"+to_string(dim)+"_tau"+to_string(tau)+".log";// TODO 改成相对路径
-    string idxfile="/home/jiahaozhang/data/klevel/results/U400K_d"+to_string(dim)+"_tau"+to_string(tau)+".idx";// TODO 改成相对路径
-
-    fstream log(logfile, ios::out);
+    int dim,tau,q_num, k;
+    string datafile, logfile, idxfile, root_directory, filename, func_str,query_str;
+    fstream log;
+    query_type query;
+    func_type func;
+    ParameterInput(argc, argv, dim,tau,root_directory,filename,func_str, q_num, k, query_str);
+    Config(dim,tau,root_directory,filename,datafile,logfile,idxfile,log, func_str, func, query_str, query);
 
     level idx(dim,tau);
-    if (building){
-        BuildIndex(idx, datafile, log, idxfile);
-    }
-    else{
-        LoadIndex(idx, datafile, log, idxfile);
 
-        query_type query=kspr;
-        int k=10;
-        int q_num=20;
-
-        switch (query) {
-            case kspr:
-                kspr::multiple_query(idx, k, q_num, log);
-                break;
-            case utk:
-                float utk_side_length=0.01;
-                utk::multiple_query(idx, k, q_num, utk_side_length, log);
-                break;
-        }
+    switch (func) {
+        case buildidx:
+            BuildIndex(idx, datafile, log, idxfile);
+            break;
+        case loadidx:
+            LoadIndex(idx, datafile, log, idxfile);
+            switch (query) {
+                case kspr:
+                    kspr::multiple_query(idx, k, q_num, log);
+                    break;
+                case utk:
+                    float utk_side_length=0.01;
+                    utk::multiple_query(idx, k, q_num, utk_side_length, log);
+                    break;
+                /*case oru:
+                    float ret_size=10;
+                    break;*/
+            }
     }
 
     cout << "DONE" << endl;
+    log.close();
     return 0;
 }
 
