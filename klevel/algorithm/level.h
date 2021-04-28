@@ -22,7 +22,7 @@
 
 class level {
 public:
-    int dim, tau;
+    int dim, tau, ik;
     vector<vector<kcell>> idx;
     unordered_map<size_t,int> region_map;
     vector<vector<float>> Allobj, OriginD;
@@ -31,7 +31,7 @@ public:
     //unordered_map<int, dominateG> Grid;
 
 public:
-    level(int a_dim, int a_tau);
+    level(int a_dim, int a_tau, int a_ik);
     ~level();
 
     void LoadData(string datafile);

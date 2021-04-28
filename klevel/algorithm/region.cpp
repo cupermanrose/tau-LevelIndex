@@ -56,11 +56,16 @@ void region::ReadFromDisk(ifstream &Infile) {
         Infile.read((char*) &w_size, sizeof(int));
         halfspace HS;
         HS.w.clear();
-        for (int j=0;j<w_size;j++){
+
+        float* HS_buffer = new float [w_size];
+        Infile.read((char*) HS_buffer,sizeof(float)*w_size);
+        for (int j=0;j<w_size;j++) HS.w.push_back(HS_buffer[j]);
+        delete[] HS_buffer;
+        /*for (int j=0;j<w_size;j++){
             float w_value;
             Infile.read((char*) &w_value,sizeof(float));
             HS.w.push_back(w_value);
-        }
+        }*/
         Infile.read((char*) &(HS.side),sizeof(bool));
         H.emplace_back(HS);
     }
@@ -72,21 +77,32 @@ void region::ReadFromDisk(ifstream &Infile) {
         Infile.read((char*) &w_size, sizeof(int));
         vector<float> point;
         point.clear();
-        for (int j=0;j<w_size;j++){
+
+        float* V_buffer = new float [w_size];
+        Infile.read((char*) V_buffer,sizeof(float)*w_size);
+        for (int j=0;j<w_size;j++) point.push_back(V_buffer[j]);
+        delete[] V_buffer;
+
+        /*for (int j=0;j<w_size;j++){
             float w_value;
             Infile.read((char*) &w_value,sizeof(float));
             point.push_back(w_value);
-        }
+        }*/
         V.emplace_back(point);
     }
     // Read innerPoint
     Infile.read((char*) &size, sizeof(int));
     innerPoint.clear();
-    for (int i=0;i<size;i++){
+
+    float* IP_buffer = new float [size];
+    Infile.read((char*) IP_buffer,sizeof(float)*size);
+    for (int i=0;i<size;i++) innerPoint.push_back(IP_buffer[i]);
+    delete[] IP_buffer;
+    /*for (int i=0;i<size;i++){
         float w_value;
         Infile.read((char*) &w_value,sizeof(float));
         innerPoint.push_back(w_value);
-    }
+    }*/
 }
 
 void region::ToBeRoot(int dim) {

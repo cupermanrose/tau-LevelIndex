@@ -38,21 +38,27 @@ void kcell::ReadFromDisk(ifstream& Infile) {
     Infile.read((char*) &curk,sizeof(int));
     Infile.read((char*) &objID,sizeof(int));
     r.ReadFromDisk(Infile);
+
+    
     int size;
     Infile.read((char*) &size,sizeof(int));
     topk.clear();
+    int* topk_buffer = new int [size];
+    Infile.read((char*) topk_buffer,sizeof(int)*size);
     for (int i=0;i<size;i++){
-        int cur;
-        Infile.read((char*) &cur,sizeof(int));
-        topk.push_back(cur);
+        topk.push_back(topk_buffer[i]);
     }
+    delete[] topk_buffer;
+
     Infile.read((char*) &size,sizeof(int));
     Stau.clear();
-    for (int i=0;i<size;i++){
-        int cur;
-        Infile.read((char*) &cur,sizeof(int));
-        Stau.push_back(cur);
+    int* Stau_buffer = new int [size];
+    Infile.read((char*) Stau_buffer,sizeof(int)*size);
+    for (int i=0;i<size;i++){// for very large k
+        Stau.push_back(Stau_buffer[i]);
     }
+    delete[] Stau_buffer;
+
     Get_HashValue();
 }
 

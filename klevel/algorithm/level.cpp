@@ -4,9 +4,10 @@
 
 #include "level.h"
 #include <chrono>
-level::level(int a_dim, int a_tau){
+level::level(int a_dim, int a_tau, int a_ik){
     dim=a_dim;
     tau=a_tau;
+    ik=a_ik; // building levels
     idx.clear();
     Allobj.clear();
     //Grid.clear();
@@ -126,7 +127,7 @@ void level::Build(fstream& log, ofstream& idxout) {
     initIdx(log);
     clock_t level_zero_time=clock();
     for (int k=1;k<=tau;k++){
-
+        if (k>ik) break;
         clock_t level_k_time=clock();
 
         vector<kcell> this_level;  this_level.clear(); region_map.clear();
