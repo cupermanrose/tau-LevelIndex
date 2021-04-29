@@ -4,9 +4,10 @@
 
 #include "level.h"
 #include <chrono>
-level::level(int a_dim, int a_tau){
+level::level(int a_dim, int a_tau, int a_ik){
     dim=a_dim;
     tau=a_tau;
+    ik=a_ik; // building levels
     idx.clear();
     Allobj.clear();
     //Grid.clear();
@@ -126,14 +127,14 @@ void level::Build(fstream& log, ofstream& idxout) {
     initIdx(log);
     clock_t level_zero_time=clock();
     for (int k=1;k<=tau;k++){
-
+        if (k>ik) break;
         clock_t level_k_time=clock();
 
         vector<kcell> this_level;  this_level.clear(); region_map.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
             tmp_profiling=clock();
-            LocalFilter(S1,Sk,*cur_cell,ave_S1,ave_Sk);
+            LocalFilter(tau, S1,Sk,*cur_cell,ave_S1,ave_Sk);
             rskyband_time+=(clock()-tmp_profiling);
 
             for (auto p=S1.begin();p!=S1.end();p++){
@@ -181,8 +182,8 @@ void level::Build(fstream& log, ofstream& idxout) {
     }
 }
 
-void level::LocalFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell, int& ave_S1, int& ave_Sk) {
-    rskyband(S1,Sk,cur_cell);
+void level::LocalFilter(int k, vector<int> &S1, vector<int> &Sk, kcell &cur_cell, int& ave_S1, int& ave_Sk) {
+    rskyband(S1,Sk,cur_cell, k);
     //GridFilter(S1,Sk,cur_cell);
     //NoFilter(S1,Sk,cur_cell);
     ave_Sk+=Sk.size();ave_S1+=S1.size();
@@ -196,7 +197,7 @@ void level::NoFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
     }
 }
 
-void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell, int k) {
     int nextk=cur_cell.curk+1;
     S1.clear();Sk.clear();
     if (cur_cell.r.V.size()==0) return;
@@ -205,10 +206,10 @@ void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
         for (auto j=cur_cell.Stau.begin();j!=cur_cell.Stau.end();j++){
             if (*i==*j) continue;
             if (RegionDominate(cur_cell.r.V,Allobj[*i],Allobj[*j],dim)) cnt++;
-            if (cnt>=(tau-cur_cell.curk)) break;
+            if (cnt>=(k-cur_cell.curk)) break;
         }
         if ((cnt==0)&&(global_layer[*i]<=nextk)) S1.push_back(*i);
-        if (cnt<(tau-cur_cell.curk)) Sk.push_back(*i);
+        if (cnt<(k-cur_cell.curk)) Sk.push_back(*i);
     }
 }
 

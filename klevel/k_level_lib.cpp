@@ -21,12 +21,12 @@ void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
     vector<kcell> empty_level; empty_level.clear();
     idx.idx.emplace_back(empty_level);
     for (int k=1;k<=idx.tau;k++){
+        if (k>idx.ik) break;
         idx.idx.push_back(empty_level);
         idx.ReadFromDisk(k,idxin);
         cout << "The size of level " << k << ": "<<idx.idx[k].size() << endl;
         log << "The size of level " << k << ": "<<idx.idx[k].size() << endl;
     }
-    log.close();
     idxin.close();
     cout << "Load Index Done!" << endl;
     log << "Load Index Done!" << endl;

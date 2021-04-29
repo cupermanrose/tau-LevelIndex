@@ -22,7 +22,7 @@
 
 class level {
 public:
-    int dim, tau;
+    int dim, tau, ik;
     vector<vector<kcell>> idx;
     unordered_map<size_t,int> region_map;
     vector<vector<float>> Allobj, OriginD;
@@ -31,7 +31,7 @@ public:
     //unordered_map<int, dominateG> Grid;
 
 public:
-    level(int a_dim, int a_tau);
+    level(int a_dim, int a_tau, int a_ik);
     ~level();
 
     void LoadData(string datafile);
@@ -40,9 +40,9 @@ public:
 
     void FreeMem(int k);
 
-    void LocalFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
+    void LocalFilter(int k, vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
     //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
-    void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+    void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int k);
     void NoFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
 
     void initIdx(fstream& log);

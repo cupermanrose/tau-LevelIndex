@@ -62,6 +62,8 @@ add_executable(${PROJECT_NAME}
         klevel/operator/kspr.cpp
         klevel/operator/utk.h
         klevel/operator/utk.cpp
+        klevel/operator/oru.h
+        klevel/operator/oru.cpp
 
 
         lib/lp_lib/bfp/bfp_LUSOL/lp_LUSOL.h
