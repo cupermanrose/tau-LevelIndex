@@ -10,13 +10,13 @@ void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     for (int i=0;i<q_num;i++){
         q_list.push_back(rand()%idx.Allobj.size());
     }
-    cout<<"begin generate query of original id:";
+    cout<<"begin generate query of original id:\n";
     for(int &i: q_list){
         cout<<idx.levelId_2_dataId[i]<<"\n";
     }
     cout<<"end generate query of original id"<<endl;
 
-    cout<<"begin generate query of k-level id:";
+    cout<<"begin generate query of k-level id:\n";
     for(int &i: q_list){
         cout<<i<<"\n";
     }
@@ -41,8 +41,8 @@ void kspr::multiple_query(level &idx, int k, int q_num, fstream &log) {
     generate_query(idx,q_num, q_list);
     for (int i=0;i<q_num;i++){
         int answer=single_query(idx, k,q_list[i],log);
-        cout << "The answer of kspr query " << i << ": " << answer << endl;
-        log << "The answer of kspr query " << i << ": " << answer << endl;
+        cout << "The answer of kspr query " << i <<"("<< idx.levelId_2_dataId[q_list[i]]<<")"<< ": " << answer << endl;
+        log << "The answer of kspr query " << i <<"("<< idx.levelId_2_dataId[q_list[i]]<<")"<< ": " << answer << endl;
     }
     cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;

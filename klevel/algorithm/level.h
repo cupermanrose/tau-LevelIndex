@@ -35,7 +35,9 @@ public:
     ~level();
 
     void LoadData(string datafile);
+
     void GlobalFilter(fstream& log, vector<int>& candidate);
+
     void FreeMem(int k);
 
     void LocalFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);

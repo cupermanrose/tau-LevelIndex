@@ -83,7 +83,7 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
     int cnt=0;
     for (auto it=candidate.begin();it!=candidate.end();it++){
         Allobj.push_back(OriginD[*it]);
-        levelId_2_dataId[cnt]=*it;
+        levelId_2_dataId[cnt]=(*it)+1;
         ++cnt;
     }
     global_layer.clear();

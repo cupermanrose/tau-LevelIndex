@@ -39,6 +39,9 @@ using orgQhull::Coordinates;
 #include "k_level_lib.h"
 #include "kspr.h"
 #include "utk.h"
+#define BUILDIDX "buildidx"
+#define LOADIDX "loadidx"
+#define KSPR "kspr"
 
 enum func_type{buildidx, loadidx};
 enum query_type{kspr, utk, oru};
@@ -48,13 +51,18 @@ void Config(int dim, int tau, string root_directory, string filename,
             string func_str, func_type& func, string query_str, query_type& query){
 
     datafile=root_directory+"data/"+filename+".dat";
-    logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+".log";
+    logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+".log";// TODO in case of user doesn't have this folder
     idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+".idx";
     log.open(logfile, ios::out);
+    cout<<logfile<<endl;
 
-    if (func_str=="buildidx") func=buildidx;
-    else if (func_str=="loadidx") func=loadidx;
-    else cout << "Unknown function!" << endl;
+    if (func_str==BUILDIDX) {
+        func=buildidx;
+    }else if (func_str==LOADIDX) {
+        func=loadidx;
+    }else {
+        cout << "Unknown function!" << endl;
+    }
 
     if (query_str=="kspr") query=kspr;
     else if (query_str=="utk") query=utk;
@@ -65,15 +73,13 @@ void Config(int dim, int tau, string root_directory, string filename,
 void ParameterInput(int argc, char* argv[], int& dim, int& tau,
                     string& root_directory, string& filename, string& func_str, int& q_num, int& k, string& query_str){
     dim=4;
-    tau=20;
-    root_directory="/home/jiahaozhang/data/klevel/";
+    tau=1;
+    root_directory="/home/kemingli/klevel/";
     filename="inde/U400K4";
-    func_str="buildidx";
-
-    q_num=20;
-    k=10;
-    query_str="kspr";
-
+    func_str=LOADIDX;
+    q_num=50;
+    k=1;
+    query_str="utk";
 }
 
 int main(int argc, char* argv[]) {
