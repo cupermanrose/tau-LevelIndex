@@ -24,9 +24,13 @@ void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     return;
 }
 
-bool kspr::Find_qid(kcell &this_cell, int qid) {
+bool kspr::Find_qid_topk(kcell &this_cell, int qid) {
     for (auto it=this_cell.topk.begin();it!=this_cell.topk.end();it++)
         if (*it==qid) return true;
+    return false;
+}
+
+bool kspr::Find_qid_Stau(kcell &this_cell, int qid) {
     for (auto it=this_cell.Stau.begin();it!=this_cell.Stau.end();it++)
         if (*it==qid) return true;
     return false;
@@ -44,20 +48,24 @@ int kspr::single_query(level &idx, int k, int q_id, fstream &log) {
 }
 
 int kspr::single_query_largek(level &idx, int k, int q_id, fstream &log) {
+    int cnt=0;
     vector<int> S1,Sk;
     int ave_S1=0,ave_Sk=0,ave_vertex=0;
     vector<vector<kcell>> tmp; tmp.clear();
     vector<kcell> init_level;  init_level.clear();
     for (auto it=idx.idx[idx.ik].begin();it!=idx.idx[idx.ik].end();it++){
-        if (Find_qid(*it,q_id)) init_level.push_back(*it);
+        if (Find_qid_topk(*it,q_id)) cnt++;
+        else if (Find_qid_Stau(*it,q_id)) init_level.push_back(*it);
     }
     tmp.emplace_back(init_level);
 
     for (int i=0;i<k-idx.ik;i++){
         vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
+        cout << i+idx.ik << ' ' << tmp[i].size() << endl;
         for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
-            if (!Find_qid(*cur_cell,q_id)) continue; // will not contribute to kspr query
-            idx.LocalFilter(S1,Sk,*cur_cell,ave_S1,ave_Sk);
+            if (Find_qid_topk(*cur_cell,q_id)) {cnt++;continue;}
+            if (!Find_qid_Stau(*cur_cell,q_id)) continue; // will not contribute to kspr query
+            idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
 
             for (auto p=S1.begin();p!=S1.end();p++){
 
@@ -81,9 +89,8 @@ int kspr::single_query_largek(level &idx, int k, int q_id, fstream &log) {
 
         tmp.emplace_back(this_level);
     }
-    int cnt=0;
     for (auto it=tmp.back().begin();it!=tmp.back().end();it++)
-        if(Find_qid(*it,q_id)) cnt++;
+        if(Find_qid_topk(*it,q_id)) cnt++;
     return cnt;
 }
 

@@ -38,9 +38,9 @@ public:
     void GlobalFilter(fstream& log, vector<int>& candidate);
     void FreeMem(int k);
 
-    void LocalFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
+    void LocalFilter(int k, vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
     //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
-    void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+    void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int k);
     void NoFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
 
     void initIdx(fstream& log);

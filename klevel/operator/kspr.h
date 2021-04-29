@@ -12,7 +12,8 @@ public:
     static void multiple_query(level& idx, int k, int q_num, fstream& log);
     static void generate_query(level& idx, int q_num, vector<int>& q_list);
     static int single_query(level& idx, int k, int q_id, fstream& log);
-    static bool Find_qid(kcell& this_cell, int qid);
+    static bool Find_qid_topk(kcell& this_cell, int qid);
+    static bool Find_qid_Stau(kcell& this_cell, int qid);
     static int single_query_largek(level& idx, int k, int q_id, fstream& log);
 };
 

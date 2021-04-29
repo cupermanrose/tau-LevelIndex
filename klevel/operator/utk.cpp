@@ -95,7 +95,7 @@ int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream 
         vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
         for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
             if (!Intersect(Qregion,cur_cell->r, idx.dim)) continue; // will not contribute to utk query
-            idx.LocalFilter(S1,Sk,*cur_cell,ave_S1,ave_Sk);
+            idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
 
             for (auto p=S1.begin();p!=S1.end();p++){
 
