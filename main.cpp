@@ -80,13 +80,13 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, int& q_num, int& k, string& query_str){
-    dim=6;
-    tau=50; // NBA: tau=30
-    ik=10;
+    dim=4;
+    tau=2; // NBA: tau=30
+    ik=2;
     root_directory="/home/jiahaozhang/data/klevel/";
-    //filename="inde/U400K4";
-    filename="real/HOUSE6D";
-    func_str="loadidx";
+    filename="inde/U100K4";
+    //filename="real/HOUSE6D";
+    func_str="buildidx";
 
     q_num=5;
     k=1;
@@ -108,7 +108,9 @@ int main(int argc, char* argv[]) {
 
     switch (func) {
         case buildidx:
-            BuildIndex(idx, datafile, log, idxfile);
+            IncBuildIndex(idx,datafile,log,idxfile);
+            //DFSBuildIndex(idx,datafile,log,idxfile);
+            //BuildIndex(idx, datafile, log, idxfile);
             break;
         case loadidx:
             LoadIndex(idx, datafile, log, idxfile);
