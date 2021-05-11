@@ -39,6 +39,9 @@ using orgQhull::Coordinates;
 #include "k_level_lib.h"
 #include "kspr.h"
 #include "utk.h"
+#define BUILDIDX "buildidx"
+#define LOADIDX "loadidx"
+#define KSPR "kspr"
 #include "oru.h"
 
 enum func_type{buildidx, loadidx};

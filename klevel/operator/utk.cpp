@@ -135,15 +135,24 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     vector<vector<float>> q_list;
 
     generate_query(idx,q_num, utk_side_length, q_list);
-    /*string queryfile="/home/jiahaozhang/data/klevel/query/utk/utk_query_4d_l0.001.txt";
-    fstream queryout(queryfile, ios::out);
-    for (int i=0;i<q_num;i++){
-        for (int j=0;j<idx.dim-1;j++)
-            queryout << q_list[i][2*j] << ' ' << q_list[i][2*j+1] << ' ';
-        queryout << endl;
-    }
-    queryout.close();
-    return;*/
+//    string queryfile="/home/kemingli/klevel/query/utk/utk_query_4d_l0.001.txt";
+//    fstream queryout(queryfile, ios::in);
+//    for (int i=0;i<q_num;i++){
+//        float tmp;
+//        for (int j=0;j<(idx.dim-1)*2;j++) {
+//            queryout>>tmp;
+//            cout<<tmp<<" ";
+//        }
+//        cout << endl;
+//    }
+//    return;
+//    for (int i=0;i<q_num;i++){
+//        for (int j=0;j<idx.dim-1;j++)
+//            queryout << q_list[i][2*j] << ' ' << q_list[i][2*j+1] << ' ';
+//        queryout << endl;
+//    }
+//    queryout.close();
+//    return;
 
     for (int i=0;i<q_num;i++){
         vector<int> utk_results;

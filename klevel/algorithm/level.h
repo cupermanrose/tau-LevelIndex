@@ -37,7 +37,9 @@ public:
     // common functions
     /////////////////////////////////////////////////
     void LoadData(string datafile);
+
     void GlobalFilter(fstream& log, vector<int>& candidate);
+
     void FreeMem(int k);
     void profiling(int k, clock_t& level_zero_time, double& rskyband_time, double& verify_time, double& isFeasible_time,double& updateV_time, fstream& log);
     void print_info(int k, clock_t& level_zero_time, clock_t& level_k_time, int& ave_S1, int& ave_Sk, int& ave_vertex, set<int>& utk_set, fstream& log);

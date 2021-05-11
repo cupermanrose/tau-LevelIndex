@@ -158,7 +158,7 @@ void qhull_user::points_at_half_inter(std::vector<std::vector<float>> &ret, cons
             }
             ret.push_back(vs);
         }
-    } catch (exception) {
+    } catch (exception &e) {// catch by ref
 
     }
 }

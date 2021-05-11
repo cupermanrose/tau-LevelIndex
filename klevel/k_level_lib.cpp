@@ -32,7 +32,7 @@ void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
     ifstream idxin(idxfile);
     idx.LoadData(datafile);
     vector<int> candidate;
-    idx.GlobalFilter(log,candidate);
+    idx.GlobalFilter(log,candidate); //TODO remove this and load from index file
 
     vector<kcell> empty_level; empty_level.clear();
     idx.idx.emplace_back(empty_level);
