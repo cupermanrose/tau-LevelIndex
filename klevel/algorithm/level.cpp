@@ -418,7 +418,7 @@ void level::WriteToDisk(int k, ofstream &idxout) {
     int size=idx[k].size();
     idxout.write((char*) &size, sizeof(int));
     for (auto it=idx[k].begin();it!=idx[k].end();it++){
-        if (k<ik) it->Stau.clear(); // space optimization
+//        if (k<ik) it->Stau.clear(); // space optimization
         it->WriteToDisk(idxout);
     }
 }

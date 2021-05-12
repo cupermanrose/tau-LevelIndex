@@ -1,50 +1,14 @@
-#include "RboxPoints.h"
-#include "QhullError.h"
-#include "QhullQh.h"
-#include "QhullFacet.h"
-#include "QhullFacetList.h"
-#include "QhullFacetSet.h"
-#include "QhullLinkedList.h"
-#include "QhullPoint.h"
-#include "QhullUser.h"
-#include "QhullVertex.h"
-#include "QhullVertexSet.h"
-#include "Qhull.h"
-#include <iostream>
-#include <iomanip> // setw
-#include <unordered_map>
-#include <unordered_set>
-//TODO merge to qhull_adapter
-using std::cerr;
-using std::cin;
-using std::cout;
-using std::endl;
-using std::cout;
-using std::endl;
-using std::string;
-using orgQhull::Qhull;
-using orgQhull::QhullError;
-using orgQhull::QhullFacet;
-using orgQhull::QhullFacetList;
-using orgQhull::QhullFacetSet;
-using orgQhull::QhullPoint;
-using orgQhull::QhullPoints;
-using orgQhull::QhullQh;
-using orgQhull::QhullUser;
-using orgQhull::QhullVertex;
-using orgQhull::QhullVertexSet;
-using orgQhull::RboxPoints;
-using orgQhull::Coordinates;
+
 
 #include "k_level_lib.h"
 #include "kspr.h"
 #include "utk.h"
+#include "oru.h"
 #define BUILDIDX "buildidx"
 #define LOADIDX "loadidx"
 #define KSPR "kspr"
 #define UTK "utk"
 #define ORU "oru"
-#include "oru.h"
 
 enum func_type{buildidx, loadidx};
 enum query_type{kspr, utk, oru};
@@ -91,14 +55,14 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=3;
+    dim=6;
     tau=10; // NBA: tau=30
     ik=10;
     root_directory="/home/kemingli/klevel/";
     //filename="inde/U400K4";
-    filename="real/NBA8D";
+    filename="inde/U400K6";
     func_str=BUILDIDX;
-    build_str="DFSBuild";
+    build_str="BFSBuild";
     q_num=5;
     k=1;
     query_str="oru";
@@ -109,8 +73,8 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
 void build_onion();
 
 int main(int argc, char* argv[]) {
-    build_onion();
-    return 0;
+//    build_onion();
+//    return 0;
     int dim,tau,ik,q_num,k;
     float utk_side_length;
     string datafile, logfile, idxfile, root_directory, filename, func_str,query_str, build_str;
@@ -120,7 +84,6 @@ int main(int argc, char* argv[]) {
     build_type build;
     ParameterInput(argc, argv, dim,tau,ik,root_directory,filename,func_str, build_str, q_num, k, query_str);
     Config(dim,tau,ik,root_directory,filename,datafile,logfile,idxfile,log, func_str, func, query_str, query, build, build_str);
-
     level idx(dim,tau,ik);
 
     switch (func) {

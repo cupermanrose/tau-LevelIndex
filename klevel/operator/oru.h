@@ -9,6 +9,7 @@
 
 class oru {
 public:
+    //
     static void multiple_query(level& idx, int k, int ret_size, int q_num, fstream& log);
     static void generate_query(level& idx, int q_num,  vector<vector<float>>& q_list);
     static bool isIn(vector<float>& v, vector<halfspace>& H, int dim);
