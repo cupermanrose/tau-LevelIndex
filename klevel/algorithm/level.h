@@ -70,7 +70,7 @@ public:
     // BulkLoad DFS
     /////////////////////////////////////////////////
     void DFSBuild(fstream& log, ofstream& idxout);
-    void SplitDFS(kcell& cell, vector<kcell>& L);
+    void SplitDFS(kcell& cell , vector<kcell>& L);
 };
 
 

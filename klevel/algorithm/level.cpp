@@ -328,7 +328,8 @@ void level::UpdateH(kcell &cur_cell) {
 }
 
 void level::UpdateV(kcell &cur_cell, int& ave_vertex) {
-    qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
+    if (dim>=3) qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
+    else qhull_adapter::ComputeVertex2D(cur_cell.r.H,cur_cell.r.V,cur_cell.r.innerPoint);
     ave_vertex+=cur_cell.r.V.size();
 }
 
@@ -417,6 +418,7 @@ void level::WriteToDisk(int k, ofstream &idxout) {
     int size=idx[k].size();
     idxout.write((char*) &size, sizeof(int));
     for (auto it=idx[k].begin();it!=idx[k].end();it++){
+        if (k<ik) it->Stau.clear(); // space optimization
         it->WriteToDisk(idxout);
     }
 }
@@ -434,7 +436,7 @@ void level::ReadFromDisk(int k, ifstream &idxin) {
 
 void level::SplitCell(int p, int i, vector<kcell>& L) {
     // generate a new kcell within L[i].r
-    if (L[i].curk<ik){
+    if ((L[i].curk<ik)&&(global_layer[p]<=L[i].curk+1)){
         kcell newcell;
         newcell.curk=L[i].curk+1;
         newcell.objID=p;
@@ -494,12 +496,13 @@ void level::SplitDFS(kcell& cell, vector<kcell> &L) {
     int ave_S1=0,ave_Sk=0,ave_vertex=0;
     LocalFilter(tau, S1,Sk,cell,ave_S1,ave_Sk);
     for (auto p=S1.begin();p!=S1.end();p++){
+        if (global_layer[*p]>cell.curk+1) continue;
         kcell newcell;
-        CreateNewCell(*p, S1, Sk, cell, newcell);
+        CreateNewCell(*p,S1,Sk,cell,newcell);
         if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
             UpdateV(newcell, ave_vertex);
             SplitDFS(newcell,L);
-            L.push_back(newcell);
+            //L.push_back(newcell);
         }
     }
     return;
