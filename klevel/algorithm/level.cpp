@@ -286,6 +286,7 @@ bool level::VerifyDuplicate(int p, kcell &cur_cell, vector<int>& Sk, vector<kcel
 void level::CreateNewCell(int p, vector<int> &S1, vector<int> &Sk, kcell &cur_cell, kcell &newcell) {
     newcell.curk=cur_cell.curk+1;
     newcell.objID=p;
+    newcell.topk.clear();
     newcell.topk=cur_cell.topk; newcell.topk.push_back(p);
     newcell.Get_HashValue();
     newcell.Stau.clear();
@@ -307,7 +308,7 @@ void level::CreateNewCell(int p, vector<int> &S1, vector<int> &Sk, kcell &cur_ce
 void level::AddHS(int o1, int o2, bool side, vector<halfspace> &H) {
     halfspace hp;
     lp_adapter::ComputeHP(Allobj[o1],Allobj[o2],hp.w,dim);
-    hp.side=side; // the halfspace score(p)>score(*it)
+    hp.side=side;
     H.emplace_back(hp);
 }
 
@@ -327,7 +328,8 @@ void level::UpdateH(kcell &cur_cell) {
 }
 
 void level::UpdateV(kcell &cur_cell, int& ave_vertex) {
-    qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
+    if (dim>=3) qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
+    else qhull_adapter::ComputeVertex2D(cur_cell.r.H,cur_cell.r.V,cur_cell.r.innerPoint);
     ave_vertex+=cur_cell.r.V.size();
 }
 
@@ -416,6 +418,7 @@ void level::WriteToDisk(int k, ofstream &idxout) {
     int size=idx[k].size();
     idxout.write((char*) &size, sizeof(int));
     for (auto it=idx[k].begin();it!=idx[k].end();it++){
+        if (k<ik) it->Stau.clear(); // space optimization
         it->WriteToDisk(idxout);
     }
 }
@@ -429,4 +432,96 @@ void level::ReadFromDisk(int k, ifstream &idxin) {
         tmp.ReadFromDisk(idxin);
         idx[k].emplace_back(tmp);
     }
+}
+
+void level::SplitCell(int p, int i, vector<kcell>& L) {
+    // generate a new kcell within L[i].r
+    if ((L[i].curk<ik)&&(global_layer[p]<=L[i].curk+1)){
+        kcell newcell;
+        newcell.curk=L[i].curk+1;
+        newcell.objID=p;
+        newcell.topk=L[i].topk;newcell.topk.push_back(p);
+        newcell.Stau=L[i].Stau;
+        newcell.r.H=L[i].r.H;
+        for (auto it = newcell.topk.begin(); it != newcell.topk.end(); it++) {
+            // the halfspace score(p)<score(*it)
+            if (*it != p) AddHS(p,*it,false,newcell.r.H);
+        }
+        for (auto it = newcell.Stau.begin(); it != newcell.Stau.end(); it++) {
+            // the halfspace score(p)>score(*it)
+            AddHS(p,*it,true,newcell.r.H);
+        }
+
+        if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)){
+            L.emplace_back(newcell);
+        }
+    }
+    // update L[i].r
+    if (L[i].objID!=-1){
+        L[i].Stau.push_back(p);
+        AddHS(L[i].objID,p,true, L[i].r.H);
+        if (!lp_adapter::is_Feasible(L[i].r.H,L[i].r.innerPoint,dim)){
+            L[i].curk=tau+1; // delete this kcell
+        }
+    }
+    else L[i].Stau.push_back(p);
+}
+
+void level::IncBuild(fstream& log, ofstream& idxout) {
+    vector<int> candidate; candidate.clear();
+    kcell rootcell; rootcell.TobeRoot(candidate, dim);
+    vector<kcell> L; L.clear();L.push_back(rootcell);
+
+    GlobalFilter(log,candidate);
+    int cnt=0;
+    clock_t cur_time=clock();
+    for (int id=0;id<Allobj.size();id++){
+        int size=L.size();
+        for (int i=0;i<size;i++) {
+            if (L[i].curk>ik) continue;
+            SplitCell(id, i, L);
+        }
+        cout << cnt++ << ": " << L.size() << endl;
+    }
+
+    cout << "Time Cost of IncBuild " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+
+    L.clear();
+    vector<kcell>().swap(L);
+}
+
+void level::SplitDFS(kcell& cell, vector<kcell> &L) {
+    if (cell.curk>=ik) return;
+    vector<int> S1,Sk;
+    int ave_S1=0,ave_Sk=0,ave_vertex=0;
+    LocalFilter(tau, S1,Sk,cell,ave_S1,ave_Sk);
+    for (auto p=S1.begin();p!=S1.end();p++){
+        if (global_layer[*p]>cell.curk+1) continue;
+        kcell newcell;
+        CreateNewCell(*p,S1,Sk,cell,newcell);
+        if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
+            UpdateV(newcell, ave_vertex);
+            SplitDFS(newcell,L);
+            //L.push_back(newcell);
+        }
+    }
+    return;
+}
+
+void level::DFSBuild(fstream &log, ofstream &idxout) {
+    vector<int> candidate; candidate.clear();
+    GlobalFilter(log,candidate);
+    kcell rootcell; rootcell.TobeRoot(candidate, dim);
+    vector<kcell> L; L.clear();L.push_back(rootcell);
+
+
+    clock_t cur_time=clock();
+
+    SplitDFS(rootcell,L);
+
+    cout << "Index cell size: " << L.size() << endl;
+    cout << "Time Cost of DFSBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+
+    L.clear();
+    vector<kcell>().swap(L);
 }

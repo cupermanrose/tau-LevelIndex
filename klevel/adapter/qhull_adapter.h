@@ -30,6 +30,7 @@ public:
     qhull_adapter();
     ~qhull_adapter();
     static void ComputeVertex(vector<halfspace>& H, vector<vector<float>>& V, vector<float>& innerPoint, int& dim);
+    static void ComputeVertex2D(vector<halfspace>& H, vector<vector<float>>& V, vector<float>& innerPoint);
 };
 
 

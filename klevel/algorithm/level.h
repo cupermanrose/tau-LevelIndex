@@ -34,17 +34,21 @@ public:
     level(int a_dim, int a_tau, int a_ik);
     ~level();
 
+    // common functions
+    /////////////////////////////////////////////////
     void LoadData(string datafile);
 
     void GlobalFilter(fstream& log, vector<int>& candidate);
 
     void FreeMem(int k);
+    void profiling(int k, clock_t& level_zero_time, double& rskyband_time, double& verify_time, double& isFeasible_time,double& updateV_time, fstream& log);
+    void print_info(int k, clock_t& level_zero_time, clock_t& level_k_time, int& ave_S1, int& ave_Sk, int& ave_vertex, set<int>& utk_set, fstream& log);
+    void print_system_info(fstream& log);
+    void WriteToDisk(int k, ofstream& idxout);
+    void ReadFromDisk(int k, ifstream& idxin);
 
-    void LocalFilter(int k, vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
-    //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
-    void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int k);
-    void NoFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
-
+    // advanced building
+    /////////////////////////////////////////////////
     void initIdx(fstream& log);
     void Build(fstream& log, ofstream& idxout);
     bool VerifyDuplicate(kcell& newcell, vector<kcell>& this_level); // hash version
@@ -53,13 +57,20 @@ public:
     void AddHS(int o1, int o2, bool side, vector<halfspace>& H);
     void UpdateH(kcell& cur_cell);
     void UpdateV(kcell& cur_cell, int& ave_vertex);
+    void LocalFilter(int k, vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
+    //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+    void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int k);
+    void NoFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
 
-    void profiling(int k, clock_t& level_zero_time, double& rskyband_time, double& verify_time, double& isFeasible_time,double& updateV_time, fstream& log);
-    void print_info(int k, clock_t& level_zero_time, clock_t& level_k_time, int& ave_S1, int& ave_Sk, int& ave_vertex, set<int>& utk_set, fstream& log);
-    void print_system_info(fstream& log);
+    // incremental building
+    /////////////////////////////////////////////////
+    void IncBuild(fstream& log, ofstream& idxout);
+    void SplitCell(int p, int i, vector<kcell>& L);
 
-    void WriteToDisk(int k, ofstream& idxout);
-    void ReadFromDisk(int k, ifstream& idxin);
+    // BulkLoad DFS
+    /////////////////////////////////////////////////
+    void DFSBuild(fstream& log, ofstream& idxout);
+    void SplitDFS(kcell& cell , vector<kcell>& L);
 };
 
 

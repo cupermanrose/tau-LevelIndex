@@ -4,6 +4,27 @@ qhull_adapter::qhull_adapter() {}
 
 qhull_adapter::~qhull_adapter() {}
 
+void qhull_adapter::ComputeVertex2D(vector<halfspace> &H, vector<vector<float>> &V, vector<float> &innerPoint) {
+    V.clear();
+    float vmin=0.0,vmax=1.0;
+    for (auto it=H.begin();it!=H.end();it++){
+        if (it->w[0]==0) continue;
+        float res=(it->w[1])/(it->w[0]);
+        if (it->side) {
+            if (it->w[0]>0.0) vmin=max(vmin,res);
+            else vmax=min(vmax,res);
+        }
+        else {
+            if (it->w[0]>0.0) vmax=min(vmax,res);
+            else vmin=max(vmin,res);
+        }
+        if (vmax<vmin) cout << "Vertex Error!" << endl;
+    }
+    vector<float> tmp;
+    tmp.clear(); tmp.push_back(vmin); V.push_back(tmp);
+    tmp.clear(); tmp.push_back(vmax); V.push_back(tmp);
+}
+
 void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<vector<float>>& V, vector<float>& innerPoint, int& dim) {
     const int numpoints = H.size() + (dim - 1) * 2 + 1;            /* number of points */
     //coordT* halfspaces = (coordT*)malloc(dim * numpoints * sizeof(coordT)); /* array of coordinates for each point */
