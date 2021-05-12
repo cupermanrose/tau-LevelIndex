@@ -42,6 +42,8 @@ using orgQhull::Coordinates;
 #define BUILDIDX "buildidx"
 #define LOADIDX "loadidx"
 #define KSPR "kspr"
+#define UTK "utk"
+#define ORU "oru"
 #include "oru.h"
 
 enum func_type{buildidx, loadidx};
@@ -51,13 +53,13 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
             string& datafile, string& logfile, string& idxfile, fstream& log,
             string func_str, func_type& func, string query_str, query_type& query){
 
-    if (func_str=="buildidx") func=buildidx;
-    else if (func_str=="loadidx") func=loadidx;
+    if (func_str==BUILDIDX) func=buildidx;
+    else if (func_str==LOADIDX) func=loadidx;
     else cout << "Unknown function!" << endl;
 
-    if (query_str=="kspr") query=kspr;
-    else if (query_str=="utk") query=utk;
-    else if (query_str=="oru") query=oru;
+    if (query_str==KSPR) query=kspr;
+    else if (query_str==UTK) query=utk;
+    else if (query_str==ORU) query=oru;
     else cout << "Unknown query!" << endl;
 
     datafile=root_directory+"data/"+filename+".dat";
@@ -83,13 +85,13 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, int& q_num, int& k, string& query_str){
-    dim=6;
-    tau=50; // NBA: tau=30
+    dim=8;
+    tau=20; // NBA: tau=30
     ik=10;
-    root_directory="/home/jiahaozhang/data/klevel/";
+    root_directory="/home/kemingli/klevel/";
     //filename="inde/U400K4";
-    filename="real/HOUSE6D";
-    func_str="loadidx";
+    filename="real/NBA8D";
+    func_str=BUILDIDX;
 
     q_num=5;
     k=1;
@@ -97,7 +99,12 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
 
 }
 
+
+void build_onion();
+
 int main(int argc, char* argv[]) {
+    build_onion();
+    return 0;
     int dim,tau,ik,q_num,k;
     float utk_side_length;
     string datafile, logfile, idxfile, root_directory, filename, func_str,query_str;
@@ -219,4 +226,57 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+
+void build_onion(){
+    int dim=4;
+    int tau=20; // NBA: tau=30
+    string s="/home/kemingli/klevel/data/anti/ANTI1600K4";
+    string input=s+".dat";
+    fstream fin(input, ios::in);
+    vector<vector<float>> data;
+    vector<float> cl(dim);
+    vector<float> cu(dim);
+    while (true) {
+        int id;
+        fin >> id;
+        if (fin.eof())
+            break;
+        vector<float> tmp;
+        for (int d = 0; d < dim; d++) fin >> cl[d];
+        for (int d = 0; d < dim; d++) fin >> cu[d];
+        for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
+
+        data.push_back(tmp);
+        if (data.size() % 1000 == 0)
+            cout << ".";
+        if (data.size() % 10000 == 0)
+            cout << data.size() << " objects loaded" << endl;
+    }
+
+    cout << "Total number of objects: " << data.size() << endl;
+    fin.close();
+//    onionlayer(candidate_onionlayer, layer,  candidate_skyband,  OriginD, tau);
+//    vector<int> in_idx(data.size());
+//    iota(in_idx.begin(), in_idx.end(), 0);
+    vector<int> in_idx;
+    kskyband(in_idx, data,tau);
+
+    if (data.empty()) {
+        return;
+    }
+    ch c(in_idx, data, dim);
+    fstream log;
+    string logfile=s+".ch";
+    log.open(logfile, ios::out);
+
+    for (int i = 1; i <= tau; ++i) {
+        log<<"#"<<i<<":";
+        for (int id: c.get_layer(i)) {
+            log<<id<<" ";
+        }
+        log<<endl;
+    }
+    log.close();
+}
+//void get_onion(vector<int> &ret, file)
 
