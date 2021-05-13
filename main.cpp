@@ -89,14 +89,14 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=3;
+    dim=4;
     tau=10; // NBA: tau=30
     ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
-    filename="inde/U400K3";
+    filename="inde/U100K4";
     //filename="real/HOUSE6D";
     func_str="buildidx";
-    build_str="DFSBuild";
+    build_str="IncBuild";
 
     q_num=5;
     k=1;
