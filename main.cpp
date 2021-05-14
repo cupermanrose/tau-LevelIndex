@@ -10,6 +10,10 @@
 #define UTK "utk"
 #define ORU "oru"
 
+
+extern bool apply_onion_from_file;
+extern string anti_id_f;
+
 enum func_type{buildidx, loadidx};
 enum query_type{kspr, utk, oru};
 enum build_type{IncBuild,DFSBuild,BFSBuild};
@@ -55,24 +59,28 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=6;
-    tau=10; // NBA: tau=30
-    ik=10;
+    dim=4;
+    tau=5; // NBA: tau=30
+    ik=5;
     root_directory="/home/kemingli/klevel/";
     //filename="inde/U400K4";
-    filename="inde/U400K6";
+    filename="anti/ANTI100K4";
     func_str=BUILDIDX;
     build_str="BFSBuild";
     q_num=5;
     k=1;
     query_str="oru";
 
+    anti_id_f="/home/kemingli/klevel/data/anti/ANTI100K4.ch";
+    apply_onion_from_file=true;
 }
 
 
-void build_onion();
-
 int main(int argc, char* argv[]) {
+//    string fn="/home/kemingli/klevel/data/anti/ANTI200K4.ch";
+//    vector<vector<int>> onion;
+//    read_onion(fn, onion);
+//    return 0;
 //    build_onion();
 //    return 0;
     int dim,tau,ik,q_num,k;
@@ -85,7 +93,6 @@ int main(int argc, char* argv[]) {
     ParameterInput(argc, argv, dim,tau,ik,root_directory,filename,func_str, build_str, q_num, k, query_str);
     Config(dim,tau,ik,root_directory,filename,datafile,logfile,idxfile,log, func_str, func, query_str, query, build, build_str);
     level idx(dim,tau,ik);
-
     switch (func) {
         case buildidx:
             switch(build){
@@ -207,56 +214,5 @@ int main(int argc, char* argv[]) {
 }
 
 
-void build_onion(){
-    int dim=4;
-    int tau=20; // NBA: tau=30
-    string s="/home/kemingli/klevel/data/anti/ANTI1600K4";
-    string input=s+".dat";
-    fstream fin(input, ios::in);
-    vector<vector<float>> data;
-    vector<float> cl(dim);
-    vector<float> cu(dim);
-    while (true) {
-        int id;
-        fin >> id;
-        if (fin.eof())
-            break;
-        vector<float> tmp;
-        for (int d = 0; d < dim; d++) fin >> cl[d];
-        for (int d = 0; d < dim; d++) fin >> cu[d];
-        for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
 
-        data.push_back(tmp);
-        if (data.size() % 1000 == 0)
-            cout << ".";
-        if (data.size() % 10000 == 0)
-            cout << data.size() << " objects loaded" << endl;
-    }
-
-    cout << "Total number of objects: " << data.size() << endl;
-    fin.close();
-//    onionlayer(candidate_onionlayer, layer,  candidate_skyband,  OriginD, tau);
-//    vector<int> in_idx(data.size());
-//    iota(in_idx.begin(), in_idx.end(), 0);
-    vector<int> in_idx;
-    kskyband(in_idx, data,tau);
-
-    if (data.empty()) {
-        return;
-    }
-    ch c(in_idx, data, dim);
-    fstream log;
-    string logfile=s+".ch";
-    log.open(logfile, ios::out);
-
-    for (int i = 1; i <= tau; ++i) {
-        log<<"#"<<i<<":";
-        for (int id: c.get_layer(i)) {
-            log<<id<<" ";
-        }
-        log<<endl;
-    }
-    log.close();
-}
-//void get_onion(vector<int> &ret, file)
 

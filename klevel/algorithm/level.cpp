@@ -4,6 +4,9 @@
 
 #include "level.h"
 #include <chrono>
+
+bool apply_onion_from_file=false;
+string anti_id_f;
 level::level(int a_dim, int a_tau, int a_ik){
     dim=a_dim;
     tau=a_tau;
@@ -60,26 +63,44 @@ void level::FreeMem(int k){
     vector<kcell>().swap(idx[k]);
 }
 
+
 void level::GlobalFilter(fstream& log, vector<int> &candidate) {
     candidate.clear();
+    if(apply_onion_from_file){
+        vector<vector<int>> onion;
+        read_onion(anti_id_f, onion);
+        int cnt=1;
+        global_layer.clear();
+        for(const auto &ly: onion){
+            for(const auto &id:ly){
+                candidate.push_back(id);
+                global_layer.push_back(cnt);
+            }
+            ++cnt;
+        }
+    }else {
+        //kskyband
+        vector<int> candidate_skyband, candidate_onionlayer;
+        clock_t st = clock();
+        kskyband(candidate_skyband, OriginD, tau);
+        cout << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
+        log << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
+        cout << "kskyband Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC << endl;
+        log << "kskyband Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC << endl;
+        //k-onionlayer
+        vector<int> layer;
+        layer.clear();
+        st = clock();
+        onionlayer(candidate_onionlayer, layer, candidate_skyband, OriginD, tau);
+        cout << "onionlayer Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC << endl;
+        log << "onionlayer Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC << endl;
 
-    //kskyband
-    vector<int> candidate_skyband, candidate_onionlayer;
-    clock_t st=clock();
-    kskyband(candidate_skyband, OriginD,tau);
-    cout << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
-    log << "The number of options after kskyband: " << candidate_skyband.size() << std::endl;
-    cout << "kskyband Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC << endl;
-    log << "kskyband Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC  << endl;
-    //k-onionlayer
-    vector<int> layer; layer.clear();
-    st=clock();
-    onionlayer(candidate_onionlayer, layer,  candidate_skyband,  OriginD, tau);
-    cout << "onionlayer Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC << endl;
-    log << "onionlayer Cost: " << (clock() - st) / (float) CLOCKS_PER_SEC  << endl;
-
-    candidate=candidate_onionlayer;
-
+        candidate = candidate_onionlayer;
+        global_layer.clear();
+        for(auto it=layer.begin();it!=layer.end();it++){
+            global_layer.push_back(*it);
+        }
+    }
     Allobj.clear();
     int cnt=0;
     for (auto it=candidate.begin();it!=candidate.end();it++){
@@ -87,10 +108,7 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
         levelId_2_dataId[cnt]=(*it)+1;
         ++cnt;
     }
-    global_layer.clear();
-    for(auto it=layer.begin();it!=layer.end();it++){
-        global_layer.push_back(*it);
-    }
+
 
     cout << "The number of options for building: " << Allobj.size() << std::endl;
     log << "The number of options for building: " << Allobj.size() << std::endl;
@@ -129,7 +147,6 @@ void level::Build(fstream& log, ofstream& idxout) {
     for (int k=1;k<=tau;k++){
         if (k>ik) break;
         clock_t level_k_time=clock();
-
         vector<kcell> this_level;  this_level.clear(); region_map.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
