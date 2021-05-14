@@ -71,6 +71,9 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
         int cnt=1;
         global_layer.clear();
         for(const auto &ly: onion){
+            if(cnt>tau){
+                break;
+            }
             for(const auto &id:ly){
                 candidate.push_back(id);
                 global_layer.push_back(cnt);
