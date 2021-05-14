@@ -25,7 +25,7 @@ public:
     kcell();
     ~kcell();
 
-    void WriteToDisk(ofstream& Outfile);
+    void WriteToDisk(ofstream& Outfile, bool OutStau);
     void ReadFromDisk(ifstream& Infile);
     void Get_HashValue();
     void TobeRoot(vector<int>& candidates, int dim);

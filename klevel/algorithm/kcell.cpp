@@ -18,7 +18,7 @@ kcell::~kcell() {
     vector<int>().swap(topk);
 }
 
-void kcell::WriteToDisk(ofstream& Outfile) {
+void kcell::WriteToDisk(ofstream& Outfile, bool OutStau) {
     Outfile.write((char*) &curk,sizeof(int));
     Outfile.write((char*) &objID,sizeof(int));
     r.WriteToDisk(Outfile);
@@ -28,9 +28,15 @@ void kcell::WriteToDisk(ofstream& Outfile) {
         Outfile.write((char*) &(*it),sizeof(int));
     }
     size=Stau.size();
-    Outfile.write((char*) &size,sizeof(int));
-    for (auto it=Stau.begin();it!=Stau.end();it++){
-        Outfile.write((char*) &(*it),sizeof(int));
+    if (OutStau){
+        Outfile.write((char*) &size,sizeof(int));
+        for (auto it=Stau.begin();it!=Stau.end();it++){
+            Outfile.write((char*) &(*it),sizeof(int));
+        }
+    }
+    else {
+        size=0;
+        Outfile.write((char*) &size,sizeof(int));
     }
 }
 

@@ -75,14 +75,7 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     apply_onion_from_file=true;
 }
 
-
 int main(int argc, char* argv[]) {
-//    string fn="/home/kemingli/klevel/data/anti/ANTI200K4.ch";
-//    vector<vector<int>> onion;
-//    read_onion(fn, onion);
-//    return 0;
-//    build_onion();
-//    return 0;
     int dim,tau,ik,q_num,k;
     float utk_side_length;
     string datafile, logfile, idxfile, root_directory, filename, func_str,query_str, build_str;
@@ -212,7 +205,5 @@ int main(int argc, char* argv[]) {
     log.close();
     return 0;
 }
-
-
 
 

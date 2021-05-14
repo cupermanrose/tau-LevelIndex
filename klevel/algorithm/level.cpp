@@ -63,7 +63,6 @@ void level::FreeMem(int k){
     vector<kcell>().swap(idx[k]);
 }
 
-
 void level::GlobalFilter(fstream& log, vector<int> &candidate) {
     candidate.clear();
     if(apply_onion_from_file){
@@ -147,6 +146,7 @@ void level::Build(fstream& log, ofstream& idxout) {
     for (int k=1;k<=tau;k++){
         if (k>ik) break;
         clock_t level_k_time=clock();
+
         vector<kcell> this_level;  this_level.clear(); region_map.clear();
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
@@ -435,8 +435,9 @@ void level::WriteToDisk(int k, ofstream &idxout) {
     int size=idx[k].size();
     idxout.write((char*) &size, sizeof(int));
     for (auto it=idx[k].begin();it!=idx[k].end();it++){
-//        if (k<ik) it->Stau.clear(); // space optimization
-        it->WriteToDisk(idxout);
+        // Space optimization
+        if (k<ik) it->WriteToDisk(idxout,false);
+        else it->WriteToDisk(idxout,true);
     }
 }
 
