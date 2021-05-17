@@ -499,7 +499,26 @@ void level::SplitDFS(kcell& cell, vector<kcell> &L) {
     for (auto p=S1.begin();p!=S1.end();p++){
         if (global_layer[*p]>cell.curk+1) continue;
         kcell newcell;
-        CreateNewCell(*p,S1,Sk,cell,newcell);
+        //CreateNewCell(*p,S1,Sk,cell,newcell);
+        newcell.curk=cell.curk+1;
+        newcell.objID=*p;
+        newcell.topk=cell.topk; newcell.topk.push_back(*p);
+        newcell.Stau.clear();
+        for (auto it=Sk.begin();it!=Sk.end();it++){
+            if (*it!=*p) newcell.Stau.push_back(*it);
+        }
+        newcell.r.V.clear();
+        newcell.r.H.clear();
+        for (int i=0;i<newcell.topk.size();i++){
+            for (int j=i+1;j<newcell.topk.size();j++){
+                AddHS(newcell.topk[i],newcell.topk[j],true,newcell.r.H);
+            }
+        }
+        for (auto it = S1.begin(); it != S1.end(); it++) {
+            if (*it != *p) AddHS(*p,*it,true,newcell.r.H);
+        }
+
+        // verify
         if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
             UpdateV(newcell, ave_vertex);
             SplitDFS(newcell,L);

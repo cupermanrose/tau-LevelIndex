@@ -93,14 +93,14 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     tau=10; // NBA: tau=30
     ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
-    filename="inde/U100K4";
-    //filename="real/HOUSE6D";
-    func_str="buildidx";
-    build_str="IncBuild";
+    filename="anti/ANTI400K4";
+    //func_str="buildidx";
+    func_str="loadidx";
+    build_str="BFSBuild";
 
     q_num=5;
-    k=1;
-    query_str="oru";
+    k=10;
+    query_str="utk";
 
 }
 
@@ -135,12 +135,12 @@ int main(int argc, char* argv[]) {
             LoadIndex(idx, datafile, log, idxfile);
             switch (query) {
                 case kspr:
-                    kspr::multiple_query(idx, 1, q_num, log);
-                    kspr::multiple_query(idx, 5, q_num, log);
+                    /*kspr::multiple_query(idx, 1, q_num, log);
+                    kspr::multiple_query(idx, 5, q_num, log);*/
                     kspr::multiple_query(idx, 10, q_num, log);
-                    kspr::multiple_query(idx, 15, q_num, log);
+                    /*kspr::multiple_query(idx, 15, q_num, log);
                     kspr::multiple_query(idx, 20, q_num, log);
-                    kspr::multiple_query(idx, 30, q_num, log);
+                    kspr::multiple_query(idx, 30, q_num, log);*/
                     //kspr::multiple_query(idx, 40, q_num, log);
                     //kspr::multiple_query(idx, 50, q_num, log);
                     break;
@@ -148,48 +148,48 @@ int main(int argc, char* argv[]) {
                     utk_side_length=0.001;
                     cout << utk_side_length << endl;
                     log << utk_side_length << endl;
-                    utk::multiple_query(idx, 1, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);
+                    /*utk::multiple_query(idx, 1, q_num, utk_side_length, log);
+                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);*/
                     utk::multiple_query(idx, 10, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 15, q_num, utk_side_length, log);
+                    /*utk::multiple_query(idx, 15, q_num, utk_side_length, log);
                     utk::multiple_query(idx, 20, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);
+                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);*/
                     utk_side_length=0.005;
                     cout << utk_side_length << endl;
                     log << utk_side_length << endl;
-                    utk::multiple_query(idx, 1, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);
+                    /*utk::multiple_query(idx, 1, q_num, utk_side_length, log);
+                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);*/
                     utk::multiple_query(idx, 10, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 15, q_num, utk_side_length, log);
+                    /*utk::multiple_query(idx, 15, q_num, utk_side_length, log);
                     utk::multiple_query(idx, 20, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);
+                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);*/
                     utk_side_length=0.01;
                     cout << utk_side_length << endl;
                     log << utk_side_length << endl;
-                    utk::multiple_query(idx, 1, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);
+                    /*utk::multiple_query(idx, 1, q_num, utk_side_length, log);
+                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);*/
                     utk::multiple_query(idx, 10, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 15, q_num, utk_side_length, log);
+                    /*utk::multiple_query(idx, 15, q_num, utk_side_length, log);
                     utk::multiple_query(idx, 20, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);
+                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);*/
                     utk_side_length=0.05;
                     cout << utk_side_length << endl;
                     log << utk_side_length << endl;
-                    utk::multiple_query(idx, 1, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);
+                    /*utk::multiple_query(idx, 1, q_num, utk_side_length, log);
+                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);*/
                     utk::multiple_query(idx, 10, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 15, q_num, utk_side_length, log);
+                    /*utk::multiple_query(idx, 15, q_num, utk_side_length, log);
                     utk::multiple_query(idx, 20, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);
+                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);*/
                     utk_side_length=0.1;
                     cout << utk_side_length << endl;
                     log << utk_side_length << endl;
-                    utk::multiple_query(idx, 1, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 5, q_num, utk_side_length, log);
+                    //utk::multiple_query(idx, 1, q_num, utk_side_length, log);
+                    //utk::multiple_query(idx, 5, q_num, utk_side_length, log);
                     utk::multiple_query(idx, 10, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 15, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 20, q_num, utk_side_length, log);
-                    utk::multiple_query(idx, 30, q_num, utk_side_length, log);
+                    //utk::multiple_query(idx, 15, q_num, utk_side_length, log);
+                    //utk::multiple_query(idx, 20, q_num, utk_side_length, log);
+                    //utk::multiple_query(idx, 30, q_num, utk_side_length, log);
                     break;
                 case oru:
                     k=1;
