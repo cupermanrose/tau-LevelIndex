@@ -151,6 +151,7 @@ void level::Build(fstream& log, ofstream& idxout) {
         clock_t level_k_time=clock();
 
         vector<kcell> this_level;  this_level.clear(); region_map.clear();
+
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
 
             tmp_profiling=clock();
@@ -203,9 +204,18 @@ void level::Build(fstream& log, ofstream& idxout) {
 }
 
 void level::LocalFilter(int k, vector<int> &S1, vector<int> &Sk, kcell &cur_cell, int& ave_S1, int& ave_Sk) {
-    rskyband(S1,Sk,cur_cell, k);
-    //GridFilter(S1,Sk,cur_cell);
-    //NoFilter(S1,Sk,cur_cell);
+    if (cur_cell.curk==0){
+        S1.clear();Sk.clear();
+        for (int i=0;i<Allobj.size();i++){
+            if (global_layer[i]==1) S1.push_back(i);
+            Sk.push_back(i);
+        }
+    }
+    else {
+        rskyband(S1,Sk,cur_cell, k);
+        //GridFilter(S1,Sk,cur_cell);
+        //NoFilter(S1,Sk,cur_cell);
+    }
     ave_Sk+=Sk.size();ave_S1+=S1.size();
 }
 
@@ -343,7 +353,7 @@ void level::UpdateH(kcell &cur_cell) {
 
     for (auto it = cur_cell.Stau.begin(); it != cur_cell.Stau.end(); it++) {
         // the halfspace score(p)>score(*it)
-        AddHS(p,*it,true,cur_cell.r.H);
+        if (global_layer[*it]<=cur_cell.curk) AddHS(p,*it,true,cur_cell.r.H);
     }
 }
 
