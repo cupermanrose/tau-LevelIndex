@@ -367,3 +367,91 @@ const vector<int> &ch::get_layer(int which_layer) {
 
 ch::~ch() {
 }
+
+void build_onion(){
+    int dim=4;
+    int tau=20; // NBA: tau=30
+    string s="/home/kemingli/klevel/data/anti/ANTI1600K4";
+    string input=s+".dat";
+    fstream fin(input, ios::in);
+    vector<vector<float>> data;
+    vector<float> cl(dim);
+    vector<float> cu(dim);
+    while (true) {
+        int id;
+        fin >> id;
+        if (fin.eof())
+            break;
+        vector<float> tmp;
+        for (int d = 0; d < dim; d++) fin >> cl[d];
+        for (int d = 0; d < dim; d++) fin >> cu[d];
+        for (int d = 0; d < dim; d++) tmp.push_back((cl[d]+cu[d])/2.0);
+
+        data.push_back(tmp);
+        if (data.size() % 1000 == 0)
+            cout << ".";
+        if (data.size() % 10000 == 0)
+            cout << data.size() << " objects loaded" << endl;
+    }
+
+    cout << "Total number of objects: " << data.size() << endl;
+    fin.close();
+//    onionlayer(candidate_onionlayer, layer,  candidate_skyband,  OriginD, tau);
+//    vector<int> in_idx(data.size());
+//    iota(in_idx.begin(), in_idx.end(), 0);
+    vector<int> in_idx;
+    kskyband(in_idx, data,tau);
+
+    if (data.empty()) {
+        return;
+    }
+    ch c(in_idx, data, dim);
+    fstream log;
+    string logfile=s+".ch";
+    log.open(logfile, ios::out);
+
+    for (int i = 1; i <= tau; ++i) {
+        log<<"#"<<i<<":";
+        for (int id: c.get_layer(i)) {
+            log<<id<<" ";
+        }
+        log<<endl;
+    }
+    log.close();
+}
+
+void read_onion(const string &filename, vector<vector<int>> &ret){
+    FILE *in=fopen(filename.c_str(), "r");
+    int cur;
+    char UNUSED;
+    int flag=1;
+    vector<int> one_onion;
+    while(flag){
+        flag=fscanf(in, "%d", &cur);
+        if(feof(in)){
+            break;
+        }
+        if(flag){
+            one_onion.push_back(cur);
+        }else{
+            flag=fscanf(in, "%c", &UNUSED);
+            if(flag){
+                if(UNUSED=='#'){
+                    flag=fscanf(in, "%d", &cur);
+                }
+                flag=fscanf(in, "%c", &UNUSED);
+                if(cur!=1){
+                    ret.push_back(one_onion);
+                    one_onion=vector<int>();
+                }
+            }// else eof
+        }
+    }
+    fclose(in);
+    ret.push_back(one_onion);
+    cout<<ret.size()<<endl;
+    for(auto &i:ret){
+        cout<<i.size()<<endl;
+    }
+}
+

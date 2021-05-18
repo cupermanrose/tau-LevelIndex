@@ -2,6 +2,7 @@
 #ifndef K_LEVEL_UTILS_H
 #define K_LEVEL_UTILS_H
 #include <vector>
+#include <string>
 #include "rtree.h"
 using std::unordered_set;
 using std::unordered_map;
@@ -75,6 +76,11 @@ public:
 
     ~ch();
 };
+
+void build_onion();
+
+void read_onion(const std::string &filename, vector<vector<int>> &ret);
+
 
 #endif //K_LEVEL_UTILS_H
 
