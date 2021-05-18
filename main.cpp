@@ -93,14 +93,14 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     tau=10; // NBA: tau=30
     ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
-    filename="anti/ANTI400K4";
+    filename="cor/COR200K4";
     //func_str="buildidx";
     func_str="loadidx";
     build_str="BFSBuild";
 
-    q_num=5;
+    q_num=50;
     k=10;
-    query_str="utk";
+    query_str="kspr";
 
 }
 
@@ -192,7 +192,8 @@ int main(int argc, char* argv[]) {
                     //utk::multiple_query(idx, 30, q_num, utk_side_length, log);
                     break;
                 case oru:
-                    k=1;
+                    oru::multiple_query(idx,10, 50,q_num,log);
+                    /*k=1;
                     cout << k << endl;
                     oru::multiple_query(idx,k, 10,q_num,log);
                     oru::multiple_query(idx,k, 30,q_num,log);
@@ -226,7 +227,7 @@ int main(int argc, char* argv[]) {
                     oru::multiple_query(idx,k, 30,q_num,log);
                     oru::multiple_query(idx,k, 50,q_num,log);
                     oru::multiple_query(idx,k, 70,q_num,log);
-                    oru::multiple_query(idx,k, 90,q_num,log);
+                    oru::multiple_query(idx,k, 90,q_num,log);*/
                     break;
             }
             break;
