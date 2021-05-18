@@ -67,17 +67,16 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     filename="anti/ANTI400K6";
     func_str=BUILDIDX;
     build_str="BFSBuild";
-    q_num=5;
-    k=1;
-    query_str="oru";
+    anti_id_f=root_directory+"data/"+filename+".ch";
+    apply_onion_from_file=true;
 
-    anti_id_f="/home/kemingli/klevel/data/anti/ANTI400K6.ch";
-    apply_onion_from_file= true;
+    q_num=50;
+    k=10;
+    query_str="kspr";
+
 }
 
 int main(int argc, char* argv[]) {
-//    build_onion();
-//    return 0;
     int dim,tau,ik,q_num,k;
     float utk_side_length;
     string datafile, logfile, idxfile, root_directory, filename, func_str,query_str, build_str;

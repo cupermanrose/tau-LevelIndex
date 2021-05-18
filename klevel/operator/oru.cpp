@@ -20,18 +20,17 @@ void oru::generate_query(level &idx, int q_num, vector<vector<float>>& q_list) {
 }
 
 bool oru::isIn(vector<float> &v, vector<halfspace> &H, int dim) {
+    double eps=0.0001;
     for (auto it = H.begin(); it != H.end(); it++) {
         float sum = 0.0;
         for (int i = 0; i < dim - 1; i++) {
             sum = sum + v[i] * it->w[i];
         }
         if (it->side == false) {
-            if (sum <= it->w[dim - 1]) continue;
-            return false;
+            if (sum+eps >= it->w[dim - 1]) return false;
         }
         else {
-            if (sum >= it->w[dim - 1]) continue;
-            return false;
+            if (sum-eps <= it->w[dim - 1]) return false;
         }
     }
     return true;
