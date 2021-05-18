@@ -369,9 +369,9 @@ ch::~ch() {
 }
 
 void build_onion(){
-    int dim=4;
+    int dim=7;
     int tau=20; // NBA: tau=30
-    string s="/home/kemingli/klevel/data/anti/ANTI1600K4";
+    string s="/home/kemingli/klevel/data/anti/ANTI400K7";
     string input=s+".dat";
     fstream fin(input, ios::in);
     vector<vector<float>> data;
@@ -400,7 +400,7 @@ void build_onion(){
 //    vector<int> in_idx(data.size());
 //    iota(in_idx.begin(), in_idx.end(), 0);
     vector<int> in_idx;
-    kskyband(in_idx, data,tau);
+    kskyband(in_idx, data,tau, false);
 
     if (data.empty()) {
         return;
