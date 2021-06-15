@@ -62,8 +62,7 @@ void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
         }
      }
      RangeQuery(rtree* rt, float* ql, float* qu, vector<int> ids){
-     }
-     */
+     }*/
     cout << "Load Index Done!" << endl;
     log << "Load Index Done!" << endl;
     idx.print_system_info(log);
