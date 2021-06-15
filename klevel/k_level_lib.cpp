@@ -44,6 +44,26 @@ void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
         log << "The size of level " << k << ": "<<idx.idx[k].size() << endl;
     }
     idxin.close();
+
+    // Build R-tree
+    /*
+     BuildRtree(vector<kcell> L, rtree* rt){
+        for (int i=0;i<idx.idx[idx.ik].size();i++){
+            float* cl = new float[idx.dim];
+            float* cu = new float[idx.dim];
+            for (int d = 0;  d<idx.dim ; d++) {
+                for (each v in idx.idx[i]) {
+                    cl[d] = min(cl[d], v[d]);
+                    cu[d] = max(cu[d], v[d]);
+                }
+            }
+            Hypercube hc(dim, cl, cu);
+            p[i] = new RtreeNodeEntry(i, hc); // i is kcell id
+        }
+     }
+     RangeQuery(rtree* rt, float* ql, float* qu, vector<int> ids){
+     }
+     */
     cout << "Load Index Done!" << endl;
     log << "Load Index Done!" << endl;
     idx.print_system_info(log);

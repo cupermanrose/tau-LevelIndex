@@ -12,10 +12,12 @@ public:
     static bool isIn(vector<float>& v, vector<float>& Qregion, int dim);
     static bool isIn(vector<float>& v, vector<halfspace>& H, int dim);
     static bool Intersect(vector<float>& Qregion,region& r, int dim);
+    static void AddQregion(vector<float>& Qregion, region& r, int dim);
     static void multiple_query(level& idx, int k, int q_num, float utk_side_length, fstream& log);
     static void generate_query(level& idx, int q_num, float utk_side_length, vector<vector<float>>& q_list);
     static int single_query(level& idx, int k, vector<float>& Qregion, fstream& log);
     static int single_query_largek(level& idx, int k, vector<float>& Qregion, fstream& log);
+    static int single_query_largek_fromlvl0(level& idx, int k, vector<float>& Qregion, fstream& log);
 };
 
 

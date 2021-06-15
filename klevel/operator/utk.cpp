@@ -23,9 +23,8 @@ void utk::generate_query(level &idx, int q_num, float utk_side_length, vector<ve
 }
 
 bool utk::isIn(vector<float>& v, vector<float>& Qregion, int dim){
-    float EPS_isIn=0.000001;
     for (int i = 0; i < dim - 1; i++) {
-        if ((v[i] + EPS_isIn >= Qregion[2 * i]) && (v[i] - EPS_isIn <= Qregion[2 * i + 1])) continue;
+        if ((v[i] >= Qregion[2 * i]) && (v[i] <= Qregion[2 * i + 1])) continue;
         return false;
     }
     return true;
@@ -81,29 +80,42 @@ int utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) {
     return results.size();
 }
 
-int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream &log) {
+void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
+    for (int i=0;i<dim-1;i++){
+        halfspace tmp_HP; tmp_HP.w.clear();
+        for (int j=0;j<dim;j++) tmp_HP.w.push_back(0.0);
+        tmp_HP.w[i]=1.0;
+
+        tmp_HP.w[dim-1]=Qregion[2*i]; tmp_HP.side=true;
+        r.H.push_back(tmp_HP);
+
+        tmp_HP.w[dim-1]=Qregion[2*i+1]; tmp_HP.side=false;
+        r.H.push_back(tmp_HP);
+    }
+    return;
+}
+
+int utk::single_query_largek_fromlvl0(level &idx, int k, vector<float> &Qregion, fstream &log) { // COMPUTE FROM LEVEL-0
     vector<int> S1,Sk;
     int ave_S1=0,ave_Sk=0,ave_vertex=0;
     vector<vector<kcell>> tmp; tmp.clear();
     vector<kcell> init_level;  init_level.clear();
-    for (auto it=idx.idx[idx.ik].begin();it!=idx.idx[idx.ik].end();it++){
-        if (Intersect(Qregion,it->r, idx.dim)) init_level.push_back(*it);
-    }
-    tmp.emplace_back(init_level);
+    vector<int> candidate; candidate.clear();
+    for (int i=0;i<idx.Allobj.size();i++) candidate.push_back(i);
+    kcell rootcell; rootcell.TobeRoot(candidate, idx.dim); rootcell.Get_HashValue();
+    init_level.push_back(rootcell);
 
-    for (int i=0;i<k-idx.ik;i++){
+    tmp.emplace_back(init_level);
+    for (int i=0;i<k;i++){
         vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
         for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
-            if (!Intersect(Qregion,cur_cell->r, idx.dim)) continue; // will not contribute to utk query
             idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
-
             for (auto p=S1.begin();p!=S1.end();p++){
-
                 kcell newcell;
                 idx.CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
-
-                if (!idx.VerifyDuplicate(newcell,this_level)){ // just for profiling
-                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,idx.dim)){ // just for profiling
+                AddQregion(Qregion,newcell.r,idx.dim);
+                if (!idx.VerifyDuplicate(newcell,this_level)){
+                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,idx.dim)){
                         this_level.emplace_back(newcell);
                         idx.region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
                     }
@@ -111,12 +123,54 @@ int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream 
             }
         }
         //Compute V for each cell
-        //discuss why we need recompute after all
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
             idx.UpdateH(*cur_cell);
             idx.UpdateV(*cur_cell,ave_vertex);
         }
+        cout << i << ": " << this_level.size() << endl;
+        tmp.emplace_back(this_level);
+    }
+    unordered_set<int> results; results.clear();
+    for (auto it=tmp.back().begin();it!=tmp.back().end();it++) {
+            for (auto p=it->topk.begin();p!=it->topk.end();p++){
+                results.insert(*p);
+            }
+    }
+    cout << tmp.back().size() << endl;
+    return results.size();
+}
 
+int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream &log) { // COMPUTE FROM LEVEL-0
+    vector<int> S1,Sk;
+    int ave_S1=0,ave_Sk=0,ave_vertex=0;
+    vector<vector<kcell>> tmp; tmp.clear();
+    vector<kcell> init_level;  init_level.clear();
+    for (auto it=idx.idx[idx.ik].begin();it!=idx.idx[idx.ik].end();it++){
+        if (Intersect(Qregion,it->r, idx.dim)) init_level.push_back(*it);
+    }
+
+    tmp.emplace_back(init_level);
+    for (int i=0;i<k-idx.ik;i++){
+        vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
+        for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
+            if (!Intersect(Qregion,cur_cell->r, idx.dim)) continue; // will not contribute to utk query
+            idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
+            for (auto p=S1.begin();p!=S1.end();p++){
+                kcell newcell;
+                idx.CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
+                if (!idx.VerifyDuplicate(newcell,this_level)){
+                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,idx.dim)){
+                        this_level.emplace_back(newcell);
+                        idx.region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
+                    }
+                }
+            }
+        }
+        //Compute V for each cell
+        for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
+            idx.UpdateH(*cur_cell);
+            idx.UpdateV(*cur_cell,ave_vertex);
+        }
         tmp.emplace_back(this_level);
     }
     unordered_set<int> results; results.clear();
@@ -127,6 +181,7 @@ int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream 
             }
         }
     }
+    cout << tmp.back().size() << endl;
     return results.size();
 }
 
