@@ -20,7 +20,7 @@ region::~region() {
 }
 
 void region::WriteToDisk(ofstream &Outfile) {
-    int size=H.size();
+    /*int size=H.size();
     Outfile.write((char*) &size, sizeof(int));
     for(auto it=H.begin();it!=H.end();it++){
         int w_size=it->w.size();
@@ -29,7 +29,9 @@ void region::WriteToDisk(ofstream &Outfile) {
             Outfile.write((char*) &(*itt),sizeof(float));
         }
         Outfile.write((char*) &(it->side), sizeof(bool));
-    }
+    }*/
+    int size=0; // halfspace can be computed from Tk and Ct set
+    Outfile.write((char*) &size, sizeof(int));
     size=V.size();
     Outfile.write((char*)&size, sizeof(int));
     for (auto it=V.begin();it!=V.end();it++){

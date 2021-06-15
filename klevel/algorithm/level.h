@@ -20,13 +20,11 @@
 
 #define TEST 1
 
-
-
 class level {
 public:
     int dim, tau, ik;
     vector<vector<kcell>> idx;
-    unordered_map<size_t,int> region_map;
+    unordered_map<size_t,int> region_map, mregion_map;
     vector<vector<float>> Allobj, OriginD;
     vector<int> global_layer;
     unordered_map<int, int> levelId_2_dataId;
@@ -54,15 +52,16 @@ public:
     void initIdx(fstream& log);
     void Build(fstream& log, ofstream& idxout);
     bool VerifyDuplicate(kcell& newcell, vector<kcell>& this_level); // hash version
-    //bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level); // for-loop version
     void CreateNewCell(int p, vector<int>& S1, vector<int>& Sk, kcell& cur_cell,kcell& newcell);
     void AddHS(int o1, int o2, bool side, vector<halfspace>& H);
     void UpdateH(kcell& cur_cell);
     void UpdateV(kcell& cur_cell, int& ave_vertex);
     void LocalFilter(int k, vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
-    //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
     void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int k);
     void NoFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+
+    //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+    //bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level); // for-loop version
 
     // incremental building
     /////////////////////////////////////////////////
@@ -72,7 +71,8 @@ public:
     // BulkLoad DFS
     /////////////////////////////////////////////////
     void DFSBuild(fstream& log, ofstream& idxout);
-    void SplitDFS(kcell& cell , vector<kcell>& L);
+    void SplitDFS(kcell& cell , vector<kcell>& L, ofstream& idxout, int& kcell_num);
+
 };
 
 

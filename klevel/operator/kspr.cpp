@@ -10,7 +10,7 @@ void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     for (int i=0;i<q_num;i++){
         q_list.push_back(rand()%idx.Allobj.size());
     }
-    cout<<"begin generate query of original id:\n";
+    /*cout<<"begin generate query of original id:\n";
     for(int &i: q_list){
         cout<<idx.levelId_2_dataId[i]<<"\n";
     }
@@ -20,7 +20,7 @@ void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     for(int &i: q_list){
         cout<<i<<"\n";
     }
-    cout<<"end generate query of k-level id"<<endl;
+    cout<<"end generate query of k-level id"<<endl;*/
     return;
 }
 
@@ -58,10 +58,9 @@ int kspr::single_query_largek(level &idx, int k, int q_id, fstream &log) {
         else if (Find_qid_Stau(*it,q_id)) init_level.push_back(*it);
     }
     tmp.emplace_back(init_level);
-
     for (int i=0;i<k-idx.ik;i++){
         vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
-        cout << i+idx.ik << ' ' << tmp[i].size() << endl;
+        //cout << i+idx.ik << ' ' << tmp[i].size() << endl;
         for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
             if (Find_qid_topk(*cur_cell,q_id)) {cnt++;continue;}
             if (!Find_qid_Stau(*cur_cell,q_id)) continue; // will not contribute to kspr query

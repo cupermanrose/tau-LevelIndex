@@ -298,6 +298,8 @@ bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
             }
             if (!foundInStau) this_level[r_id->second].Stau.push_back(*it);
         }
+
+
     }
 
     return flag;
@@ -502,15 +504,45 @@ void level::SplitCell(int p, int i, vector<kcell>& L) {
         }
 
         if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)){
+            int tmp;
+            UpdateV(newcell,tmp);
             L.emplace_back(newcell);
         }
     }
     // update L[i].r
-    if (L[i].objID!=-1){
-        L[i].Stau.push_back(p);
-        AddHS(L[i].objID,p,true, L[i].r.H);
-        if (!lp_adapter::is_Feasible(L[i].r.H,L[i].r.innerPoint,dim)){
-            L[i].curk=tau+1; // delete this kcell
+    if ((L[i].objID!=-1)&&(global_layer[p]<=L[i].curk)){
+        if (RegionDominate(L[i].r.V, Allobj[p], Allobj[L[i].objID],dim)) {
+            L[i].Stau.push_back(p);
+
+        }
+        else if (RegionDominate(L[i].r.V, Allobj[L[i].objID],Allobj[p], dim)){
+            L[i].curk++;
+            L[i].topk.push_back(p);
+        }
+        else{
+            // generate new kcell (R^-)
+            kcell newcell;
+            newcell.curk=L[i].curk+1;
+            newcell.objID=L[i].objID;
+            newcell.topk=L[i].topk;newcell.topk.push_back(p);
+            newcell.Stau=L[i].Stau;
+            newcell.r.H=L[i].r.H;
+            AddHS(p,L[i].objID,true,newcell.r.H);
+            if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)){
+                int tmp;
+                UpdateV(newcell,tmp);
+                L.emplace_back(newcell);
+            }
+            // update L[i] (R^+)
+            L[i].Stau.push_back(p);
+            AddHS(L[i].objID,p,true, L[i].r.H);
+            if (!lp_adapter::is_Feasible(L[i].r.H,L[i].r.innerPoint,dim)){
+                L[i].curk=tau+1; // delete this kcell
+            }
+            else{
+                int tmp;
+                UpdateV(L[i],tmp);
+            }
         }
     }
     else L[i].Stau.push_back(p);
@@ -533,13 +565,21 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
         cout << cnt++ << ": " << L.size() << endl;
     }
 
-    cout << "Time Cost of IncBuild " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+    for (auto it=L.begin();it!=L.end();it++){
+        if (it->curk<ik) it->WriteToDisk(idxout,false);
+        else it->WriteToDisk(idxout,true);
+    }
+
+    cout << "Index cell size: " << L.size()<< endl;
+    cout << "Time Cost of IncBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+    log << "Index cell size: " << L.size() << endl;
+    log << "Time Cost of IncBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
 
     L.clear();
     vector<kcell>().swap(L);
 }
 
-void level::SplitDFS(kcell& cell, vector<kcell> &L) {
+void level::SplitDFS(kcell& cell, vector<kcell> &L, ofstream& idxout, int& kcell_num) {
     if (cell.curk>=ik) return;
     vector<int> S1,Sk;
     int ave_S1=0,ave_Sk=0,ave_vertex=0;
@@ -568,8 +608,12 @@ void level::SplitDFS(kcell& cell, vector<kcell> &L) {
 
         // verify
         if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
+            kcell_num++;
+            if (kcell_num%1000==0) cout << kcell_num <<endl;
             UpdateV(newcell, ave_vertex);
-            SplitDFS(newcell,L);
+            SplitDFS(newcell,L, idxout, kcell_num);
+            if (newcell.curk<ik) newcell.WriteToDisk(idxout,false);
+            else newcell.WriteToDisk(idxout,true);
             //L.push_back(newcell);
         }
     }
@@ -584,12 +628,12 @@ void level::DFSBuild(fstream &log, ofstream &idxout) {
 
 
     clock_t cur_time=clock();
-
-    SplitDFS(rootcell,L);
-
-    cout << "Index cell size: " << L.size() << endl;
+    int kcell_num=0;
+    SplitDFS(rootcell,L, idxout,kcell_num);
+    cout << "Index cell size: " << kcell_num << endl;
     cout << "Time Cost of DFSBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
-
+    log << "Index cell size: " << kcell_num << endl;
+    log << "Time Cost of DFSBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
     L.clear();
     vector<kcell>().swap(L);
 }

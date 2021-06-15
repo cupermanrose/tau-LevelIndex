@@ -6,6 +6,7 @@
 #define K_LEVEL_K_LEVEL_LIB_H
 
 #include "algorithm/level.h"
+#include "hypercube.h"
 #include <iostream>
 #include <fstream>
 
