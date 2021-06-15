@@ -77,8 +77,7 @@ public:
     ~ch();
 };
 
-void build_onion();
-
+void build_onion(const std::string &s, int dim, int tau);
 void read_onion(const std::string &filename, vector<vector<int>> &ret);
 
 
