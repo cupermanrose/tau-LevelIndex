@@ -45,3 +45,31 @@ void build_rtree(Rtree *&rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,
     // aggregate rtree
     aggregateRecords(*rtree_rt);
 }
+
+
+template<typename VVF>
+void box2rtree(Rtree *&rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VVF &data){
+    if(data.empty()){
+        return;
+    }
+    int dim=data[0].size()/2;
+    RtreeNodeEntry** p = new RtreeNodeEntry*[data.size()];
+    for (int id=0;id<data.size();++id)
+    {
+        Hypercube hc(dim, &(data[id][0]), &(data[id][dim]));
+        p[id] = new RtreeNodeEntry(id, hc);
+    }
+    // build rtree
+    const int maxChild = (PAGESIZE - RtreeNode::size()) / RtreeNodeEntry::size(dim);
+    //FileMemory mem(PAGESIZE, "./result/index.txt", RtreeNodeEntry::fromMem, true);
+    FileMemory mem(PAGESIZE, "index.txt", RtreeNodeEntry::fromMem, true);
+    rtree_rt = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
+//            cout << "[Rtree build done]" << endl;
+
+    // in-memory rtree
+//            cout << "cache R-tree into memory" << endl;
+    rtreeRAM(*rtree_rt, ramTree);
+
+    // aggregate rtree
+    aggregateRecords(*rtree_rt);
+}

@@ -63,8 +63,8 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
     dim=4;
-    tau=10; // NBA: tau=30
-    ik=10;
+    tau=60; // NBA: tau=30
+    ik=60;
     root_directory="/home/kemingli/klevel/";
     filename="inde/U400K4";
     //filename="anti/ANTI400K6";
