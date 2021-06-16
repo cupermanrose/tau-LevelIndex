@@ -75,6 +75,7 @@ void box2rtree(Rtree *&rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VV
 }
 
 
+// Apply R-tree in query processing
 template<typename PTS>
 bool boxIntersection(PTS &boxl, PTS &boxu,
                             vector<float> &targetl, vector<float> &targetu){
