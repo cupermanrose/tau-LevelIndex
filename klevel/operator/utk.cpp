@@ -68,16 +68,36 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
     return false;
 }
 
-int utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) {
+int utk::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
+                      int k, vector<float> &Qregion, fstream &log) {
+    vector<float> ql,qu;
+    ql.clear();qu.clear();
+    for (int i=0;i<idx.dim-1;i++){
+        ql.push_back(Qregion[i]);
+        qu.push_back(Qregion[i*2+1]);
+    }
+
+    vector<int> kcellID;kcellID.clear();
+    RangeQueryFromRtree(rt,ramTree,ql,qu,kcellID);
     unordered_set<int> results; results.clear();
-    for (auto it=idx.idx[k].begin();it!=idx.idx[k].end();it++){
+
+    for (auto it=kcellID.begin();it!=kcellID.end();it++){
+        if (Intersect(Qregion, idx.idx[k][*it].r,idx.dim)){
+            for (auto p=idx.idx[k][*it].topk.begin();p!=idx.idx[k][*it].topk.end();p++){
+                results.insert(*p);
+            }
+        }
+    }
+    return results.size();
+
+    /*for (auto it=idx.idx[k].begin();it!=idx.idx[k].end();it++){
         if (Intersect(Qregion,it->r, idx.dim)){
             for (auto p=it->topk.begin();p!=it->topk.end();p++){
                 results.insert(*p);
             }
         }
     }
-    return results.size();
+    return results.size();*/
 }
 
 void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
@@ -93,51 +113,6 @@ void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
         r.H.push_back(tmp_HP);
     }
     return;
-}
-
-int utk::single_query_largek_fromlvl0(level &idx, int k, vector<float> &Qregion, fstream &log) { // COMPUTE FROM LEVEL-0
-    vector<int> S1,Sk;
-    int ave_S1=0,ave_Sk=0,ave_vertex=0;
-    vector<vector<kcell>> tmp; tmp.clear();
-    vector<kcell> init_level;  init_level.clear();
-    vector<int> candidate; candidate.clear();
-    for (int i=0;i<idx.Allobj.size();i++) candidate.push_back(i);
-    kcell rootcell; rootcell.TobeRoot(candidate, idx.dim); rootcell.Get_HashValue();
-    init_level.push_back(rootcell);
-
-    tmp.emplace_back(init_level);
-    for (int i=0;i<k;i++){
-        vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
-        for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
-            idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
-            for (auto p=S1.begin();p!=S1.end();p++){
-                kcell newcell;
-                idx.CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
-                AddQregion(Qregion,newcell.r,idx.dim);
-                if (!idx.VerifyDuplicate(newcell,this_level)){
-                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,idx.dim)){
-                        this_level.emplace_back(newcell);
-                        idx.region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
-                    }
-                }
-            }
-        }
-        //Compute V for each cell
-        for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
-            idx.UpdateH(*cur_cell);
-            idx.UpdateV(*cur_cell,ave_vertex);
-        }
-        cout << i << ": " << this_level.size() << endl;
-        tmp.emplace_back(this_level);
-    }
-    unordered_set<int> results; results.clear();
-    for (auto it=tmp.back().begin();it!=tmp.back().end();it++) {
-            for (auto p=it->topk.begin();p!=it->topk.end();p++){
-                results.insert(*p);
-            }
-    }
-    cout << tmp.back().size() << endl;
-    return results.size();
 }
 
 int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream &log) { // COMPUTE FROM LEVEL-0
@@ -186,33 +161,40 @@ int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream 
 }
 
 void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fstream &log) {
+    Rtree* rt=nullptr;
+    unordered_map<long int, RtreeNode*> ramTree;
+    BuildRtree(idx.idx[idx.ik], rt, ramTree);
+
+    log << "R-tree from k-level Done!" << endl;
+    cout << "R-tree from k-level Done!" << endl;
+
     clock_t cur_time=clock();
     vector<vector<float>> q_list;
 
     generate_query(idx,q_num, utk_side_length, q_list);
-//    string queryfile="/home/kemingli/klevel/query/utk/utk_query_4d_l0.001.txt";
-//    fstream queryout(queryfile, ios::in);
-//    for (int i=0;i<q_num;i++){
-//        float tmp;
-//        for (int j=0;j<(idx.dim-1)*2;j++) {
-//            queryout>>tmp;
-//            cout<<tmp<<" ";
-//        }
-//        cout << endl;
-//    }
-//    return;
-//    for (int i=0;i<q_num;i++){
-//        for (int j=0;j<idx.dim-1;j++)
-//            queryout << q_list[i][2*j] << ' ' << q_list[i][2*j+1] << ' ';
-//        queryout << endl;
-//    }
-//    queryout.close();
-//    return;
+/*    string queryfile="/home/kemingli/klevel/query/utk/utk_query_4d_l0.001.txt";
+    fstream queryout(queryfile, ios::in);
+    for (int i=0;i<q_num;i++){
+        float tmp;
+        for (int j=0;j<(idx.dim-1)*2;j++) {
+            queryout>>tmp;
+            cout<<tmp<<" ";
+        }
+        cout << endl;
+    }
+    return;
+    for (int i=0;i<q_num;i++){
+        for (int j=0;j<idx.dim-1;j++)
+            queryout << q_list[i][2*j] << ' ' << q_list[i][2*j+1] << ' ';
+        queryout << endl;
+    }
+    queryout.close();
+    return;*/
 
     for (int i=0;i<q_num;i++){
         vector<int> utk_results;
         int answer;
-        if (k<=idx.ik) answer=single_query(idx, k,q_list[i],log);
+        if (k<=idx.ik) answer=single_query(idx, rt, ramTree, k,q_list[i],log);
         else answer=single_query_largek(idx,k,q_list[i],log);
         cout << "The answer of utk query " << i << ": " << answer << endl;
         log << "The answer of utk query " << i << ": " << answer << endl;
