@@ -50,64 +50,42 @@ void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
     idx.print_system_info(log);
 }
 
-void Vertex2BOX(const vector<kcell> &L, vector<vector<float>>& MBRs){
+void Vertex2BOX(const vector<kcell> &L, vector<vector<float>>& MBRs, int dim){
     // the convex hull defined by vertexes to lower bound upper bound box
-    // dim-1 vertex to dim box
     if(L.empty() || L.begin()->r.V.empty()){
         MBRs.clear();
         return;
     }
-    int dim = L.begin()->r.V.size()+1;
     MBRs.clear();
     for(auto &iter: L){
         vector<float> box(dim*2);
-        for (int j = 0; j < dim; ++j) {
-            box[j]=1;
+        for (int d = 0; d < dim; d++) {
+            box[d*2]=1;
+            box[d*2+1]=0.0;
         }
-        float bias=1;
         for(auto &vertex: iter.r.V){
 
-            for(auto &attr: vertex){
-                bias-=attr;
+            for (int d = 0; d < dim; d++) {
+                box[d*2]=min(box[d*2], vertex[d]);
+                box[d*2+1]=max(box[d*2+1],vertex[d]);
             }
 
-            for (int i = 0; i < vertex.size(); ++i) {
-                box[i]=min(box[i], vertex[i]);
-            }
-            box[dim-1]=min(box[dim-1], bias);
-
-            for (int i = 0; i < vertex.size(); ++i) {
-                box[i+dim]=max(box[i+dim], vertex[i]);
-            }
-            box[dim-1+dim]=max(box[dim-1+dim], bias);
         }
         MBRs.emplace_back(box);
     }
     return;
 }
 
-void BuildRtree(const vector<kcell> &L, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree){
+void BuildRtree(const vector<kcell> &L, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree, int dim){
     vector<vector<float>> MBRs;
-    Vertex2BOX(L,MBRs);
+    Vertex2BOX(L,MBRs, dim);
     box2rtree(rt, ramTree, MBRs);
 }
 
-float sum(vector<float> &v){
-    float ret=0;
-    for(auto &f:v){
-        ret+=f;
-    }
-    return ret;
-}
-
-void RangeQueryFromRtree(Rtree* &rt, unordered_map<long int, RtreeNode*> &ramTree,
+void RangeQueryFromRtree(Rtree* rt, unordered_map<long int, RtreeNode*> &ramTree,
                          vector<float> &ql, vector<float> &qu, vector<int> &ret_ids){
     vector<float> target_l(ql);
     vector<float> target_u(qu);
-
-    target_l.push_back(1-sum(ql));
-    target_u.push_back(1-sum(qu));
-
     rtree_boxInter(ret_ids, rt, ramTree, target_l, target_u);
 }
 

@@ -71,7 +71,7 @@ float oru::kcell_filter(vector<kcell> &L, vector<bool>& filter, int ret_size, ve
     return 0.0;
 }
 
-float oru::single_query(level &idx, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree,
+float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
                         int k, int ret_size, vector<float>& q, fstream &log) {
     //vector<bool> filter(idx.idx[k].size(),false);
     //return kcell_filter(idx.idx[k],filter,ret_size,q,idx.dim);
@@ -167,7 +167,7 @@ float oru::single_query_largek(level &idx, int k, int ret_size, vector<float>& q
     return ans;;
 }
 
-void oru::multiple_query(level &idx, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree,
+void oru::multiple_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
                          int k, int ret_size, int q_num, fstream &log) {
     clock_t cur_time=clock();
     vector<vector<float>> q_list;

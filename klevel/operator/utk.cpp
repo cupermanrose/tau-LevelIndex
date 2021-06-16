@@ -68,12 +68,12 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
     return false;
 }
 
-int utk::single_query(level &idx, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree,
+int utk::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
                       int k, vector<float> &Qregion, fstream &log) {
     vector<float> ql,qu;
     ql.clear();qu.clear();
     for (int i=0;i<idx.dim-1;i++){
-        ql.push_back(Qregion[i]);
+        ql.push_back(Qregion[i*2]);
         qu.push_back(Qregion[i*2+1]);
     }
 
@@ -160,7 +160,7 @@ int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream 
     return results.size();
 }
 
-void utk::multiple_query(level &idx, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree,
+void utk::multiple_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
                          int k, int q_num, float utk_side_length, fstream &log) {
     clock_t cur_time=clock();
     vector<vector<float>> q_list;
