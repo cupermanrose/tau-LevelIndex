@@ -6,7 +6,9 @@
 #include <chrono>
 
 bool apply_onion_from_file=false;
+bool write_onion_to_file=false;
 string anti_id_f;
+string read_anti_dat;
 level::level(int a_dim, int a_tau, int a_ik){
     dim=a_dim;
     tau=a_tau;
@@ -65,7 +67,23 @@ void level::FreeMem(int k){
 
 void level::GlobalFilter(fstream& log, vector<int> &candidate) {
     candidate.clear();
-    if(apply_onion_from_file){
+    if(write_onion_to_file){
+        build_onion(read_anti_dat, this->dim, this->tau);
+        vector<vector<int>> onion;
+        read_onion(anti_id_f, onion);
+        int cnt=1;
+        global_layer.clear();
+        for(const auto &ly: onion){
+            if(cnt>tau){
+                break;
+            }
+            for(const auto &id:ly){
+                candidate.push_back(id);
+                global_layer.push_back(cnt);
+            }
+            ++cnt;
+        }
+    }else if(apply_onion_from_file) {
         vector<vector<int>> onion;
         read_onion(anti_id_f, onion);
         int cnt=1;

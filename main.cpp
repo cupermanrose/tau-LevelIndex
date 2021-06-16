@@ -12,7 +12,10 @@
 
 
 extern bool apply_onion_from_file;
+extern bool write_onion_to_file;
 extern string anti_id_f;
+extern string read_anti_dat;
+
 
 enum func_type{buildidx, loadidx};
 enum query_type{kspr, utk, oru};
@@ -38,7 +41,7 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
     datafile=root_directory+"data/"+filename+".dat";
     if (func==buildidx){
-        logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_"+build_str+".log";
+        logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ins.log";
     }
     else if (func==loadidx) {
         switch (query){
@@ -53,7 +56,7 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
                 break;
         }
     }
-    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_noHS"+"_"+build_str+".idx";
+    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_noHS_ins.idx";
     log.open(logfile, ios::out);
 }
 
@@ -63,14 +66,14 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     tau=10; // NBA: tau=30
     ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
-    filename="inde/U200K4";
+    filename="inde/U100K4";
     func_str="buildidx";
     //func_str="loadidx";
     build_str="IncBuild";
-    anti_id_f=root_directory+"data/"+filename+"tau10.ch";
+    anti_id_f=root_directory+"data/"+filename+"tau100.ch";
     apply_onion_from_file=false;
-
-    q_num=30;
+    write_onion_to_file=false;
+    q_num=50;
     k=10;
     query_str="utk";
 
