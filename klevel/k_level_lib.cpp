@@ -164,17 +164,23 @@ void RangeQuery(const vector<kcell> &L, vector<float> &ql, vector<float> &qu, ve
     Rtree* rt=nullptr;
     unordered_map<long int, RtreeNode*> ramTree;
     BuildRtree(L, rt, ramTree);
-    vector<float> target_l;
-    vector<float> target_u;
+    vector<float> target_l(ql);
+    vector<float> target_u(qu);
 
-    for(auto &i:ql){
-        target_l.emplace_back(i);
-    }
     target_l.push_back(1-sum(ql));
-    for(auto &i:qu){
-        target_u.emplace_back(i);
-    }
     target_u.push_back(1-sum(qu));
 
     rtree_boxInter(ret_ids, rt, ramTree, target_l, target_u);
 }
+
+void RangeQueryFromRtree(Rtree* rt, unordered_map<long int, RtreeNode*> ramTree,
+        vector<float> &ql, vector<float> &qu, vector<int> &ret_ids){
+    vector<float> target_l(ql);
+    vector<float> target_u(qu);
+
+    target_l.push_back(1-sum(ql));
+    target_u.push_back(1-sum(qu));
+
+    rtree_boxInter(ret_ids, rt, ramTree, target_l, target_u);
+}
+
