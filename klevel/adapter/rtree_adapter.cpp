@@ -70,3 +70,32 @@ void aggregateRecords(Rtree& a_rtree)
 }
 
 
+void rtree_boxInter(vector<int> &ret, const Rtree *rtree_rt, unordered_map<long int, RtreeNode *> &ramTree,
+                    vector<float> &ql, vector<float> &qu){
+    multiset<int> heap;
+    multiset<int>::iterator heapIter;
+    RtreeNode *node;
+    int pageID;
+    heap.emplace(rtree_rt->m_memory.m_rootPageID);
+    while (!heap.empty()) {
+        heapIter = heap.begin();
+        pageID = *heapIter;
+        heap.erase(heapIter);
+        node = ramTree[pageID];
+        if (node->isLeaf()) {
+            for (int i = 0; i < node->m_usedspace; i++) {
+                if (boxIntersection(node->m_entry[i]->m_hc.getLower(), node->m_entry[i]->m_hc.getUpper(),
+                                    ql, qu)) {
+                    ret.push_back(node->m_entry[i]->m_id);
+                }
+            }
+        } else {
+            for (int i = 0; i < node->m_usedspace; i++) {
+                if (boxIntersection(node->m_entry[i]->m_hc.getLower(), node->m_entry[i]->m_hc.getUpper(),
+                                    ql, qu)) {
+                    heap.emplace(node->m_entry[i]->m_id);
+                }
+            }
+        }
+    }
+}

@@ -71,9 +71,45 @@ float oru::kcell_filter(vector<kcell> &L, vector<bool>& filter, int ret_size, ve
     return 0.0;
 }
 
-float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstream &log) {
-    vector<bool> filter(idx.idx[k].size(),false);
-    return kcell_filter(idx.idx[k],filter,ret_size,q,idx.dim);
+float oru::single_query(level &idx, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree,
+                        int k, int ret_size, vector<float>& q, fstream &log) {
+    //vector<bool> filter(idx.idx[k].size(),false);
+    //return kcell_filter(idx.idx[k],filter,ret_size,q,idx.dim);
+
+    float init_dis=0.0001;
+    while (true){
+        vector<float> ql,qu;
+        ql.clear();qu.clear();
+
+        vector<int> kcellID;kcellID.clear();
+        RangeQueryFromRtree(rt,ramTree,ql,qu,kcellID);
+        unordered_set<int> results; results.clear();
+        for (auto it=kcellID.begin();it!=kcellID.end();it++){
+            for (auto p=idx.idx[k][*it].topk.begin();p!=idx.idx[k][*it].topk.end();p++){
+                results.insert(*p);
+            }
+        }
+
+        if (results.size()>=ret_size){
+            vector<pair<float, int>> dis2q; dis2q.clear();
+            for (int i=0;i<kcellID.size();i++){
+                int id=kcellID[i];
+                float dis=GetDistance(q,idx.idx[k][id].r, idx.dim); // replace!!!
+                dis2q.push_back(make_pair(dis,i));
+            }
+            sort(dis2q.begin(),dis2q.end());
+            unordered_set<int> ret;ret.clear();
+            for (auto it=dis2q.begin();it!=dis2q.end();it++){
+                int id=it->second;
+                for (auto p=idx.idx[k][id].topk.begin();p!=idx.idx[k][id].topk.end();p++){
+                    ret.insert(*p);
+                }
+                if (ret.size()>=ret_size) return it->first;
+            }
+            return 0.0;
+        }
+        else init_dis= init_dis*2;
+    }
 }
 
 float oru::single_query_largek(level &idx, int k, int ret_size, vector<float>& q, fstream &log) {
@@ -131,13 +167,14 @@ float oru::single_query_largek(level &idx, int k, int ret_size, vector<float>& q
     return ans;;
 }
 
-void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &log) {
+void oru::multiple_query(level &idx, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree,
+                         int k, int ret_size, int q_num, fstream &log) {
     clock_t cur_time=clock();
     vector<vector<float>> q_list;
     generate_query(idx,q_num, q_list);
     for (int i=0;i<q_num;i++){
         float answer;
-        if (k<=idx.ik) answer=single_query(idx, k, ret_size, q_list[i],log);
+        if (k<=idx.ik) answer=single_query(idx, rt, ramTree, k, ret_size, q_list[i],log);
         else answer=single_query_largek(idx,k,ret_size, q_list[i],log);
         cout << "The answer of oru query " << i << ": " << answer << endl;
         log << "The answer of oru query " << i << ": " << answer << endl;

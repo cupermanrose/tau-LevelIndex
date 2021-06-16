@@ -100,7 +100,7 @@ float sum(vector<float> &v){
     return ret;
 }
 
-void RangeQueryFromRtree(Rtree* rt, unordered_map<long int, RtreeNode*> ramTree,
+void RangeQueryFromRtree(Rtree* &rt, unordered_map<long int, RtreeNode*> &ramTree,
                          vector<float> &ql, vector<float> &qu, vector<int> &ret_ids){
     vector<float> target_l(ql);
     vector<float> target_u(qu);

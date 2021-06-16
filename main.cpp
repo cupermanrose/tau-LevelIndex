@@ -41,7 +41,7 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
     datafile=root_directory+"data/"+filename+".dat";
     if (func==buildidx){
-        logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ins.log";
+        logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_"+build_str+".log";
     }
     else if (func==loadidx) {
         switch (query){
@@ -56,7 +56,7 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
                 break;
         }
     }
-    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_noHS_ins.idx";
+    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_noHS_"+build_str+".idx";
     log.open(logfile, ios::out);
 }
 
@@ -67,13 +67,13 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
     filename="inde/U400K4";
-    func_str="buildidx";
-    //func_str="loadidx";
-    build_str="IncBuild";
+    //func_str="buildidx";
+    func_str="loadidx";
+    build_str="BFSBuild";
     anti_id_f=root_directory+"data/"+filename+"tau100.ch";
     apply_onion_from_file=false;
     write_onion_to_file=false;
-    q_num=50;
+    q_num=10;
     k=10;
     query_str="utk";
 
@@ -109,34 +109,37 @@ int main(int argc, char* argv[]) {
         case loadidx:
             LoadIndex(idx, datafile, log, idxfile);
             switch (query) {
-                case kspr:
+                case kspr:{
                     kspr::multiple_query(idx, 10, q_num, log);
-                    kspr::multiple_query(idx, 30, q_num, log);
-                    kspr::multiple_query(idx, 50, q_num, log);
-                    kspr::multiple_query(idx, 70, q_num, log);
-                    kspr::multiple_query(idx, 90, q_num, log);
                     break;
-                case utk:
-                    utk_side_length=0.01;
-                    cout << utk_side_length << endl;
-                    log << utk_side_length << endl;
-                    utk::multiple_query(idx, 15, q_num, 0.01, log);
-                    utk::multiple_query(idx, 20, q_num, 0.01, log);
-                    utk::multiple_query(idx, 50, q_num, 0.01, log);
-                    utk::multiple_query(idx, 100, q_num, 0.01, log);
+                }
+                case utk: {
+                    clock_t rtree_time = clock();
+                    Rtree *rt = nullptr;
+                    unordered_map<long int, RtreeNode *> ramTree;
+                    BuildRtree(idx.idx[idx.ik], rt, ramTree);
+                    log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
+                        << endl;
+                    cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
+                         << endl;
+                    utk::multiple_query(idx, rt, ramTree, 10, q_num, 0.01, log);
                     break;
-                case oru:
-                    k=10;
-                    oru::multiple_query(idx,k, 10,q_num,log);
-                    oru::multiple_query(idx,k, 30,q_num,log);
-                    oru::multiple_query(idx,k, 50,q_num,log);
-                    oru::multiple_query(idx,k, 70,q_num,log);
-                    oru::multiple_query(idx,k, 90,q_num,log);
+                }
+                case oru: {
+                    clock_t rtree_time = clock();
+                    Rtree *rt = nullptr;
+                    unordered_map<long int, RtreeNode *> ramTree;
+                    BuildRtree(idx.idx[idx.ik], rt, ramTree);
+                    log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
+                        << endl;
+                    cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
+                         << endl;
+                    oru::multiple_query(idx, rt, ramTree, 10, 50, q_num, log);
                     break;
+                }
             }
             break;
     }
-
     cout << "DONE" << endl;
     log.close();
     return 0;
