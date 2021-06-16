@@ -469,7 +469,14 @@ void level::ReadFromDisk(int k, ifstream &idxin) {
 
 void level::SplitCell(int p, int i, vector<kcell>& L) {
     // generate a new kcell within L[i].r
-    if ((L[i].curk<ik)&&(global_layer[p]<=L[i].curk+1)){
+    bool flag = true;
+    for (auto it=L[i].Stau.begin();it!=L[i].Stau.end();it++){
+        if (RegionDominate(L[i].r.V, Allobj[p], Allobj[*it],dim)) {
+            flag=false;
+            break;
+        }
+    }
+    if ((L[i].curk<ik)&&(global_layer[p]<=L[i].curk+1)&&(flag)){
         kcell newcell;
         newcell.curk=L[i].curk+1;
         newcell.objID=p;
@@ -495,13 +502,12 @@ void level::SplitCell(int p, int i, vector<kcell>& L) {
     if ((L[i].objID!=-1)&&(global_layer[p]<=L[i].curk)){
         if (RegionDominate(L[i].r.V, Allobj[p], Allobj[L[i].objID],dim)) {
             L[i].Stau.push_back(p);
-
         }
         else if (RegionDominate(L[i].r.V, Allobj[L[i].objID],Allobj[p], dim)){
             L[i].curk++;
             L[i].topk.push_back(p);
         }
-        else{
+        else if (flag) {
             // generate new kcell (R^-)
             kcell newcell;
             newcell.curk=L[i].curk+1;
@@ -526,6 +532,7 @@ void level::SplitCell(int p, int i, vector<kcell>& L) {
                 UpdateV(L[i],tmp);
             }
         }
+        else L[i].Stau.push_back(p);
     }
     else L[i].Stau.push_back(p);
 }
@@ -548,6 +555,7 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
     }
 
     for (auto it=L.begin();it!=L.end();it++){
+        if (it->curk>ik) continue;
         if (it->curk<ik) it->WriteToDisk(idxout,false);
         else it->WriteToDisk(idxout,true);
     }
