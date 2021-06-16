@@ -63,10 +63,10 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
     dim=4;
-    tau=10; // NBA: tau=30
-    ik=10;
-    root_directory="/home/jiahaozhang/data/klevel/";
-    filename="inde/U100K4";
+    tau=50; // NBA: tau=30
+    ik=50;
+    root_directory="/home/kemingli/klevel/";
+    filename="inde/U400K4";
     func_str="buildidx";
     //func_str="loadidx";
     build_str="IncBuild";
@@ -75,7 +75,7 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     write_onion_to_file=false;
     q_num=50;
     k=10;
-    query_str="utk";
+    query_str="kspr";
 
 }
 
