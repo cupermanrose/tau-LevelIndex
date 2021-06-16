@@ -66,7 +66,7 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     tau=10; // NBA: tau=30
     ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
-    filename="inde/U100K4";
+    filename="inde/U400K4";
     func_str="buildidx";
     //func_str="loadidx";
     build_str="IncBuild";
