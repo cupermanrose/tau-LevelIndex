@@ -57,7 +57,7 @@ void Vertex2BOX(const vector<kcell> &L, vector<vector<float>>& MBRs){
         MBRs.clear();
         return;
     }
-    int dim = L.begin()->r.V.size()+1;
+    int dim = L.begin()->r.V.begin()->size()+1;
     MBRs.clear();
     for(auto &iter: L){
         vector<float> box(dim*2);
