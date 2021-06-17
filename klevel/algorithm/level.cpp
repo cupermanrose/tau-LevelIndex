@@ -583,7 +583,7 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
     }
 
     for (auto it=L.begin();it!=L.end();it++){
-//        if (it->curk>ik) continue;
+        //if (it->curk>ik) continue;
         if (it->curk<ik) it->WriteToDisk(idxout,false);
         else it->WriteToDisk(idxout,true);
     }

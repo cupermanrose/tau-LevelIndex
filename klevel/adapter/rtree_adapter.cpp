@@ -69,7 +69,6 @@ void aggregateRecords(Rtree& a_rtree)
     }
 }
 
-
 void rtree_boxInter(vector<int> &ret, const Rtree *rtree_rt, unordered_map<long int, RtreeNode *> &ramTree,
                     vector<float> &ql, vector<float> &qu){
     multiset<int> heap;
@@ -99,4 +98,3 @@ void rtree_boxInter(vector<int> &ret, const Rtree *rtree_rt, unordered_map<long 
         }
     }
 }
-

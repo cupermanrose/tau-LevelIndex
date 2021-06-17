@@ -14,7 +14,7 @@ int countRecords(Rtree& a_rtree, int pageID);
 void aggregateRecords(Rtree& a_rtree);
 
 template<typename VVF>
-void build_rtree(Rtree *&rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VVF &data){
+void build_rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VVF &data){
     if(data.empty()){
         return;
     }
@@ -48,7 +48,7 @@ void build_rtree(Rtree *&rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,
 
 
 template<typename VVF>
-void box2rtree(Rtree *&rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VVF &data){
+void box2rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VVF &data){
     if(data.empty()){
         return;
     }
@@ -92,5 +92,3 @@ bool boxIntersection(PTS &boxl, PTS &boxu,
 
 void rtree_boxInter(vector<int> &ret, const Rtree *rtree_rt, unordered_map<long int, RtreeNode *> &ramTree,
                     vector<float> &ql, vector<float> &qu);
-
-
