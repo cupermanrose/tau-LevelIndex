@@ -37,7 +37,7 @@ bool oru::isIn(vector<float> &v, vector<halfspace> &H, int dim) {
 }
 
 float oru::GetDistance(vector<float>& q, region& r, int dim){
-    if (isIn(q,r.H,dim)) return 0.0;
+    //if (isIn(q,r.H,dim)) return 0.0;
     float dis=1.0;
     for (auto it=r.V.begin();it!=r.V.end();it++){
         float tmp=0.0, resq=1.0,resv=1.0;
@@ -80,7 +80,10 @@ float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode
     while (true){
         vector<float> ql,qu;
         ql.clear();qu.clear();
-
+        for (int d=0;d<idx.dim-1;d++){
+            ql.push_back(q[d]-init_dis);
+            qu.push_back(q[d]+init_dis);
+        }
         vector<int> kcellID;kcellID.clear();
         RangeQueryFromRtree(rt,ramTree,ql,qu,kcellID);
         unordered_set<int> results; results.clear();
@@ -94,8 +97,9 @@ float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode
             vector<pair<float, int>> dis2q; dis2q.clear();
             for (int i=0;i<kcellID.size();i++){
                 int id=kcellID[i];
+                idx.UpdateH(idx.idx[k][id]);
                 float dis=GetDistance(q,idx.idx[k][id].r, idx.dim); // replace!!!
-                dis2q.push_back(make_pair(dis,i));
+                dis2q.push_back(make_pair(dis,id));
             }
             sort(dis2q.begin(),dis2q.end());
             unordered_set<int> ret;ret.clear();
@@ -175,7 +179,7 @@ void oru::multiple_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNod
     for (int i=0;i<q_num;i++){
         float answer;
         if (k<=idx.ik) answer=single_query(idx, rt, ramTree, k, ret_size, q_list[i],log);
-        else answer=single_query_largek(idx,k,ret_size, q_list[i],log);
+        else cout << "the maximum k of oru is less than ik";
         cout << "The answer of oru query " << i << ": " << answer << endl;
         log << "The answer of oru query " << i << ": " << answer << endl;
     }

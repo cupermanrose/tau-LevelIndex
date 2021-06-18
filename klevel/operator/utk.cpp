@@ -115,14 +115,31 @@ void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
     return;
 }
 
-int utk::single_query_largek(level &idx, int k, vector<float> &Qregion, fstream &log) { // COMPUTE FROM LEVEL-0
+int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
+                             int k, vector<float> &Qregion, fstream &log) { // COMPUTE FROM LEVEL-0
+    vector<float> ql,qu;
+    ql.clear();qu.clear();
+    for (int i=0;i<idx.dim-1;i++){
+        ql.push_back(Qregion[i*2]);
+        qu.push_back(Qregion[i*2+1]);
+    }
+
+    vector<int> kcellID;
+    RangeQueryFromRtree(rt,ramTree,ql,qu,kcellID);
+
     vector<int> S1,Sk;
     int ave_S1=0,ave_Sk=0,ave_vertex=0;
     vector<vector<kcell>> tmp; tmp.clear();
     vector<kcell> init_level;  init_level.clear();
-    for (auto it=idx.idx[idx.ik].begin();it!=idx.idx[idx.ik].end();it++){
-        if (Intersect(Qregion,it->r, idx.dim)) init_level.push_back(*it);
+
+    for (auto it=kcellID.begin();it!=kcellID.end();it++){
+        if (Intersect(Qregion, idx.idx[idx.ik][*it].r,idx.dim)) {
+            init_level.push_back(idx.idx[idx.ik][*it]);
+        }
     }
+    /*for (auto it=idx.idx[idx.ik].begin();it!=idx.idx[idx.ik].end();it++){
+        if (Intersect(Qregion,it->r, idx.dim)) init_level.push_back(*it);
+    }*/
 
     tmp.emplace_back(init_level);
     for (int i=0;i<k-idx.ik;i++){
@@ -189,7 +206,7 @@ void utk::multiple_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNod
         vector<int> utk_results;
         int answer;
         if (k<=idx.ik) answer=single_query(idx, rt, ramTree, k,q_list[i],log);
-        else answer=single_query_largek(idx,k,q_list[i],log);
+        else answer=single_query_largek(idx, rt, ramTree, k,q_list[i],log);
         cout << "The answer of utk query " << i << ": " << answer << endl;
         log << "The answer of utk query " << i << ": " << answer << endl;
     }
