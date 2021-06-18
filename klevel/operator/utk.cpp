@@ -77,7 +77,7 @@ int utk::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>
         qu.push_back(Qregion[i*2+1]);
     }
 
-    vector<int> kcellID;kcellID.clear();
+    vector<int> kcellID;
     RangeQueryFromRtree(rt,ramTree,ql,qu,kcellID);
     unordered_set<int> results; results.clear();
 

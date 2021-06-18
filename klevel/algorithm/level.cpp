@@ -83,8 +83,8 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
             }
             ++cnt;
         }
-        // for generate query file, do not delete
-//        vector<int> query(candidate.rbegin(), candidate.rbegin()+(50<candidate.size()?50:candidate.size()));
+//         for generate query file, do not delete
+//        vector<int> query(candidate.rbegin(), candidate.rbegin()+(1000<candidate.size()?1000:candidate.size()));
 //        for(auto &i: query){
 //            cout<<i+1<<endl;
 //        }

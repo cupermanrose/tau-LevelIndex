@@ -37,7 +37,6 @@ void build_rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,
     FileMemory mem(PAGESIZE, "index.txt", RtreeNodeEntry::fromMem, true);
     rtree_rt = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
 //            cout << "[Rtree build done]" << endl;
-
     // in-memory rtree
 //            cout << "cache R-tree into memory" << endl;
     rtreeRAM(*rtree_rt, ramTree);
@@ -62,8 +61,9 @@ void box2rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VV
     // build rtree
     const int maxChild = (PAGESIZE - RtreeNode::size()) / RtreeNodeEntry::size(dim);
     //FileMemory mem(PAGESIZE, "./result/index.txt", RtreeNodeEntry::fromMem, true);
-    FileMemory mem(PAGESIZE, "index.txt", RtreeNodeEntry::fromMem, true);
-    rtree_rt = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
+    //TODO not using a file, if running multiple rtree, this would cause problem
+    FileMemory *mem=new FileMemory(PAGESIZE, "index2.txt", RtreeNodeEntry::fromMem, true);
+    rtree_rt = TGS::bulkload(*mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
 //            cout << "[Rtree build done]" << endl;
 
     // in-memory rtree
@@ -82,7 +82,7 @@ bool boxIntersection(PTS &boxl, PTS &boxu,
     // to satisfy:
     //     x_i>=boxl_i && x_i>=targetl_i && x_i<=boxu_i && x_i<=targetu_i
     int dim=targetl.size();
-    for (int i = 0; i < dim; ++i) {
+    for (int i = 0; i < dim-1; ++i) {
         if(max(boxl[i], targetl[i]) > min(boxu[i], targetu[i])){
             return false;
         }
