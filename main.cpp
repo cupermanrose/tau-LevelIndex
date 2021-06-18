@@ -76,6 +76,7 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     q_num=10;
     k=10;
     query_str="utk";
+
 }
 
 int main(int argc, char* argv[]) {
@@ -116,19 +117,19 @@ int main(int argc, char* argv[]) {
                     clock_t rtree_time = clock();
                     Rtree *rt = nullptr;
                     unordered_map<long int, RtreeNode *> ramTree;
-                    BuildRtree(idx.idx[idx.ik], rt, ramTree, idx.dim-1);
+                    BuildRtree(idx.idx[idx.ik], rt, ramTree, idx.dim);
                     log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
                         << endl;
                     cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
                          << endl;
-                    utk::multiple_query(idx, rt, ramTree, 10, q_num, 0.1, log);
+                    utk::multiple_query(idx, rt, ramTree, 3, q_num, 0.1, log);
                     break;
                 }
                 case oru: {
                     clock_t rtree_time = clock();
                     Rtree *rt = nullptr;
                     unordered_map<long int, RtreeNode *> ramTree;
-                    BuildRtree(idx.idx[idx.ik], rt, ramTree,idx.dim-1);
+                    BuildRtree(idx.idx[idx.ik], rt, ramTree,idx.dim);
                     log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
                         << endl;
                     cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
