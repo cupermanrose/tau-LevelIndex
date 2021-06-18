@@ -62,17 +62,13 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4;
-    tau=50; // NBA: tau=30
-    ik=50;
-    root_directory="/home/kemingli/klevel/";
-    filename="inde/U400K4";
+    dim=5;
     tau=10; // NBA: tau=30
     ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
-    filename="inde/U400K4";
-    //func_str="buildidx";
-    func_str="loadidx";
+    filename="inde/U400K5";
+    func_str="buildidx";
+    //func_str="loadidx";
     build_str="BFSBuild";
     anti_id_f=root_directory+"data/"+filename+"tau100.ch";
     apply_onion_from_file=false;
@@ -80,7 +76,6 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     q_num=10;
     k=10;
     query_str="utk";
-
 }
 
 int main(int argc, char* argv[]) {

@@ -62,7 +62,7 @@ void box2rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VV
     // build rtree
     const int maxChild = (PAGESIZE - RtreeNode::size()) / RtreeNodeEntry::size(dim);
     //FileMemory mem(PAGESIZE, "./result/index.txt", RtreeNodeEntry::fromMem, true);
-    FileMemory mem(PAGESIZE, "index.txt", RtreeNodeEntry::fromMem, true);
+    FileMemory mem(PAGESIZE, "klevel_rtree.txt", RtreeNodeEntry::fromMem, true);
     rtree_rt = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
 //            cout << "[Rtree build done]" << endl;
 
