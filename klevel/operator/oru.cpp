@@ -46,7 +46,7 @@ float oru::GetDistance(vector<float>& q, region& r, int dim){
             resq=resq-q[d];
             resv=resv-(*it)[d];
         }
-        tmp=sqrt(tmp+resq*resv);
+        tmp=sqrt(tmp+(resq-resv)*(resq-resv));
         if (tmp<dis) dis=tmp;
     }
     return dis;
@@ -78,6 +78,7 @@ float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode
 
     float init_dis=0.0001;
     while (true){
+        if (init_dis>1.0) return 1.0; // k-level option is less than ret_size
         vector<float> ql,qu;
         ql.clear();qu.clear();
         for (int d=0;d<idx.dim-1;d++){
@@ -116,6 +117,7 @@ float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode
     }
 }
 
+/*
 float oru::single_query_largek(level &idx, int k, int ret_size, vector<float>& q, fstream &log) {
     vector<int> S1,Sk;
     int ave_S1=0,ave_Sk=0,ave_vertex=0;
@@ -170,9 +172,16 @@ float oru::single_query_largek(level &idx, int k, int ret_size, vector<float>& q
     }
     return ans;;
 }
+*/
 
-void oru::multiple_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
-                         int k, int ret_size, int q_num, fstream &log) {
+void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &log) {
+    clock_t rtree_time = clock();
+    Rtree *rt = nullptr;
+    unordered_map<long int, RtreeNode *> ramTree;
+    BuildRtree(idx.idx[k], rt, ramTree,idx.dim);
+    log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC << endl;
+    cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC << endl;
+
     clock_t cur_time=clock();
     vector<vector<float>> q_list;
     generate_query(idx,q_num, q_list);

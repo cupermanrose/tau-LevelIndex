@@ -53,12 +53,13 @@ void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
 void Vertex2BOX(const vector<kcell> &L, vector<vector<float>>& MBRs, int dim){
     // the convex hull defined by vertexes to lower bound upper bound box
     // dim-1 vertex to dim box
-    if(L.empty() || L.begin()->r.V.empty()){
+    if(L.empty() /*|| L.begin()->r.V.empty()*/){
         MBRs.clear();
         return;
     }
     MBRs.clear();
     for(auto &iter: L){
+        if (iter.r.V.empty()) continue;
         vector<float> box(dim*2);
         for (int j = 0; j < dim; ++j) {
             box[j]=1;

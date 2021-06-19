@@ -93,7 +93,20 @@ int kspr::single_query_largek(level &idx, int k, int q_id, fstream &log) {
     return cnt;
 }
 
+void BuildInvertedIdx(vector<vector<int>>& inverted_idx, level& idx, vector<kcell>& L){
+    inverted_idx.clear();
+    for (int i=0;i<idx.Allobj.size();i++){
+
+    }
+}
+
 void kspr::multiple_query(level &idx, int k, int q_num, fstream &log) {
+    clock_t invert_time = clock();
+    //vector<vector<int>> inverted_idx;
+   // BuildInvertedIdx(inverted_idx, idx, idx.idx[k]);
+    log << "InvertedIdx from k-level building time: " << (clock() - invert_time) / (float) CLOCKS_PER_SEC << endl;
+    cout << "InvertedIdx from k-level building time: " << (clock() - invert_time) / (float) CLOCKS_PER_SEC << endl;
+
     clock_t cur_time=clock();
     vector<int> q_list;
     generate_query(idx,q_num, q_list);

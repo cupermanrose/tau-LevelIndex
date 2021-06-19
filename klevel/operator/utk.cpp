@@ -177,8 +177,14 @@ int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, Rtre
     return results.size();
 }
 
-void utk::multiple_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
-                         int k, int q_num, float utk_side_length, fstream &log) {
+void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fstream &log) {
+    clock_t rtree_time = clock();
+    Rtree *rt = nullptr;
+    unordered_map<long int, RtreeNode *> ramTree;
+    BuildRtree(idx.idx[k], rt, ramTree, idx.dim);
+    log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC << endl;
+    cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC << endl;
+
     clock_t cur_time=clock();
     vector<vector<float>> q_list;
 
