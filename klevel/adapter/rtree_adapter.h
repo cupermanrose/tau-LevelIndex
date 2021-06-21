@@ -37,6 +37,7 @@ void build_rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,
     FileMemory mem(PAGESIZE, "index.txt", RtreeNodeEntry::fromMem, true);
     rtree_rt = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
 //            cout << "[Rtree build done]" << endl;
+
     // in-memory rtree
 //            cout << "cache R-tree into memory" << endl;
     rtreeRAM(*rtree_rt, ramTree);
