@@ -1,5 +1,3 @@
-
-
 #include "k_level_lib.h"
 #include "kspr.h"
 #include "utk.h"
@@ -62,26 +60,20 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4;
-    tau=3; // NBA: tau=30
-    ik=3;
-    root_directory="/home/kemingli/klevel/";
-    filename="inde/U400K4";
-//    tau=10; // NBA: tau=30
-//    ik=10;
-//    root_directory="/home/jiahaozhang/data/klevel/";
-//    filename="inde/U400K4";
-//    func_str="buildidx";
+    dim=6;
+    tau=10; // NBA: tau=30
+    ik=10;
+    root_directory="/home/jiahaozhang/data/klevel/";
+    filename="real/HOUSE6D";
+    //func_str="buildidx";
     func_str="loadidx";
     build_str="BFSBuild";
-    anti_id_f=root_directory+"data/"+filename+".ch";
-    read_anti_dat=root_directory+"data/"+filename;
+    anti_id_f=root_directory+"data/"+filename+"tau10.ch";
     apply_onion_from_file=false;
     write_onion_to_file=false;
-    q_num=10;
-    k=3;
-    query_str="utk";
-
+    q_num=50;
+    k=5;
+    query_str="oru";
 }
 
 int main(int argc, char* argv[]) {
@@ -119,27 +111,11 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 case utk: {
-                    clock_t rtree_time = clock();
-                    Rtree *rt = nullptr;
-                    unordered_map<long int, RtreeNode *> ramTree;
-                    BuildRtree(idx.idx[idx.ik], rt, ramTree, idx.dim);
-                    log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
-                        << endl;
-                    cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
-                         << endl;
-                    utk::multiple_query(idx, rt, ramTree, 3, q_num, 0.1, log);
+                    utk::multiple_query(idx, k, q_num, 0.01, log);
                     break;
                 }
                 case oru: {
-                    clock_t rtree_time = clock();
-                    Rtree *rt = nullptr;
-                    unordered_map<long int, RtreeNode *> ramTree;
-                    BuildRtree(idx.idx[idx.ik], rt, ramTree,idx.dim);
-                    log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
-                        << endl;
-                    cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC
-                         << endl;
-                    oru::multiple_query(idx, rt, ramTree, 10, 50, q_num, log);
+                    oru::multiple_query(idx, k, 50, q_num, log);
                     break;
                 }
             }

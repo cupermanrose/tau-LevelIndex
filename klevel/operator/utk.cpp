@@ -137,15 +137,19 @@ int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, Rtre
             init_level.push_back(idx.idx[idx.ik][*it]);
         }
     }
+    cout << kcellID.size() << ' ' << init_level.size() << endl;
     /*for (auto it=idx.idx[idx.ik].begin();it!=idx.idx[idx.ik].end();it++){
         if (Intersect(Qregion,it->r, idx.dim)) init_level.push_back(*it);
     }*/
-
+    unordered_set<int> results; results.clear();
     tmp.emplace_back(init_level);
     for (int i=0;i<k-idx.ik;i++){
         vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
         for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
             if (!Intersect(Qregion,cur_cell->r, idx.dim)) continue; // will not contribute to utk query
+            for (auto p=cur_cell->topk.begin();p!=cur_cell->topk.end();p++){
+                results.insert(*p);
+            }
             idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
             for (auto p=S1.begin();p!=S1.end();p++){
                 kcell newcell;
@@ -165,15 +169,7 @@ int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, Rtre
         }
         tmp.emplace_back(this_level);
     }
-    unordered_set<int> results; results.clear();
-    for (auto it=tmp.back().begin();it!=tmp.back().end();it++) {
-        if (Intersect(Qregion,it->r, idx.dim)){
-            for (auto p=it->topk.begin();p!=it->topk.end();p++){
-                results.insert(*p);
-            }
-        }
-    }
-    cout << tmp.back().size() << endl;
+
     return results.size();
 }
 
@@ -181,7 +177,8 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     clock_t rtree_time = clock();
     Rtree *rt = nullptr;
     unordered_map<long int, RtreeNode *> ramTree;
-    BuildRtree(idx.idx[k], rt, ramTree, idx.dim);
+    if (k<=idx.ik) BuildRtree(idx.idx[k], rt, ramTree, idx.dim);
+    else BuildRtree(idx.idx[idx.ik], rt, ramTree, idx.dim);
     log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC << endl;
     cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC << endl;
 
