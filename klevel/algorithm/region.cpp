@@ -19,19 +19,24 @@ region::~region() {
     vector<float>().swap(innerPoint);
 }
 
-void region::WriteToDisk(ofstream &Outfile) {
-    /*int size=H.size();
-    Outfile.write((char*) &size, sizeof(int));
-    for(auto it=H.begin();it!=H.end();it++){
-        int w_size=it->w.size();
-        Outfile.write((char*) &w_size,sizeof(int));
-        for (auto itt=it->w.begin();itt!=it->w.end();itt++){
-            Outfile.write((char*) &(*itt),sizeof(float));
+void region::WriteToDisk(ofstream &Outfile, bool OutHS) {
+    int size;
+    if (OutHS){
+        size=H.size();
+        Outfile.write((char*) &size, sizeof(int));
+        for(auto it=H.begin();it!=H.end();it++){
+            int w_size=it->w.size();
+            Outfile.write((char*) &w_size,sizeof(int));
+            for (auto itt=it->w.begin();itt!=it->w.end();itt++){
+                Outfile.write((char*) &(*itt),sizeof(float));
+            }
+            Outfile.write((char*) &(it->side), sizeof(bool));
         }
-        Outfile.write((char*) &(it->side), sizeof(bool));
-    }*/
-    int size=0; // halfspace can be computed from Tk and Ct set
-    Outfile.write((char*) &size, sizeof(int));
+    }
+    else {// halfspace can be computed from Tk and Ct set
+        size=0;
+        Outfile.write((char*) &size, sizeof(int));
+    }
     size=V.size();
     Outfile.write((char*)&size, sizeof(int));
     for (auto it=V.begin();it!=V.end();it++){

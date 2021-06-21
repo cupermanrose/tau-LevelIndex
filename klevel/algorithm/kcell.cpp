@@ -21,7 +21,8 @@ kcell::~kcell() {
 void kcell::WriteToDisk(ofstream& Outfile, bool OutStau) {
     Outfile.write((char*) &curk,sizeof(int));
     Outfile.write((char*) &objID,sizeof(int));
-    r.WriteToDisk(Outfile);
+    bool OutHS=OutStau;
+    r.WriteToDisk(Outfile, OutHS);
     int size=topk.size();
     Outfile.write((char*) &size,sizeof(int));
     for (auto it=topk.begin();it!=topk.end();it++){

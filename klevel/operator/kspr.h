@@ -15,7 +15,7 @@ public:
     static bool Find_qid_topk(kcell& this_cell, int qid);
     static bool Find_qid_Stau(kcell& this_cell, int qid);
     static int single_query_largek(level& idx, int k, int q_id, fstream& log);
-    //static void BuildInvertedIdx(vector<vector<int>>& inverted_idx, level& idx, vector<kcell>& L);
+    static void SplitDFS(level& idx, kcell& cell, int pq, int k, int& cnt);
 };
 
 
