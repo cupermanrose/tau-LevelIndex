@@ -15,6 +15,14 @@
   - sudo apt-get update
   - sudo apt-get install libboost-all-dev
   
+  To install osqp
+  - git clone --recursive https://github.com/oxfordcontrol/osqp
+  - cd osqp
+  - mkdir build
+  - cd build
+  - cmake -G "Unix Makefiles" .. #
+
+  
   
   log file
   

@@ -3,7 +3,7 @@
 //
 
 #include "oru.h"
-
+#include "qp_adapter.h"
 void oru::generate_query(level &idx, int q_num, vector<vector<float>>& q_list) {
     srand(0); // random seed
     q_list.clear();
@@ -38,18 +38,28 @@ bool oru::isIn(vector<float> &v, vector<halfspace> &H, int dim) {
 
 float oru::GetDistance(vector<float>& q, region& r, int dim){
     //if (isIn(q,r.H,dim)) return 0.0;
-    float dis=1.0;
-    for (auto it=r.V.begin();it!=r.V.end();it++){
-        float tmp=0.0, resq=1.0,resv=1.0;
-        for (int d=0;d<dim;d++){
-            tmp=tmp+(q[d]-(*it)[d])*(q[d]-(*it)[d]);
-            resq=resq-q[d];
-            resv=resv-(*it)[d];
+//    float dis=1.0;
+//    for (auto it=r.V.begin();it!=r.V.end();it++){
+//        float tmp=0.0, resq=1.0,resv=1.0;
+//        for (int d=0;d<dim;d++){
+//            tmp=tmp+(q[d]-(*it)[d])*(q[d]-(*it)[d]);
+//            resq=resq-q[d];
+//            resv=resv-(*it)[d];
+//        }
+//        tmp=sqrt(tmp+(resq-resv)*(resq-resv));
+//        if (tmp<dis) dis=tmp;
+//    }
+//    return dis;
+    vector<vector<float>> halfspaces;
+    for(auto &i: r.H){
+        halfspaces.emplace_back(i.w);
+        if(i.side){
+            for(auto &j: halfspaces.back()){
+                j=-j;
+            }
         }
-        tmp=sqrt(tmp+(resq-resv)*(resq-resv));
-        if (tmp<dis) dis=tmp;
     }
-    return dis;
+    return getDistance(q, halfspaces);
 }
 
 float oru::kcell_filter(vector<kcell> &L, vector<bool>& filter, int ret_size, vector<float>& q, int dim) {
