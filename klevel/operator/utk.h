@@ -20,6 +20,7 @@ public:
                             int k, vector<float>& Qregion, fstream& log);
     static int single_query_largek(level& idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
                                    int k, vector<float>& Qregion, fstream& log);
+    static void SplitDFS(level& idx, kcell& cell, vector<float>& Qregion, int k, unordered_set<int>& results);
 };
 
 

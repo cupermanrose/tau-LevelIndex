@@ -9,17 +9,17 @@
 void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     srand(0); // random seed
     q_list.clear();
-    fstream kspr_query("/home/jiahaozhang/data/klevel/query/kspr/kspr_id.txt",ios::in);
+    /*fstream kspr_query("/home/jiahaozhang/data/klevel/query/kspr/kspr_id_10000.txt",ios::in);
     for (int i=0;i<q_num;i++){
         int id;
-        kspr_query>>id;
+        for (int i=0;i<100;i++) kspr_query >> id;
         q_list.push_back(id);
         //q_list.push_back(rand()%idx.Allobj.size());
     }
-    kspr_query.close();
-    /*for (int i=0;i<q_num;i++){
+    kspr_query.close();*/
+    for (int i=0;i<q_num;i++){
         q_list.push_back(rand()%idx.Allobj.size());
-    }*/
+    }
 
     /*cout<<"begin generate query of original id:\n";
     for(int &i: q_list){
@@ -58,7 +58,7 @@ int kspr::single_query(level &idx, int k, int q_id, fstream &log) {
     return cnt;
 }
 
-void LocalFilter(level& idx, kcell& cell, vector<int>&S1, vector<int>&Sk, int qk){
+void LocalFilter_kspr(level& idx, kcell& cell, vector<int>&S1, vector<int>&Sk, int qk){
     S1.clear();Sk.clear();
     for (auto i=cell.Stau.begin();i!=cell.Stau.end();i++){
         int cnt=0;
@@ -72,11 +72,10 @@ void LocalFilter(level& idx, kcell& cell, vector<int>&S1, vector<int>&Sk, int qk
     }
 }
 void kspr::SplitDFS(level& idx, kcell& cell, int pq, int qk, int& cnt) {
-    if (Find_qid_topk(cell,pq)) {cnt++; return;}
     if (!Find_qid_Stau(cell,pq)) return;
     if ((cell.curk>=qk)||(cell.r.V.size()==0)) return;
     vector<int> S1,Sk;
-    LocalFilter(idx,cell,S1,Sk,qk);
+    LocalFilter_kspr(idx,cell,S1,Sk,qk);
     for (auto p=S1.begin();p!=S1.end();p++){
         kcell newcell;
         newcell.curk=cell.curk+1;
@@ -99,26 +98,28 @@ void kspr::SplitDFS(level& idx, kcell& cell, int pq, int qk, int& cnt) {
 
         // verify
         if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,idx.dim)) {
-            int ave_vertex=0;
-            idx.UpdateV(newcell, ave_vertex);
-            SplitDFS(idx,newcell,pq, qk,cnt);
+            if (*p==pq) cnt++;
+            else{
+                int ave_vertex=0;
+                idx.UpdateV(newcell, ave_vertex);
+                SplitDFS(idx,newcell,pq, qk,cnt);
+            }
         }
     }
     return;
 }
 
-
 int kspr::single_query_largek(level &idx, int k, int q_id, fstream &log) {
     int cnt=0;
     vector<int> S1,Sk;
-    int ave_S1=0,ave_Sk=0,ave_vertex=0;
-    vector<vector<kcell>> tmp; tmp.clear();
-    vector<kcell> init_level;  init_level.clear();
     for (auto it=idx.idx[idx.ik].begin();it!=idx.idx[idx.ik].end();it++){
         if (Find_qid_topk(*it,q_id)) cnt++;
-        else if (Find_qid_Stau(*it,q_id)) init_level.push_back(*it);
+        else if (Find_qid_Stau(*it,q_id)) {
+            cnt++;
+            SplitDFS(idx,*it,q_id,k,cnt);
+        }
     }
-    tmp.emplace_back(init_level);
+
     /*for (int i=0;i<k-idx.ik;i++){
         vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
         //cout << i+idx.ik << ' ' << tmp[i].size() << endl;
