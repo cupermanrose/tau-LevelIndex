@@ -54,26 +54,27 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
                 break;
         }
     }
-    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_noHS_"+build_str+".idx";
+    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_HS_"+build_str+".idx";
     log.open(logfile, ios::out);
 }
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=6;
+    dim=8;
     tau=10; // NBA: tau=30
     ik=10;
-    root_directory="/home/jiahaozhang/data/klevel/";
-    filename="real/HOUSE6D";
-    //func_str="buildidx";
-    func_str="loadidx";
+    root_directory="/home/kemingli/klevel/";
+    filename="real/NBA8D";
+    func_str="buildidx";
+//    func_str="loadidx";
     build_str="BFSBuild";
-    anti_id_f=root_directory+"data/"+filename+"tau10.ch";
+    anti_id_f=root_directory+"data/"+filename+".ch";
+    read_anti_dat=root_directory+"data/"+filename;
     apply_onion_from_file=false;
-    write_onion_to_file=false;
+    write_onion_to_file=true;
     q_num=50;
-    k=5;
-    query_str="oru";
+    k=10;
+    query_str="utk";
 }
 
 int main(int argc, char* argv[]) {
@@ -107,7 +108,7 @@ int main(int argc, char* argv[]) {
             LoadIndex(idx, datafile, log, idxfile);
             switch (query) {
                 case kspr:{
-                    kspr::multiple_query(idx, 10, q_num, log);
+                    kspr::multiple_query(idx, k, q_num, log);
                     break;
                 }
                 case utk: {

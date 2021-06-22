@@ -41,7 +41,7 @@ float oru::GetDistance(vector<float>& q, region& r, int dim){
     float dis=1.0;
     for (auto it=r.V.begin();it!=r.V.end();it++){
         float tmp=0.0, resq=1.0,resv=1.0;
-        for (int d=0;d<dim-1;d++){
+        for (int d=0;d<dim;d++){
             tmp=tmp+(q[d]-(*it)[d])*(q[d]-(*it)[d]);
             resq=resq-q[d];
             resv=resv-(*it)[d];
