@@ -55,26 +55,27 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
         }
     }
     idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_HS_"+build_str+".idx";
+    cout<<idxfile<<endl;
     log.open(logfile, ios::out);
 }
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=8;
-    tau=10; // NBA: tau=30
-    ik=10;
+    dim=4;
+    tau=3; // NBA: tau=30
+    ik=3;
     root_directory="/home/kemingli/klevel/";
-    filename="real/NBA8D";
-    func_str="buildidx";
-//    func_str="loadidx";
+    filename="inde/U400K4";
+//    func_str="buildidx";
+    func_str="loadidx";
     build_str="BFSBuild";
     anti_id_f=root_directory+"data/"+filename+".ch";
     read_anti_dat=root_directory+"data/"+filename;
     apply_onion_from_file=false;
-    write_onion_to_file=true;
+    write_onion_to_file=false;
     q_num=50;
-    k=10;
-    query_str="utk";
+    k=3;
+    query_str="oru";
 }
 
 int main(int argc, char* argv[]) {
