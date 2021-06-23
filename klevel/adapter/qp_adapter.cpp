@@ -10,21 +10,24 @@ using namespace std;
 
 double getDistance(const vector<float>& w, const vector<vector<float>>& H){
     /*
+     * if   w is dim
+     * then H is dim+1
+     * minimize (x-w)^T \cdot (x-w) subject to H_{i, 1:dim} \cdot x <= H_{i, dim+1}
+     */
+    /*
      * csc_matrix(data->n, data->n, P_nnz, P_x, P_i, P_p)
      * in OSQP,
      * QP problem's "P" and "A" are represented as csc format sparse matrix
      * for more detail about transform dense_matrix into csc_matrix
      * see https://en.wikipedia.org/wiki/Sparse_matrix
      *
+     * minimize 0.5 x^T P x + q^T x subject to l <= Ax <= u
+     *
      * The OSQP example can be seen from here:
      * https://osqp.org/docs/examples/setup-and-solve.html
-    */
-    /*
-     * w is dim
-     * H is dim+1
      */
     /*
-     * minimize 0.5 x^T P x + q^T x subject to l <= Ax <= u
+     * the detail document can be reached from /doc/For k-level Distance from a point to a convex hull and QP problem.docx
      */
     assert(!w.empty());
     int dim=w.size();
