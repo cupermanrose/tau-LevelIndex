@@ -486,7 +486,7 @@ void level::WriteToDisk(int k, ofstream &idxout) {
 }
 
 void level::ReadFromDisk(int k, ifstream &idxin) {
-    int size;
+    int size=1;
     idxin.read((char*) &size, sizeof(int));
     idx[k].clear();
     for (int i=0;i<size;i++){
@@ -585,8 +585,7 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
 
     for (auto it=L.begin();it!=L.end();it++){
         //if (it->curk>ik) continue;
-        if (it->curk<ik) it->WriteToDisk(idxout,false);
-        else it->WriteToDisk(idxout,true);
+        it->WriteToDisk(idxout, it->curk >= ik);
     }
 
     cout << "Index cell size: " << L.size()<< endl;

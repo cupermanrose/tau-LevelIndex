@@ -62,7 +62,7 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
     dim=4;
     tau=100; // NBA: tau=30
-    ik=30;
+    ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
     filename="inde/U400K4";
     //func_str="buildidx";
@@ -72,8 +72,8 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     apply_onion_from_file=false;
     write_onion_to_file=false;
     q_num=100;
-    k=100;
-    query_str="utk";
+    k=30;
+    query_str="kspr";
 }
 
 int main(int argc, char* argv[]) {

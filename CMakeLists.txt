@@ -15,6 +15,9 @@ set_property(TARGET libqhullcpp PROPERTY IMPORTED_LOCATION /usr/local/lib/${CMAK
 set_property(TARGET libqhullcpp PROPERTY INTERFACE_LINK_LIBRARIES libqhullstatic_r)
 add_dependencies(libqhullcpp qhull)
 
+### add osqp
+find_package(osqp REQUIRED)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-as-needed -O3 -Wall -ldl")
 
 
@@ -59,6 +62,8 @@ add_executable(${PROJECT_NAME}
         klevel/adapter/qhull_adapter.cpp
         klevel/adapter/rtree_adapter.h
         klevel/adapter/rtree_adapter.cpp
+        klevel/adapter/qp_adapter.h
+        klevel/adapter/qp_adapter.cpp
 
         klevel/operator/kspr.h
         klevel/operator/kspr.cpp
@@ -184,5 +189,7 @@ if(Boost_FOUND)
 else()
     message(STATUS "This program requires the boost library, and will not be compiled.")
 endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE osqp::osqpstatic)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE libqhullcpp)
 
