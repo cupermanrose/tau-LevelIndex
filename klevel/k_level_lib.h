@@ -13,8 +13,9 @@
 
 void BuildIndex(level& idx, string datafile, fstream& log, string idxfile);
 void LoadIndex(level& idx, string datafile, fstream& log, string idxfile);
+void InsBuildIndex(level& idx, string datafile, fstream& log, string idxfile);
 void IncBuildIndex(level& idx, string datafile, fstream& log, string idxfile);
-void DFSBuildIndex(level& idx, string datafile, fstream& log, string idxfile);
+//void DFSBuildIndex(level& idx, string datafile, fstream& log, string idxfile);
 
 void BuildRtree(const vector<kcell> &L, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree, int dim);
 void Vertex2BOX(const vector<kcell> &L, vector<vector<float>>& MBRs, int dim);

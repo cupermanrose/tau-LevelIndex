@@ -12,6 +12,14 @@ void BuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     idxout.close();
 }
 
+void InsBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+    ofstream idxout(idxfile);
+    idx.LoadData(datafile);
+    idx.InsBuild(log,idxout);
+    log.close();
+    idxout.close();
+}
+
 void IncBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
@@ -20,13 +28,13 @@ void IncBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     idxout.close();
 }
 
-void DFSBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+/*void DFSBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
     idx.DFSBuild(log,idxout);
     log.close();
     idxout.close();
-}
+}*/
 
 void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
     ifstream idxin(idxfile);

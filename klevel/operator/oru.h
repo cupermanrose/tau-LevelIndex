@@ -6,6 +6,7 @@
 #define K_LEVEL_ORU_H
 
 #include "algorithm/level.h"
+#include "adapter/qp_adapter.h"
 #include "k_level_lib.h"
 
 class oru {

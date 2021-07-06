@@ -167,7 +167,7 @@ void level::initIdx(fstream& log){
 void level::Build(fstream& log, ofstream& idxout) {
     vector<int> S1,Sk;
     set<int> utk_set; utk_set.clear();
-    int ave_S1=0,ave_Sk=0,ave_vertex=0;
+    int ave_S1=0,ave_Sk=0,ave_vertex=0, cellsum=0;
 
     //for profiling
     clock_t tmp_profiling;
@@ -222,7 +222,7 @@ void level::Build(fstream& log, ofstream& idxout) {
             UpdateV(*cur_cell,ave_vertex);
             updateV_time+=(clock()-tmp_profiling);
         }
-
+        cellsum+=this_level.size();
         idx.emplace_back(this_level);
 
         WriteToDisk(k, idxout);
@@ -230,6 +230,8 @@ void level::Build(fstream& log, ofstream& idxout) {
         profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
         FreeMem(k-1);
     }
+    cout << "The total size of index: " << cellsum << endl;
+    log << "The total size of index: " << cellsum << endl;
 }
 
 void level::LocalFilter(int k, vector<int> &S1, vector<int> &Sk, kcell &cur_cell, int& ave_S1, int& ave_Sk) {
@@ -309,8 +311,6 @@ bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
             }
             if (!foundInStau) this_level[r_id->second].Stau.push_back(*it);
         }
-
-
     }
 
     return flag;
@@ -496,6 +496,69 @@ void level::ReadFromDisk(int k, ifstream &idxin) {
     }
 }
 
+// for large k queries
+void level::SplitDFS(kcell& cell, vector<kcell> &L, ofstream& idxout, int& kcell_num) {
+    if (cell.curk>=ik) return;
+    vector<int> S1,Sk;
+    int ave_S1=0,ave_Sk=0,ave_vertex=0;
+    LocalFilter(tau, S1,Sk,cell,ave_S1,ave_Sk);
+    for (auto p=S1.begin();p!=S1.end();p++){
+        if (global_layer[*p]>cell.curk+1) continue;
+        kcell newcell;
+        //CreateNewCell(*p,S1,Sk,cell,newcell);
+        newcell.curk=cell.curk+1;
+        newcell.objID=*p;
+        newcell.topk=cell.topk; newcell.topk.push_back(*p);
+        newcell.Stau.clear();
+        for (auto it=Sk.begin();it!=Sk.end();it++){
+            if (*it!=*p) newcell.Stau.push_back(*it);
+        }
+        newcell.r.V.clear();
+        newcell.r.H.clear();
+        for (int i=0;i<newcell.topk.size();i++){
+            for (int j=i+1;j<newcell.topk.size();j++){
+                AddHS(newcell.topk[i],newcell.topk[j],true,newcell.r.H);
+            }
+        }
+        for (auto it = S1.begin(); it != S1.end(); it++) {
+            if (*it != *p) AddHS(*p,*it,true,newcell.r.H);
+        }
+
+        // verify
+        if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
+            kcell_num++;
+            if (kcell_num%1000==0) cout << kcell_num <<endl;
+            UpdateV(newcell, ave_vertex);
+            SplitDFS(newcell,L, idxout, kcell_num);
+            if (newcell.curk<ik) newcell.WriteToDisk(idxout,false);
+            else newcell.WriteToDisk(idxout,true);
+            //L.push_back(newcell);
+        }
+    }
+    return;
+}
+
+// Ins
+
+void level::MergeCell(vector<kcell> &L_NoMerge, vector<kcell> &L_Merge) {
+    L_Merge.clear();
+    vector<kcell>().swap(L_Merge);
+    region_map.clear();
+    for (int i=0;i<L_NoMerge.size();i++){
+        if (L_NoMerge[i].curk>ik) continue;
+        L_NoMerge[i].Get_HashValue();
+        if (!VerifyDuplicate(L_NoMerge[i],L_NoMerge)){
+            region_map.insert(make_pair(L_NoMerge[i].hash_value,i));
+        }
+        else L_NoMerge[i].curk=ik+1;
+    }
+    for (int i=0;i<L_NoMerge.size();i++){
+        if (L_NoMerge[i].curk>ik) continue;
+        if (L_NoMerge[i].r.V.size()==0) continue;
+        L_Merge.push_back(L_NoMerge[i]);
+    }
+}
+
 void level::SplitCell(int p, int i, vector<kcell>& L) {
     // generate a new kcell within L[i].r
     bool flag = true;
@@ -567,77 +630,52 @@ void level::SplitCell(int p, int i, vector<kcell>& L) {
 }
 
 void level::IncBuild(fstream& log, ofstream& idxout) {
-    vector<int> candidate; candidate.clear();
-    kcell rootcell; rootcell.TobeRoot(candidate, dim);
-    vector<kcell> L; L.clear();L.push_back(rootcell);
+    initIdx(log);
+    kcell rootcell=idx[0][0]; rootcell.Stau.clear();
+    vector<kcell> L,L_Merge; L={rootcell};
 
-    GlobalFilter(log,candidate);
     int cnt=0;
     clock_t cur_time=clock();
     for (int id=0;id<Allobj.size();id++){
         int size=L.size();
         for (int i=0;i<size;i++) {
+            if ((L[i].r.V.size()==0)&(L[i].curk!=0)) L[i].curk=ik+1;
             if (L[i].curk>ik) continue;
             SplitCell(id, i, L);
         }
         cout << cnt++ << ": " << L.size() << endl;
     }
 
-    for (auto it=L.begin();it!=L.end();it++){
-        //if (it->curk>ik) continue;
-        it->WriteToDisk(idxout, it->curk >= ik);
-    }
-
-    cout << "Index cell size: " << L.size()<< endl;
-    cout << "Time Cost of IncBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
-    log << "Index cell size: " << L.size() << endl;
-    log << "Time Cost of IncBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
-
+    MergeCell(L,L_Merge);
     L.clear();
     vector<kcell>().swap(L);
-}
+    for (int i=1;i<=ik;i++) idx.push_back(L);
 
-void level::SplitDFS(kcell& cell, vector<kcell> &L, ofstream& idxout, int& kcell_num) {
-    if (cell.curk>=ik) return;
-    vector<int> S1,Sk;
-    int ave_S1=0,ave_Sk=0,ave_vertex=0;
-    LocalFilter(tau, S1,Sk,cell,ave_S1,ave_Sk);
-    for (auto p=S1.begin();p!=S1.end();p++){
-        if (global_layer[*p]>cell.curk+1) continue;
-        kcell newcell;
-        //CreateNewCell(*p,S1,Sk,cell,newcell);
-        newcell.curk=cell.curk+1;
-        newcell.objID=*p;
-        newcell.topk=cell.topk; newcell.topk.push_back(*p);
-        newcell.Stau.clear();
-        for (auto it=Sk.begin();it!=Sk.end();it++){
-            if (*it!=*p) newcell.Stau.push_back(*it);
-        }
-        newcell.r.V.clear();
-        newcell.r.H.clear();
-        for (int i=0;i<newcell.topk.size();i++){
-            for (int j=i+1;j<newcell.topk.size();j++){
-                AddHS(newcell.topk[i],newcell.topk[j],true,newcell.r.H);
-            }
-        }
-        for (auto it = S1.begin(); it != S1.end(); it++) {
-            if (*it != *p) AddHS(*p,*it,true,newcell.r.H);
-        }
-
-        // verify
-        if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
-            kcell_num++;
-            if (kcell_num%1000==0) cout << kcell_num <<endl;
-            UpdateV(newcell, ave_vertex);
-            SplitDFS(newcell,L, idxout, kcell_num);
-            if (newcell.curk<ik) newcell.WriteToDisk(idxout,false);
-            else newcell.WriteToDisk(idxout,true);
-            //L.push_back(newcell);
-        }
+    for (auto it=L_Merge.begin();it!=L_Merge.end();it++){
+        if ((it->curk>ik)||(it->curk==0)) continue;
+        idx[it->curk].push_back(*it);
     }
-    return;
+    //ComputeEdge();
+
+    int cellsum=0;
+    for (int i=0;i<=ik;i++) {
+        cellsum+=idx[i].size();
+        cout << "The region size of LEVEL " << i << ": " << idx[i].size() << endl;
+        log << "The region size of LEVEL " << i << ": " << idx[i].size() << endl;
+        WriteToDisk(i,idxout);
+    }
+    cout << "The total size of index: " << cellsum << endl;
+    log << "The total size of index: " << cellsum << endl;
+
+    cout << "Time Cost of IncBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+    log << "Time Cost of IncBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+
+
+    L_Merge.clear();
+    vector<kcell>().swap(L_Merge);
 }
 
+/*
 void level::DFSBuild(fstream &log, ofstream &idxout) {
     vector<int> candidate; candidate.clear();
     GlobalFilter(log,candidate);
@@ -654,4 +692,118 @@ void level::DFSBuild(fstream &log, ofstream &idxout) {
     log << "Time Cost of DFSBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
     L.clear();
     vector<kcell>().swap(L);
+}*/
+
+/*
+void level::SplitCell_Ins(int p, kcell& cur_cell, vector<kcell>& L) {
+    bool flag = true;
+    for (auto it=cur_cell.Stau.begin();it!=cur_cell.Stau.end();it++){ // check whether p can be top^(k+1)
+        if (RegionDominate(cur_cell.r.V, Allobj[p], Allobj[*it],dim)) {
+            flag=false;
+            break;
+        }
+    }
+    vector<int> S1,Stau;
+    if (!flag){
+        kcell newcell=cur_cell;
+        newcell.Stau.push_back(p);
+        L.emplace_back(newcell);
+    }
+    else {
+        if ((cur_cell.curk < ik) && (global_layer[p] <= cur_cell.curk + 1)) { //c': generate a new kcell within L[i].r
+            kcell newcell;
+            S1=Stau=cur_cell.Stau;
+            CreateNewCell(p, S1, Stau, cur_cell, newcell);
+            if (lp_adapter::is_Feasible(newcell.r.H, newcell.r.innerPoint, dim)) L.emplace_back(newcell);
+        }
+        if (cur_cell.curk != 0) {
+            // generate c^+ and c^-
+            if (RegionDominate(cur_cell.r.V, Allobj[p], Allobj[cur_cell.objID], dim)) { // only c^+
+                kcell newcell = cur_cell;
+                newcell.Stau.push_back(p);
+                L.emplace_back(newcell);
+            }
+            else if (RegionDominate(cur_cell.r.V, Allobj[cur_cell.objID], Allobj[p], dim) &&
+                       (cur_cell.curk < ik)) { // only c^-
+                kcell newcell = cur_cell;
+                newcell.curk++;
+                newcell.topk.push_back(p);
+                L.emplace_back(newcell);
+            }
+            else {
+                if (cur_cell.curk < ik) {
+                    {// generate new kcell c^-
+                        kcell newcell;
+                        newcell.curk = cur_cell.curk + 1;
+                        newcell.objID = cur_cell.objID;
+                        newcell.topk = cur_cell.topk;
+                        newcell.topk.push_back(p);
+                        newcell.Stau = cur_cell.Stau;
+                        newcell.r.H = cur_cell.r.H;
+                        AddHS(p, cur_cell.objID, true, newcell.r.H);
+                        if (lp_adapter::is_Feasible(newcell.r.H, newcell.r.innerPoint, dim)) L.emplace_back(newcell);
+                    }
+                    {// generate new kcell c^+
+                        kcell newcell = cur_cell;
+                        newcell.Stau.push_back(p);
+                        AddHS(p, cur_cell.objID, false, newcell.r.H);
+                        if (lp_adapter::is_Feasible(newcell.r.H, newcell.r.innerPoint, dim)) L.emplace_back(newcell);
+                    }
+                }
+            }
+        }
+    }
 }
+
+void level::InsBuild(fstream& log, ofstream& idxout) {
+    initIdx(log);
+    kcell rootcell=idx[0][0]; rootcell.Stau.clear();
+    vector<kcell> L, L_tmp; L={rootcell};
+
+    int cnt=0, ave_vertex=0;
+    clock_t cur_time=clock();
+    for (int id=0;id<Allobj.size();id++){
+        L_tmp.clear();
+        vector<kcell>().swap(L_tmp);
+        for (auto it=L.begin();it!=L.end();it++)  SplitCell_Ins(id,*it,L_tmp);
+        if (id==Allobj.size()-1) MergeCell(L,L_tmp);
+        L=L_tmp;
+        for (auto it=L.begin();it!=L.end();it++) {
+            //UpdateH(*it);
+            if (it->r.H.empty()) it->r.V=rootcell.r.V;
+            else UpdateV(*it,ave_vertex);
+        }
+
+        log << cnt << " : " << L.size() << endl;
+        cout << cnt << " : " << L.size() << endl;
+        cnt++;
+        rootcell.Stau.push_back(id);
+        L.push_back(rootcell);
+    }
+
+
+    for (auto it=L.begin();it!=L.end();it++){
+        if ((it->curk>ik)||(it->curk==0)) continue;
+        idx[it->curk].push_back(*it);
+    }
+    //ComputeEdge();
+    int cellsum=0;
+    for (int i=0;i<=ik;i++) {
+        cellsum+=idx[i].size();
+        cout << "The region size of LEVEL " << i << ": " << idx[i].size() << endl;
+        log << "The region size of LEVEL " << i << ": " << idx[i].size() << endl;
+        WriteToDisk(i,idxout);
+    }
+    cout << "The total size of index: " << cellsum << endl;
+    log << "The total size of index: " << cellsum << endl;
+
+    cout << "Time Cost of IncBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+    log << "Time Cost of IncBuild: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+
+    L.clear();
+    vector<kcell>().swap(L);
+    L_tmp.clear();
+    vector<kcell>().swap(L_tmp);
+}
+*/
+

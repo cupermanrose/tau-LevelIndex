@@ -63,15 +63,18 @@ public:
     //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
     //bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level); // for-loop version
 
-    // incremental building
-    /////////////////////////////////////////////////
+    // Insertion-based building
+    void MergeCell(vector<kcell>& L_NoMerge, vector<kcell>& L_Merge);
     void IncBuild(fstream& log, ofstream& idxout);
     void SplitCell(int p, int i, vector<kcell>& L);
 
+    //void InsBuild(fstream& log, ofstream& idxout);
+    //void SplitCell_Ins(int p, kcell& cur_cell, vector<kcell>& L);
+
+
     // BulkLoad DFS
-    /////////////////////////////////////////////////
-    void DFSBuild(fstream& log, ofstream& idxout);
-    void SplitDFS(kcell& cell , vector<kcell>& L, ofstream& idxout, int& kcell_num);
+    //void DFSBuild(fstream& log, ofstream& idxout);
+    void SplitDFS(kcell& cell , vector<kcell>& L, ofstream& idxout, int& kcell_num); // also for large k query
 
 };
 
