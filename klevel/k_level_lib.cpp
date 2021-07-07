@@ -44,7 +44,7 @@ void INSBuild(level& idx, string datafile, fstream& log, string idxfile) {
     idxout.close();
 }*/
 
-void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
+void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) { // Need debug for Edge Compuation
     ifstream idxin(idxfile);
     idx.LoadData(datafile);
     vector<int> candidate;
