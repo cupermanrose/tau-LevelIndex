@@ -17,7 +17,7 @@ extern string read_anti_dat;
 
 enum func_type{buildidx, loadidx};
 enum query_type{kspr, utk, oru};
-enum build_type{InsBuild,IncBuild, DFSBuild,BFSBuild};
+enum build_type{INS,PT, PTF};
 
 void Config(int dim, int tau, int ik, string root_directory, string filename,
             string& datafile, string& logfile, string& idxfile, fstream& log,
@@ -32,28 +32,17 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
     else if (query_str==ORU) query=oru;
     else cout << "Unknown query!" << endl;
 
-    if (build_str=="InsBuild") build=InsBuild;
-    else if (build_str=="IncBuild") build=IncBuild;
-    else if (build_str=="DFSBuild") build=DFSBuild;
-    else if (build_str=="BFSBuild") build=BFSBuild;
+    if (build_str=="INS") build=INS;
+    else if (build_str=="PT") build=PT;
+    else if (build_str=="PTF") build=PTF;
     else cout << "Unknown building method!" << endl;
 
     datafile=root_directory+"data/"+filename+".dat";
     if (func==buildidx){
-        logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_"+build_str+".log";
+        logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_"+build_str+".log";
     }
     else if (func==loadidx) {
-        switch (query){
-            case kspr:
-                logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_query"+query_str+".ans";
-                break;
-            case utk:
-                logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_query"+query_str+".ans";
-                break;
-            case oru:
-                logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_query"+query_str+".ans";
-                break;
-        }
+        logfile=root_directory+"log/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_"+query_str+".ans";
     }
     idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_"+build_str+".idx";
     log.open(logfile, ios::out);
@@ -61,19 +50,19 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4;
-    tau=ik=5;
+    dim=4; tau=5; ik=5;
     root_directory="/home/jiahaozhang/data/klevel/";
     filename="inde/U400K4";
-    func_str="buildidx";
-    //func_str="loadidx";
-    build_str="BFSBuild";
+    func_str="buildidx"; // buildidx loadidx
+    build_str="PT"; // INS PT PTF
+    query_str="oru"; // kspr utk oru
+    q_num=100; // # of query
+    k=10; // query k
+
+    // auxiliary parameter
     anti_id_f=root_directory+"data/"+filename+"tau10.ch";
     apply_onion_from_file=false;
     write_onion_to_file=false;
-    q_num=100;
-    k=10;
-    query_str="oru";
 }
 
 int main(int argc, char* argv[]) {
@@ -92,17 +81,14 @@ int main(int argc, char* argv[]) {
     switch (func) {
         case buildidx:
             switch(build){
-                case InsBuild:
-                    InsBuildIndex(idx,datafile,log,idxfile);
+                case INS:
+                    INSBuild(idx, datafile, log, idxfile);
                     break;
-                case IncBuild:
-                    IncBuildIndex(idx,datafile,log,idxfile);
+                case PT:
+                    PTBuild(idx, datafile, log, idxfile);
                     break;
-                /*case DFSBuild:
-                    DFSBuildIndex(idx,datafile,log,idxfile);
-                    break;*/
-                case BFSBuild:
-                    BuildIndex(idx, datafile, log, idxfile);
+                case PTF:
+                    PTFBuild(idx, datafile, log, idxfile);
                     break;
             }
             break;

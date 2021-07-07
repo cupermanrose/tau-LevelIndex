@@ -4,7 +4,7 @@
 
 #include "k_level_lib.h"
 
-void BuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+void PTFBuild(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
     idx.Build(log,idxout);
@@ -12,15 +12,23 @@ void BuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     idxout.close();
 }
 
-void InsBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+void PTBuild(level& idx, string datafile, fstream& log, string idxfile) {
+    ofstream idxout(idxfile);
+    idx.LoadData(datafile);
+    idx.Build_nofilter(log,idxout);
+    log.close();
+    idxout.close();
+}
+
+/*void InsBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
     idx.InsBuild(log,idxout);
     log.close();
     idxout.close();
-}
+}*/
 
-void IncBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+void INSBuild(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
     idx.IncBuild(log,idxout);

@@ -44,9 +44,6 @@ void level::LoadData(string datafile) {
 
         OriginD.push_back(tmp);
 
-        /*if (TEST) {
-            if (OriginD.size() >= 50) break;
-        }*/
         //log information
         if (OriginD.size() % 1000 == 0)
             cout << ".";
@@ -61,6 +58,7 @@ void level::LoadData(string datafile) {
 
 void level::FreeMem(int k){
     if (k<0) return;
+    for (auto it=idx[k].begin();it!=idx[k].end();it++) it->FreeMem();
     idx[k].clear();
     vector<kcell>().swap(idx[k]);
 }
@@ -150,11 +148,6 @@ void level::initIdx(fstream& log){
     vector<int> candidate;
     GlobalFilter(log,candidate);
 
-    // Initial Grid
-    /*vector<int> offset(dim,0);
-    dominateG::EnumerateGrid(offset,0,div_num,dim,Allobj,Grid);
-    std::cout << "Init Grid done!" << std::endl;*/
-
     idx.clear();
     kcell rootcell; rootcell.TobeRoot(candidate, dim); rootcell.Get_HashValue();
     vector<kcell> Lzero;
@@ -175,14 +168,15 @@ void level::Build(fstream& log, ofstream& idxout) {
 
     initIdx(log);
     clock_t level_zero_time=clock();
-    for (int k=1;k<=tau;k++){
-        if (k>ik) break;
-        clock_t level_k_time=clock();
+    for (int k=1;k<=ik;k++){
 
-        vector<kcell> this_level;  this_level.clear(); region_map.clear();
+        clock_t level_k_time=clock();
+        vector<kcell> this_level; this_level.clear(); region_map.clear();
+        int valid_cell=0;
 
         for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
-
+            if ((cur_cell->curk!=0)&&(cur_cell->r.V.size()==0)) continue;
+            valid_cell++;
             tmp_profiling=clock();
             LocalFilter(tau, S1,Sk,*cur_cell,ave_S1,ave_Sk);
             rskyband_time+=(clock()-tmp_profiling);
@@ -194,17 +188,14 @@ void level::Build(fstream& log, ofstream& idxout) {
 
                 bool verify;
                 tmp_profiling=clock();
-                //verify=VerifyDuplicate(*p,*cur_cell,Sk, this_level);
-                verify=VerifyDuplicate(newcell,this_level);
+                verify=VerifyDuplicate(newcell,this_level); // merge Stau
                 verify_time+=(clock()-tmp_profiling);
                 if (!verify){ // just for profiling
-                //if (!VerifyDuplicate(*p,*cur_cell,Sk, this_level)){ // merge s_tau
                     bool isFeasible;
                     tmp_profiling=clock();
-                    isFeasible=lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim);
+                    isFeasible=lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim); // compute innerPoint
                     isFeasible_time+=(clock()-tmp_profiling);
                     if (isFeasible){ // just for profiling
-                    //if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) { // compute innerPoint
                         utk_set.insert(newcell.objID);
                         this_level.emplace_back(newcell);
                         region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
@@ -215,7 +206,6 @@ void level::Build(fstream& log, ofstream& idxout) {
         }
 
         //Compute V for each cell
-        //discuss why we need recompute after all
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
             UpdateH(*cur_cell);
             tmp_profiling=clock();
@@ -226,7 +216,8 @@ void level::Build(fstream& log, ofstream& idxout) {
         idx.emplace_back(this_level);
 
         WriteToDisk(k, idxout);
-        print_info(k,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, utk_set,log);
+        int ave_next = EdgeComputation(k-1);
+        print_info(k, cellsum, valid_cell,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, ave_next, utk_set,log);
         profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
         FreeMem(k-1);
     }
@@ -274,27 +265,6 @@ void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell, int k) {
     }
 }
 
-/*
-void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
-    unordered_map<int, set<int>> G; G.clear();
-    set<int> id; id.clear();
-    for (auto v=cur_cell.r.V.begin();v!=cur_cell.r.V.end();v++){
-        int cube_id=dominateG::FindCube(*v,dim);
-        id.insert(cube_id);
-    }
-    for (auto cube_id=id.begin();cube_id!=id.end();cube_id++){
-        auto cube=Grid.find(*cube_id);
-        if (cube!=Grid.end()) dominateG::MergeG(G,cube->second.G,cur_cell.Stau);
-    }
-
-    S1.clear();Sk.clear();
-    for (auto p=G.begin();p!=G.end();p++){
-        if (p->second.size()==0) S1.push_back(p->first);
-        if (p->second.size()<(tau-cur_cell.curk)) Sk.push_back(p->first);
-    }
-}
-*/
-
 bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
     bool flag = false;
 
@@ -315,34 +285,6 @@ bool level::VerifyDuplicate(kcell &newcell, vector<kcell> &this_level) {
 
     return flag;
 }
-
-/*
-bool level::VerifyDuplicate(int p, kcell &cur_cell, vector<int>& Sk, vector<kcell> &this_level) {
-    bool flag = false;
-
-    for (auto r=this_level.begin();r!=this_level.end();r++){
-        if (r->objID!=p) continue;
-        if (r->topk.find(p)==r->topk.end()) continue;
-
-        bool found=true;
-        for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++){
-            if (r->topk.find(*it)==r->topk.end()){
-                found=false;
-                break;
-            }
-        }
-        if (found) {
-            flag = true;
-            for (auto it = Sk.begin(); it != Sk.end(); it++) {
-                if (*it != p) r->Stau.insert(*it);
-            }
-            break;
-        }
-    }
-
-    return flag;
-}
-*/
 
 void level::CreateNewCell(int p, vector<int> &S1, vector<int> &Sk, kcell &cur_cell, kcell &newcell) {
     newcell.curk=cur_cell.curk+1;
@@ -394,29 +336,33 @@ void level::UpdateV(kcell &cur_cell, int& ave_vertex) {
     ave_vertex+=cur_cell.r.V.size();
 }
 
-void level::print_info(int k, clock_t& level_zero_time, clock_t & cur_time, int& ave_S1, int& ave_Sk, int& ave_vertex, set<int>& utk_set, fstream& log) {
+void level::print_info(int k, int cellsum, int valid_cell, clock_t& level_zero_time, clock_t & cur_time, int& ave_S1, int& ave_Sk, int& ave_vertex, int& ave_next, set<int>& utk_set, fstream& log) {
     cout << "LEVEL: " << k << endl;
     cout << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
     cout << "The option number of LEVEL 1-" << k << ": " << utk_set.size() << endl;
-    cout << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
-    cout << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
-    cout << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)idx[k-1].size() << endl;
-    cout << "Average verterices of region in LEVEL" << ": " << (float) ave_vertex / (float) idx[k-1].size() << endl;
+    cout << "Average S1 of LEVEL" << ": " << ave_S1 / (float)valid_cell << endl;
+    cout << "Average Sk of LEVEL" << ": " << ave_Sk / (float)valid_cell << endl;
+    cout << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float) valid_cell << endl;
+    cout << "Average verterices of region in LEVEL" << ": " << (float) ave_vertex / (float) valid_cell << endl;
+    cout << "Average next of region in LEVEL" << ": " << (float) ave_next / (float) valid_cell << endl;
     cout << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+    cout << "Total region of LEVEL 1-" << k << ": " << cellsum << endl;
     cout << "Total Time Cost of LEVEL 1-" << k << ": " << (clock() - level_zero_time) / (float)CLOCKS_PER_SEC << endl;
     cout << endl;
     log << "LEVEL: " << k << endl;
     log << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
     log << "The option number of LEVEL 1-" << k << ": " << utk_set.size() << endl;
-    log << "Average S1 of LEVEL" << ": " << ave_S1 / (float)idx[k-1].size() << endl;
-    log << "Average Sk of LEVEL" << ": " << ave_Sk / (float)idx[k-1].size() << endl;
-    log << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)idx[k-1].size() << endl;
-    log << "Average verterices of region in LEVEL" << ": " << (float) ave_vertex / (float) idx[k-1].size() << endl;
+    log << "Average S1 of LEVEL" << ": " << ave_S1 / (float)valid_cell << endl;
+    log << "Average Sk of LEVEL" << ": " << ave_Sk / (float)valid_cell << endl;
+    log << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)valid_cell << endl;
+    log << "Average verterices of region in LEVEL" << ": " << (float) ave_vertex / (float) valid_cell << endl;
+    log << "Average next of region in LEVEL" << ": " << (float) ave_next / (float) valid_cell << endl;
     log << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
+    log << "Total region of LEVEL 1-" << k << ": " << cellsum << endl;
     log << "Total Time Cost of LEVEL 1-" << k << ": " << (clock() - level_zero_time) / (float)CLOCKS_PER_SEC << endl;
     log << endl;
     print_system_info(log);
-    ave_Sk=ave_S1=0; ave_vertex=0.0;
+    ave_Sk=ave_S1=ave_next=0; ave_vertex=0.0;
 }
 
 void level::print_system_info(fstream &log) {
@@ -480,8 +426,9 @@ void level::WriteToDisk(int k, ofstream &idxout) {
     idxout.write((char*) &size, sizeof(int));
     for (auto it=idx[k].begin();it!=idx[k].end();it++){
         // Space optimization
-        if (k<ik) it->WriteToDisk(idxout,false);
-        else it->WriteToDisk(idxout,true);
+        //if (k<ik) it->WriteToDisk(idxout,false);
+        //else it->WriteToDisk(idxout,true);
+        it->WriteToDisk(idxout,true); // output Stau for all cells but not Halfspaces
     }
 }
 
@@ -494,6 +441,42 @@ void level::ReadFromDisk(int k, ifstream &idxin) {
         tmp.ReadFromDisk(idxin);
         idx[k].emplace_back(tmp);
     }
+}
+
+int level::EdgeComputation(int k) {
+    if (k==0){
+        idx[k][0].Next.clear();
+        for (int i=0;i<idx[k+1].size();i++) idx[k][0].Next.push_back(i);
+        return idx[k+1].size();
+    }
+    unordered_map<size_t,int> k_map; k_map.clear();
+    for (int i=0;i<idx[k].size();i++){
+        vector<int> tmp=idx[k][i].topk;
+        std::sort(tmp.begin(),tmp.end()); // make it in order to output the unique hash_value for a set
+        std::size_t seed = 0;
+        for (auto it=tmp.begin();it!=tmp.end();it++){
+            boost::hash_combine(seed, *it);
+        }
+        k_map.insert({seed,i});
+    }
+    for (int i=0;i<idx[k+1].size();i++){
+        vector<int> tmp=idx[k+1][i].topk;
+        std::sort(tmp.begin(),tmp.end()); // make it in order to output the unique hash_value for a set
+        for (int j=0;j<k+1;j++){
+            std:size_t seed=0;
+            for (int t=0;t<k+1;t++){ // remove one option from idx[k+1][i] to find its parents
+                if (j==t) continue;
+                boost::hash_combine(seed, tmp[t]);
+            }
+            auto p_id=k_map.find(seed);
+            if (p_id!=k_map.end()){
+                idx[k][p_id->second].Next.push_back(i);
+            }
+        }
+    }
+    int ave_next=0;
+    for (auto it=idx[k].begin();it!=idx[k].end();it++) ave_next+=it->Next.size();
+    return ave_next;
 }
 
 // for large k queries
@@ -640,7 +623,10 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
         int size=L.size();
         for (int i=0;i<size;i++) {
             if ((L[i].r.V.size()==0)&(L[i].curk!=0)) L[i].curk=ik+1;
-            if (L[i].curk>ik) continue;
+            if (L[i].curk>ik) {
+                L[i].FreeMem();
+                continue;
+            }
             SplitCell(id, i, L);
         }
         cout << cnt++ << ": " << L.size() << endl;
@@ -674,6 +660,88 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
     L_Merge.clear();
     vector<kcell>().swap(L_Merge);
 }
+
+void level::Build_nofilter(fstream& log, ofstream& idxout) {
+    vector<int> S1,Sk;
+    set<int> utk_set; utk_set.clear();
+    int ave_S1=0,ave_Sk=0,ave_vertex=0, cellsum=0;
+
+    //for profiling
+    clock_t tmp_profiling;
+    double rskyband_time=0.0,verify_time=0.0,isFeasible_time=0.0,updateV_time=0.0;
+
+    initIdx(log);
+    clock_t level_zero_time=clock();
+    for (int k=1;k<=ik;k++){
+
+        clock_t level_k_time=clock();
+        vector<kcell> this_level; this_level.clear(); region_map.clear();
+        int valid_cell=0;
+
+        for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
+            if ((cur_cell->curk!=0)&&(cur_cell->r.V.size()==0)) continue;
+            valid_cell++;
+            tmp_profiling=clock();
+            NoFilter(S1,Sk,*cur_cell);
+            rskyband_time+=(clock()-tmp_profiling);
+
+            for (auto p=S1.begin();p!=S1.end();p++){
+                {// naive optimization from previous work
+                    if (global_layer[*p]>k) continue;
+                    bool flag = true;
+                    for (auto it=S1.begin();it!=S1.end();it++){
+                        if (*it==*p) continue;
+                        if (RegionDominate(cur_cell->r.V, Allobj[*p], Allobj[*it],dim)) {
+                            flag=false;
+                            break;
+                        }
+                    }
+                    if (!flag) continue;
+                }
+
+
+                kcell newcell;
+                CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
+
+                bool verify;
+                tmp_profiling=clock();
+                verify=VerifyDuplicate(newcell,this_level); // merge Stau
+                verify_time+=(clock()-tmp_profiling);
+                if (!verify){ // just for profiling
+                    bool isFeasible;
+                    tmp_profiling=clock();
+                    isFeasible=lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim); // compute innerPoint
+                    isFeasible_time+=(clock()-tmp_profiling);
+                    if (isFeasible){ // just for profiling
+                        utk_set.insert(newcell.objID);
+                        this_level.emplace_back(newcell);
+                        region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
+                    }
+                }
+            }
+
+        }
+
+        //Compute V for each cell
+        for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
+            UpdateH(*cur_cell);
+            tmp_profiling=clock();
+            UpdateV(*cur_cell,ave_vertex);
+            updateV_time+=(clock()-tmp_profiling);
+        }
+        cellsum+=this_level.size();
+        idx.emplace_back(this_level);
+
+        WriteToDisk(k, idxout);
+        int ave_next = EdgeComputation(k-1);
+        print_info(k, cellsum, valid_cell,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, ave_next, utk_set,log);
+        profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
+        FreeMem(k-1);
+    }
+    cout << "The total size of index: " << cellsum << endl;
+    log << "The total size of index: " << cellsum << endl;
+}
+
 
 /*
 void level::DFSBuild(fstream &log, ofstream &idxout) {
@@ -804,6 +872,55 @@ void level::InsBuild(fstream& log, ofstream& idxout) {
     vector<kcell>().swap(L);
     L_tmp.clear();
     vector<kcell>().swap(L_tmp);
+}
+*/
+
+/*
+void level::GridFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+    unordered_map<int, set<int>> G; G.clear();
+    set<int> id; id.clear();
+    for (auto v=cur_cell.r.V.begin();v!=cur_cell.r.V.end();v++){
+        int cube_id=dominateG::FindCube(*v,dim);
+        id.insert(cube_id);
+    }
+    for (auto cube_id=id.begin();cube_id!=id.end();cube_id++){
+        auto cube=Grid.find(*cube_id);
+        if (cube!=Grid.end()) dominateG::MergeG(G,cube->second.G,cur_cell.Stau);
+    }
+
+    S1.clear();Sk.clear();
+    for (auto p=G.begin();p!=G.end();p++){
+        if (p->second.size()==0) S1.push_back(p->first);
+        if (p->second.size()<(tau-cur_cell.curk)) Sk.push_back(p->first);
+    }
+}
+*/
+
+/*
+bool level::VerifyDuplicate(int p, kcell &cur_cell, vector<int>& Sk, vector<kcell> &this_level) {
+    bool flag = false;
+
+    for (auto r=this_level.begin();r!=this_level.end();r++){
+        if (r->objID!=p) continue;
+        if (r->topk.find(p)==r->topk.end()) continue;
+
+        bool found=true;
+        for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++){
+            if (r->topk.find(*it)==r->topk.end()){
+                found=false;
+                break;
+            }
+        }
+        if (found) {
+            flag = true;
+            for (auto it = Sk.begin(); it != Sk.end(); it++) {
+                if (*it != p) r->Stau.insert(*it);
+            }
+            break;
+        }
+    }
+
+    return flag;
 }
 */
 
