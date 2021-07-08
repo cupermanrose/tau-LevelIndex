@@ -48,7 +48,7 @@ void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) { // N
     ifstream idxin(idxfile);
     idx.LoadData(datafile);
     vector<int> candidate;
-    idx.GlobalFilter(log,candidate); //TODO remove this and load from index file
+    idx.GlobalFilter(log,candidate);
 
     kcell root; root.TobeRoot(candidate,idx.dim);
     vector<kcell> empty_level; empty_level={root};

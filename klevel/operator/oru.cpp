@@ -113,6 +113,11 @@ float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode
                 vector<vector<float>> HS; HS.clear();
                 for (auto it=idx.idx[k][id].r.H.begin();it!=idx.idx[k][id].r.H.end();it++){
                     HS.push_back(it->w);
+                    if(it->side){
+                        for(auto &j: HS.back()){
+                            j=-j;
+                        }
+                    }
                 }
                 float dis=getDistance(q,HS);
                 dis2q.push_back(make_pair(dis,id));
@@ -210,4 +215,43 @@ void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &lo
     cout << "Average oru query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average oru query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     return;
+}
+// --------------------------------- new code since 2021/7/8 -------------------------------------
+float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstream &log) {
+    float oru_ret_dis=INFINITY;
+    vector<vector<kcell>> &cells = idx.idx;
+    if(cells.empty() || cells[0].empty() || cells.size()<=k ){
+        return oru_ret_dis;
+    }
+    kcell &root=cells[0][0];
+    multimap<double, kcell*> heap;
+    heap.emplace(INFINITY, &root);
+    unordered_set<int> ret_option;
+    while(!heap.empty() && ret_option.size()<ret_size){
+        kcell * nearest_cell=heap.begin()->second;
+        oru_ret_dis=heap.begin()->first;
+        heap.erase(heap.begin());
+        if(nearest_cell->curk==k){
+            for(auto &i:nearest_cell->topk){
+                ret_option.insert(i);
+            }
+        }else{
+            for(auto &i:nearest_cell->Next){
+                kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
+                idx.UpdateH(*child_cell);
+                vector<vector<float>> HS; HS.clear();
+                for (auto it=child_cell->r.H.begin();it!=child_cell->r.H.end();it++){
+                    HS.push_back(it->w);
+                    if(it->side){// this is importance !!!!!!!
+                        for(auto &j: HS.back()){
+                            j=-j;
+                        }
+                    }
+                }
+                double dis=getDistance(q,HS);
+                heap.emplace(dis, child_cell);
+            }
+        }
+    }
+    return oru_ret_dis;
 }
