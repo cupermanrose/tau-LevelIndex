@@ -24,7 +24,7 @@ class level {
 public:
     int dim, tau, ik;
     vector<vector<kcell>> idx;
-    unordered_map<size_t,int> region_map, mregion_map;
+    unordered_map<size_t,int> region_map;
     vector<vector<float>> Allobj, OriginD;
     vector<int> global_layer;
     unordered_map<int, int> levelId_2_dataId;
@@ -42,15 +42,18 @@ public:
 
     void FreeMem(int k);
     void profiling(int k, clock_t& level_zero_time, double& rskyband_time, double& verify_time, double& isFeasible_time,double& updateV_time, fstream& log);
-    void print_info(int k, clock_t& level_zero_time, clock_t& level_k_time, int& ave_S1, int& ave_Sk, int& ave_vertex, set<int>& utk_set, fstream& log);
+    void print_info(int k, int cellsum, int valid_cell, clock_t& level_zero_time, clock_t& level_k_time,
+                    int& ave_S1, int& ave_Sk, int& ave_vertex, int& ave_next, set<int>& utk_set, fstream& log);
     void print_system_info(fstream& log);
     void WriteToDisk(int k, ofstream& idxout);
     void ReadFromDisk(int k, ifstream& idxin);
+    int EdgeComputation(int k);
 
     // advanced building
     /////////////////////////////////////////////////
     void initIdx(fstream& log);
     void Build(fstream& log, ofstream& idxout);
+    void Build_nofilter(fstream& log, ofstream& idxout);
     bool VerifyDuplicate(kcell& newcell, vector<kcell>& this_level); // hash version
     void CreateNewCell(int p, vector<int>& S1, vector<int>& Sk, kcell& cur_cell,kcell& newcell);
     void AddHS(int o1, int o2, bool side, vector<halfspace>& H);
@@ -63,15 +66,18 @@ public:
     //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
     //bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level); // for-loop version
 
-    // incremental building
-    /////////////////////////////////////////////////
+    // Insertion-based building
+    void MergeCell(vector<kcell>& L_NoMerge, vector<kcell>& L_Merge);
     void IncBuild(fstream& log, ofstream& idxout);
     void SplitCell(int p, int i, vector<kcell>& L);
 
+    //void InsBuild(fstream& log, ofstream& idxout);
+    //void SplitCell_Ins(int p, kcell& cur_cell, vector<kcell>& L);
+
+
     // BulkLoad DFS
-    /////////////////////////////////////////////////
-    void DFSBuild(fstream& log, ofstream& idxout);
-    void SplitDFS(kcell& cell , vector<kcell>& L, ofstream& idxout, int& kcell_num);
+    //void DFSBuild(fstream& log, ofstream& idxout);
+    void SplitDFS(kcell& cell , vector<kcell>& L, ofstream& idxout, int& kcell_num); // also for large k query
 
 };
 

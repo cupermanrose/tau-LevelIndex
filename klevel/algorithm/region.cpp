@@ -140,3 +140,12 @@ void region::ComputeHP(vector<float> &w, vector<float> &o1, vector<float> &o2, i
     w.push_back(o2_d - o1_d);
     return;
 }
+
+void region::FreeMem() {
+    H.clear();
+    vector<halfspace>().swap(H);
+    V.clear();
+    vector<vector<float>>().swap(V);
+    innerPoint.clear();
+    vector<float>().swap(innerPoint);
+}

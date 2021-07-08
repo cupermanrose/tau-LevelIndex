@@ -17,7 +17,7 @@ extern string read_anti_dat;
 
 enum func_type{buildidx, loadidx};
 enum query_type{kspr, utk, oru};
-enum build_type{IncBuild,DFSBuild,BFSBuild};
+enum build_type{INS,PT, PTF};
 
 void Config(int dim, int tau, int ik, string root_directory, string filename,
             string& datafile, string& logfile, string& idxfile, fstream& log,
@@ -32,9 +32,9 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
     else if (query_str==ORU) query=oru;
     else cout << "Unknown query!" << endl;
 
-    if (build_str=="IncBuild") build=IncBuild;
-    else if (build_str=="DFSBuild") build=DFSBuild;
-    else if (build_str=="BFSBuild") build=BFSBuild;
+    if (build_str=="INS") build=INS;
+    else if (build_str=="PT") build=PT;
+    else if (build_str=="PTF") build=PTF;
     else cout << "Unknown building method!" << endl;
 
     datafile=root_directory+"data/"+filename+".dat";
@@ -61,21 +61,23 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4;
-    tau=20; // NBA: tau=30
-    ik=20;
-    root_directory="/home/kemingli/klevel/";
-    filename="inde/U1K4";
-    func_str="buildidx";
-//    func_str="loadidx";
-    build_str="BFSBuild";
+    dim=4; tau=10; ik=10;
+    root_directory="/home/jiahaozhang/data/klevel/";
+//    root_directory="/home/kemingli/klevel/";
+
+    filename="inde/U400K4";
+    func_str="buildidx"; // buildidx loadidx
+    //    func_str="loadidx";
+    build_str="INS"; // INS PT PTF
+    query_str="oru"; // kspr utk oru
+    q_num=100; // # of query
+    k=10; // query k
+
+    // auxiliary parameter
     anti_id_f=root_directory+"data/"+filename+".ch";
     read_anti_dat=root_directory+"data/"+filename;
     apply_onion_from_file=false;
     write_onion_to_file=false;
-    q_num=50;
-    k=10;
-    query_str="utk";
 }
 
 int main(int argc, char* argv[]) {
@@ -94,14 +96,14 @@ int main(int argc, char* argv[]) {
     switch (func) {
         case buildidx:
             switch(build){
-                case IncBuild:
-                    IncBuildIndex(idx,datafile,log,idxfile);
+                case INS:
+                    INSBuild(idx, datafile, log, idxfile);
                     break;
-                case DFSBuild:
-                    DFSBuildIndex(idx,datafile,log,idxfile);
+                case PT:
+                    PTBuild(idx, datafile, log, idxfile);
                     break;
-                case BFSBuild:
-                    BuildIndex(idx, datafile, log, idxfile);
+                case PTF:
+                    PTFBuild(idx, datafile, log, idxfile);
                     break;
             }
             break;

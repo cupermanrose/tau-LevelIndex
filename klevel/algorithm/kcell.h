@@ -20,6 +20,7 @@ public:
     region r;
     vector<int> topk; // the top-kth in this region
     vector<int> Stau; // top-tau candidates set
+    vector<int> Next;
 
 public:
     kcell();
@@ -29,6 +30,7 @@ public:
     void ReadFromDisk(ifstream& Infile);
     void Get_HashValue();
     void TobeRoot(vector<int>& candidates, int dim);
+    void FreeMem();
 };
 
 

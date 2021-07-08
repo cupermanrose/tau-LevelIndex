@@ -174,26 +174,21 @@ int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, Rtre
         ql.push_back(Qregion[i*2]);
         qu.push_back(Qregion[i*2+1]);
     }
-
     vector<int> kcellID;
     RangeQueryFromRtree(rt,ramTree,ql,qu,kcellID);
 
+    unordered_set<int> results; results.clear();
+    for (auto it=kcellID.begin();it!=kcellID.end();it++){
+        SplitDFS(idx,idx.idx[idx.ik][*it],Qregion,k,results);
+    }
+    return results.size();
+
+    /*
     vector<int> S1,Sk;
     int ave_S1=0,ave_Sk=0,ave_vertex=0;
     vector<vector<kcell>> tmp; tmp.clear();
     vector<kcell> init_level;  init_level.clear();
-
-    unordered_set<int> results; results.clear();
-    for (auto it=kcellID.begin();it!=kcellID.end();it++){
-        if (Intersect(Qregion, idx.idx[idx.ik][*it].r,idx.dim)) {
-            //init_level.push_back(idx.idx[idx.ik][*it]);
-            SplitDFS(idx,idx.idx[idx.ik][*it],Qregion,k,results);
-        }
-    }
-    return results.size();
-    //cout << kcellID.size() << ' ' << init_level.size() << endl;
-
-    /*unordered_set<int> results; results.clear();
+     unordered_set<int> results; results.clear();
     tmp.emplace_back(init_level);
     for (int i=0;i<k-idx.ik;i++){
         vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();

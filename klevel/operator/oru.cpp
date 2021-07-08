@@ -109,7 +109,12 @@ float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode
             for (int i=0;i<kcellID.size();i++){
                 int id=kcellID[i];
                 idx.UpdateH(idx.idx[k][id]);
-                float dis=GetDistance(q,idx.idx[k][id].r, idx.dim); // replace!!!
+                //float dis=GetDistance(q,idx.idx[k][id].r, idx.dim); // replace!!!
+                vector<vector<float>> HS; HS.clear();
+                for (auto it=idx.idx[k][id].r.H.begin();it!=idx.idx[k][id].r.H.end();it++){
+                    HS.push_back(it->w);
+                }
+                float dis=getDistance(q,HS);
                 dis2q.push_back(make_pair(dis,id));
             }
             sort(dis2q.begin(),dis2q.end());

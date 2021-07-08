@@ -4,7 +4,7 @@
 
 #include "k_level_lib.h"
 
-void BuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+void PTFBuild(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
     idx.Build(log,idxout);
@@ -12,7 +12,23 @@ void BuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     idxout.close();
 }
 
-void IncBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+void PTBuild(level& idx, string datafile, fstream& log, string idxfile) {
+    ofstream idxout(idxfile);
+    idx.LoadData(datafile);
+    idx.Build_nofilter(log,idxout);
+    log.close();
+    idxout.close();
+}
+
+/*void InsBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+    ofstream idxout(idxfile);
+    idx.LoadData(datafile);
+    idx.InsBuild(log,idxout);
+    log.close();
+    idxout.close();
+}*/
+
+void INSBuild(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
     idx.IncBuild(log,idxout);
@@ -20,25 +36,26 @@ void IncBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     idxout.close();
 }
 
-void DFSBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
+/*void DFSBuildIndex(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
     idx.DFSBuild(log,idxout);
     log.close();
     idxout.close();
-}
+}*/
 
-void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) {
+void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) { // Need debug for Edge Compuation
     ifstream idxin(idxfile);
     idx.LoadData(datafile);
     vector<int> candidate;
     idx.GlobalFilter(log,candidate); //TODO remove this and load from index file
 
-    vector<kcell> empty_level; empty_level.clear();
+    kcell root; root.TobeRoot(candidate,idx.dim);
+    vector<kcell> empty_level; empty_level={root};
     idx.idx.emplace_back(empty_level);
-    for (int k=1;k<=idx.tau;k++){
-        if (k>idx.ik) break;
-        idx.idx.push_back(empty_level);
+    for (int k=1;k<=idx.ik;k++){
+        vector<kcell> this_level; this_level.clear();
+        idx.idx.emplace_back(this_level);
         idx.ReadFromDisk(k,idxin);
         cout << "The size of level " << k << ": "<<idx.idx[k].size() << endl;
         log << "The size of level " << k << ": "<<idx.idx[k].size() << endl;
