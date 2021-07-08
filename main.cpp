@@ -62,20 +62,20 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
     dim=4;
-    tau=3; // NBA: tau=30
-    ik=3;
+    tau=20; // NBA: tau=30
+    ik=20;
     root_directory="/home/kemingli/klevel/";
-    filename="inde/U400K4";
-//    func_str="buildidx";
-    func_str="loadidx";
+    filename="inde/U1K4";
+    func_str="buildidx";
+//    func_str="loadidx";
     build_str="BFSBuild";
     anti_id_f=root_directory+"data/"+filename+".ch";
     read_anti_dat=root_directory+"data/"+filename;
     apply_onion_from_file=false;
     write_onion_to_file=false;
     q_num=50;
-    k=3;
-    query_str="oru";
+    k=10;
+    query_str="utk";
 }
 
 int main(int argc, char* argv[]) {
