@@ -50,11 +50,11 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4; tau=5; ik=5;
+    dim=4; tau=10; ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
     filename="inde/U400K4";
     func_str="buildidx"; // buildidx loadidx
-    build_str="PT"; // INS PT PTF
+    build_str="INS"; // INS PT PTF
     query_str="oru"; // kspr utk oru
     q_num=100; // # of query
     k=10; // query k

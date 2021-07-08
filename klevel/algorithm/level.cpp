@@ -433,7 +433,7 @@ void level::WriteToDisk(int k, ofstream &idxout) {
 }
 
 void level::ReadFromDisk(int k, ifstream &idxin) {
-    int size=1;
+    int size;
     idxin.read((char*) &size, sizeof(int));
     idx[k].clear();
     for (int i=0;i<size;i++){
