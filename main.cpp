@@ -63,7 +63,7 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
     dim=4; tau=5; ik=5;
     root_directory="/home/jiahaozhang/data/klevel/";
-    //root_directory="/home/kemingli/klevel/";
+    // root_directory="/home/kemingli/klevel/";
 
     filename="inde/U400K4";
 //    func_str="buildidx"; // buildidx loadidx
