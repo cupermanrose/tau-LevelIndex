@@ -255,3 +255,19 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
     }
     return oru_ret_dis;
 }
+
+void oru::multiple_query2(level &idx, int k, int ret_size, int q_num, fstream &log) {
+    clock_t cur_time=clock();
+    vector<vector<float>> q_list;
+    generate_query(idx,q_num, q_list);
+    for (int i=0;i<q_num;i++){
+        float answer;
+        if (k<=idx.ik) answer=single_query(idx, k, ret_size, q_list[i],log);
+        else cout << "the maximum k of oru is less than ik";
+        cout << "The answer of oru query " << i << ": " << answer << endl;
+        log << "The answer of oru query " << i << ": " << answer << endl;
+    }
+    cout << "Average oru query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    log << "Average oru query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    return;
+}

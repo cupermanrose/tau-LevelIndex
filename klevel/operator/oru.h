@@ -21,6 +21,7 @@ public:
                               int k, int ret_size, vector<float>& q, fstream& log);
     //static float single_query_largek(level& idx, int k, int ret_size, vector<float>& q, fstream& log);
     static float single_query(level &idx, int k, int ret_size, vector<float>& q, fstream &log);
+    static void multiple_query2(level &idx, int k, int ret_size, int q_num, fstream &log);
 
 };
 

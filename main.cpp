@@ -61,17 +61,17 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4; tau=10; ik=10;
-    root_directory="/home/jiahaozhang/data/klevel/";
-//    root_directory="/home/kemingli/klevel/";
+    dim=4; tau=5; ik=5;
+//    root_directory="/home/jiahaozhang/data/klevel/";
+    root_directory="/home/kemingli/klevel/";
 
     filename="inde/U400K4";
-    func_str="buildidx"; // buildidx loadidx
-    //    func_str="loadidx";
-    build_str="INS"; // INS PT PTF
+//    func_str="buildidx"; // buildidx loadidx
+    func_str="loadidx";
+    build_str="PTF"; // INS PT PTF
     query_str="oru"; // kspr utk oru
-    q_num=100; // # of query
-    k=10; // query k
+    q_num=5; // # of query
+    k=5; // query k
 
     // auxiliary parameter
     anti_id_f=root_directory+"data/"+filename+".ch";
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 case oru: {
-                    oru::multiple_query(idx, k, 50, q_num, log);
+                    oru::multiple_query2(idx, k, 50, q_num, log);
                     break;
                 }
             }
