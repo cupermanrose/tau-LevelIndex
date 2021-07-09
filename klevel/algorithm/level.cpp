@@ -481,48 +481,6 @@ int level::EdgeComputation(int k) {
     return ave_next;
 }
 
-// for large k queries
-void level::SplitDFS(kcell& cell, vector<kcell> &L, ofstream& idxout, int& kcell_num) {
-    if (cell.curk>=ik) return;
-    vector<int> S1,Sk;
-    int ave_S1=0,ave_Sk=0,ave_vertex=0;
-    LocalFilter(tau, S1,Sk,cell,ave_S1,ave_Sk);
-    for (auto p=S1.begin();p!=S1.end();p++){
-        if (global_layer[*p]>cell.curk+1) continue;
-        kcell newcell;
-        //CreateNewCell(*p,S1,Sk,cell,newcell);
-        newcell.curk=cell.curk+1;
-        newcell.objID=*p;
-        newcell.topk=cell.topk; newcell.topk.push_back(*p);
-        newcell.Stau.clear();
-        for (auto it=Sk.begin();it!=Sk.end();it++){
-            if (*it!=*p) newcell.Stau.push_back(*it);
-        }
-        newcell.r.V.clear();
-        newcell.r.H.clear();
-        for (int i=0;i<newcell.topk.size();i++){
-            for (int j=i+1;j<newcell.topk.size();j++){
-                AddHS(newcell.topk[i],newcell.topk[j],true,newcell.r.H);
-            }
-        }
-        for (auto it = S1.begin(); it != S1.end(); it++) {
-            if (*it != *p) AddHS(*p,*it,true,newcell.r.H);
-        }
-
-        // verify
-        if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
-            kcell_num++;
-            if (kcell_num%1000==0) cout << kcell_num <<endl;
-            UpdateV(newcell, ave_vertex);
-            SplitDFS(newcell,L, idxout, kcell_num);
-            if (newcell.curk<ik) newcell.WriteToDisk(idxout,false);
-            else newcell.WriteToDisk(idxout,true);
-            //L.push_back(newcell);
-        }
-    }
-    return;
-}
-
 // Ins
 
 void level::MergeCell(vector<kcell> &L_NoMerge, vector<kcell> &L_Merge) {
@@ -743,6 +701,70 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
     cout << "The total size of index: " << cellsum << endl;
     log << "The total size of index: " << cellsum << endl;
 }
+
+// split next level cells from cur_cell, and all cells of NextCell are inside cur_cell
+void level::SingleCellSplit(int qk, kcell &cur_cell, vector<kcell> &NextCell) {
+    NextCell.clear();
+    vector<int> S1,Sk;
+    int ave_S1=0,ave_Sk=0,ave_vertex=0;
+    LocalFilter(qk, S1,Sk,cur_cell,ave_S1,ave_Sk);
+    for (auto p=S1.begin();p!=S1.end();p++){
+        if (global_layer[*p]>cur_cell.curk+1) continue;
+        kcell newcell;
+        CreateNewCell(*p,S1,Sk,cur_cell,newcell);
+        // verify
+        if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
+            UpdateV(newcell, ave_vertex);
+            NextCell.push_back(newcell);
+        }
+    }
+    return;
+}
+
+/*
+// for large k queries
+void level::SplitDFS(kcell& cell, vector<kcell> &L, ofstream& idxout, int& kcell_num) {
+    if (cell.curk>=ik) return;
+    vector<int> S1,Sk;
+    int ave_S1=0,ave_Sk=0,ave_vertex=0;
+    LocalFilter(tau, S1,Sk,cell,ave_S1,ave_Sk);
+    for (auto p=S1.begin();p!=S1.end();p++){
+        if (global_layer[*p]>cell.curk+1) continue;
+        kcell newcell;
+        //CreateNewCell(*p,S1,Sk,cell,newcell);
+        newcell.curk=cell.curk+1;
+        newcell.objID=*p;
+        newcell.topk=cell.topk; newcell.topk.push_back(*p);
+        newcell.Stau.clear();
+        for (auto it=Sk.begin();it!=Sk.end();it++){
+            if (*it!=*p) newcell.Stau.push_back(*it);
+        }
+        newcell.r.V.clear();
+        newcell.r.H.clear();
+        for (int i=0;i<newcell.topk.size();i++){
+            for (int j=i+1;j<newcell.topk.size();j++){
+                AddHS(newcell.topk[i],newcell.topk[j],true,newcell.r.H);
+            }
+        }
+        for (auto it = S1.begin(); it != S1.end(); it++) {
+            if (*it != *p) AddHS(*p,*it,true,newcell.r.H);
+        }
+
+        // verify
+        if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
+            kcell_num++;
+            if (kcell_num%1000==0) cout << kcell_num <<endl;
+            UpdateV(newcell, ave_vertex);
+            SplitDFS(newcell,L, idxout, kcell_num);
+            if (newcell.curk<ik) newcell.WriteToDisk(idxout,false);
+            else newcell.WriteToDisk(idxout,true);
+            //L.push_back(newcell);
+        }
+    }
+    return;
+}
+*/
+
 
 
 /*
