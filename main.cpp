@@ -69,7 +69,7 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
 //    func_str="buildidx"; // buildidx loadidx
     func_str="loadidx";
     build_str="PTF"; // INS PT PTF
-    query_str="oru"; // kspr utk oru
+    query_str="utk"; // kspr utk oru
     q_num=5; // # of query
     k=5; // query k
 

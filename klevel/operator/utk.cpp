@@ -53,7 +53,6 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
     for (auto it=r.V.begin();it!=r.V.end();it++){
         if (isIn(*it,Qregion,dim)) return true;
     }
-
     int bitset = 1 << (dim-1);
     for (int i = 0; i < bitset; i++) {
         vector<float> Qv; Qv.clear();
@@ -65,6 +64,7 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
         }
         if (isIn(Qv, r.H, dim)) return true;
     }
+    //TODO This might be wrong
     return false;
 }
 
@@ -80,7 +80,6 @@ int utk::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>
     vector<int> kcellID;
     RangeQueryFromRtree(rt,ramTree,ql,qu,kcellID);
     unordered_set<int> results; results.clear();
-
     for (auto it=kcellID.begin();it!=kcellID.end();it++){
         if (Intersect(Qregion, idx.idx[k][*it].r,idx.dim)){
             for (auto p=idx.idx[k][*it].topk.begin();p!=idx.idx[k][*it].topk.end();p++){
