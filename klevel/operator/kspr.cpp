@@ -47,15 +47,90 @@ bool kspr::Find_qid_Stau(kcell &this_cell, int qid) {
     return false;
 }
 
-int kspr::single_query(level &idx, int k, int q_id, fstream &log) {
-    int cnt=0;
-    for (auto it=idx.idx[k].begin();it!=idx.idx[k].end();it++){
-        bool find=false;
-        for (auto p=it->topk.begin();p!=it->topk.end();p++)
-                if (*p==q_id) find=true;
-        if (find) cnt++;
+void kspr::single_query(level &idx, int k, int q_id, fstream &log) {
+    int visit=0,result=0;
+    list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
+    vector<kcell> NextCell;
+    while (!queue.empty()){
+        auto cur_cell=queue.front(); queue.pop_front(); visit++;
+        if (Find_qid_topk(cur_cell,q_id)){
+            result++;
+        }
+        else if (Find_qid_Stau(cur_cell,q_id)&&(cur_cell.curk<k)){
+            if (cur_cell.curk<idx.ik){
+                for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
+                    queue.push_back(idx.idx[cur_cell.curk+1][*it]);
+                }
+            }
+            else{ // for large k
+                idx.SingleCellSplit(k,cur_cell,NextCell);
+                for (auto it=NextCell.begin();it!=NextCell.end();it++){
+                    queue.push_back(*it);
+                }
+            }
+        }
     }
-    return cnt;
+    NextCell.clear();
+    vector<kcell>().swap(NextCell);
+    cout << "Visiting cells of kspr query: " <<  visit << endl;
+    log << "Visiting cells of kspr query: " <<  visit << endl;
+    cout << "Result cells of kspr query: " << result << endl;
+    log << "Result cells of kspr query: " << result << endl;
+    return;
+}
+
+void kspr::multiple_query(level &idx, int k, int q_num, fstream &log) { // dag travel
+    vector<int> q_list;
+    generate_query(idx,q_num, q_list);
+    clock_t cur_time=clock();
+    for (int i=0;i<q_num;i++){
+        cout << "kspr query " << i <<"("<< q_list[i]<<")"<< ": " << endl;
+        log << "kspr query " << i <<"("<< q_list[i]<<")"<< ": " << endl;
+        single_query(idx,k,q_list[i],log);
+    }
+    cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    return;
+}
+
+/*
+void kspr::multiple_query(level &idx, int k, int q_num, fstream &log) {
+    clock_t invert_time = clock();
+
+    vector<vector<int>> inverted_idx;
+    vector<int> ids;ids.clear();
+    int cur_k;
+    if (k<=idx.ik) cur_k=k;
+    else cur_k=idx.ik;
+    inverted_idx.clear();
+    for (int i=0;i<idx.Allobj.size();i++) inverted_idx.push_back(ids);
+    for (int i=0;i<idx.idx[cur_k].size();i++){
+        for (auto it=idx.idx[cur_k][i].topk.begin();it!=idx.idx[cur_k][i].topk.end();it++){
+            inverted_idx[*it].push_back(i);
+        }
+    }
+
+    log << "InvertedIdx from k-level building time: " << (clock() - invert_time) / (float) CLOCKS_PER_SEC << endl;
+    cout << "InvertedIdx from k-level building time: " << (clock() - invert_time) / (float) CLOCKS_PER_SEC << endl;
+
+    vector<int> q_list;
+    generate_query(idx,q_num, q_list);
+    clock_t cur_time=clock();
+    for (int i=0;i<q_num;i++){
+        int answer=0;
+        for (auto it=idx.levelId_2_dataId.begin();it!=idx.levelId_2_dataId.end();it++){
+            if (q_list[i]==it->second){
+                if (k<=idx.ik) answer=inverted_idx[it->first].size();
+                else answer=single_query_largek(idx,k,it->first,log);
+                break;
+            }
+        }
+        cout << "The answer of kspr query " << i <<"("<< q_list[i]<<")"<< ": " << answer << endl;
+        log << "The answer of kspr query " << i <<"("<< q_list[i]<<")"<< ": " << answer << endl;
+    }
+    cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    return;
 }
 
 void LocalFilter_kspr(level& idx, kcell& cell, vector<int>&S1, vector<int>&Sk, int qk){
@@ -108,88 +183,4 @@ void kspr::SplitDFS(level& idx, kcell& cell, int pq, int qk, int& cnt) {
     }
     return;
 }
-
-int kspr::single_query_largek(level &idx, int k, int q_id, fstream &log) {
-    int cnt=0;
-    vector<int> S1,Sk;
-    for (auto it=idx.idx[idx.ik].begin();it!=idx.idx[idx.ik].end();it++){
-        if (Find_qid_topk(*it,q_id)) cnt++;
-        else if (Find_qid_Stau(*it,q_id)) {
-            cnt++;
-            SplitDFS(idx,*it,q_id,k,cnt);
-        }
-    }
-
-    /*for (int i=0;i<k-idx.ik;i++){
-        vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
-        //cout << i+idx.ik << ' ' << tmp[i].size() << endl;
-        for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
-            if (Find_qid_topk(*cur_cell,q_id)) {cnt++;continue;}
-            if (!Find_qid_Stau(*cur_cell,q_id)) continue; // will not contribute to kspr query
-            idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
-
-            for (auto p=S1.begin();p!=S1.end();p++){
-
-                kcell newcell;
-                idx.CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
-
-                if (!idx.VerifyDuplicate(newcell,this_level)){ // just for profiling
-                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,idx.dim)){ // just for profiling
-                        this_level.emplace_back(newcell);
-                        idx.region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
-                    }
-                }
-            }
-        }
-        //Compute V for each cell
-        //discuss why we need recompute after all
-        for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
-            idx.UpdateH(*cur_cell);
-            idx.UpdateV(*cur_cell,ave_vertex);
-        }
-
-        tmp.emplace_back(this_level);
-    }
-    for (auto it=tmp.back().begin();it!=tmp.back().end();it++)
-        if(Find_qid_topk(*it,q_id)) cnt++;*/
-    return cnt;
-}
-
-void kspr::multiple_query(level &idx, int k, int q_num, fstream &log) {
-    clock_t invert_time = clock();
-
-    vector<vector<int>> inverted_idx;
-    vector<int> ids;ids.clear();
-    int cur_k;
-    if (k<=idx.ik) cur_k=k;
-    else cur_k=idx.ik;
-    inverted_idx.clear();
-    for (int i=0;i<idx.Allobj.size();i++) inverted_idx.push_back(ids);
-    for (int i=0;i<idx.idx[cur_k].size();i++){
-        for (auto it=idx.idx[cur_k][i].topk.begin();it!=idx.idx[cur_k][i].topk.end();it++){
-            inverted_idx[*it].push_back(i);
-        }
-    }
-
-    log << "InvertedIdx from k-level building time: " << (clock() - invert_time) / (float) CLOCKS_PER_SEC << endl;
-    cout << "InvertedIdx from k-level building time: " << (clock() - invert_time) / (float) CLOCKS_PER_SEC << endl;
-
-    vector<int> q_list;
-    generate_query(idx,q_num, q_list);
-    clock_t cur_time=clock();
-    for (int i=0;i<q_num;i++){
-        int answer=0;
-        for (auto it=idx.levelId_2_dataId.begin();it!=idx.levelId_2_dataId.end();it++){
-            if (q_list[i]==it->second){
-                if (k<=idx.ik) answer=inverted_idx[it->first].size();
-                else answer=single_query_largek(idx,k,it->first,log);
-                break;
-            }
-        }
-        cout << "The answer of kspr query " << i <<"("<< q_list[i]<<")"<< ": " << answer << endl;
-        log << "The answer of kspr query " << i <<"("<< q_list[i]<<")"<< ": " << answer << endl;
-    }
-    cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
-    log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
-    return;
-}
+*/

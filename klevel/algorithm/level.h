@@ -77,8 +77,9 @@ public:
 
     // BulkLoad DFS
     //void DFSBuild(fstream& log, ofstream& idxout);
-    void SplitDFS(kcell& cell , vector<kcell>& L, ofstream& idxout, int& kcell_num); // also for large k query
+    //void SplitDFS(kcell& cell , vector<kcell>& L, ofstream& idxout, int& kcell_num);
 
+    void SingleCellSplit(int qk, kcell& cur_cell, vector<kcell>& NextCell);
 };
 
 
