@@ -9,13 +9,15 @@ void utk::generate_query(level &idx, int q_num, float utk_side_length, vector<ve
     q_list.clear();
     for (int i=0;i<q_num;i++){
         vector<float> v((idx.dim-1)*2,0.0);
-        float res=rand()/RAND_MAX-utk_side_length*(idx.dim-1);
-        if (res<0) res=1.0-utk_side_length*(idx.dim-1);
-
+        /*float res=rand()/RAND_MAX-utk_side_length*(idx.dim-1);
+        if (res<0) res=1.0-utk_side_length*(idx.dim-1);*/
+        int res=rand()%10000;
+        cout << res << endl;
         for (int d=0;d<idx.dim-1;d++){
-            v[d*2] = res*rand()/RAND_MAX;
+            int tmp=rand() % res;
+            v[d*2] = (float) tmp / 10000.0;
             v[d*2+1] = v[d*2]+utk_side_length;
-            res=res-v[d*2];
+            res=res-tmp;
         }
         q_list.push_back(v);
     }
@@ -89,29 +91,30 @@ void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
 }
 
 void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) {
-    int visit=0,result=0;
+    int visit=0;
     list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
     set<pair<int,int>> hash_set; hash_set.clear();
+    set<int> results; results.clear();
     vector<kcell> NextCell;
     while (!queue.empty()){
         auto cur_cell=queue.front(); queue.pop_front(); visit++;
-        if (cur_cell.curk==k){
-            if (Intersect(Qregion,cur_cell.r, idx.dim)) result++;
-        }
-        else if (Intersect(Qregion,cur_cell.r, idx.dim)){
-            if (cur_cell.curk<idx.ik){
-                for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
-                    if (hash_set.find(make_pair(cur_cell.curk+1, *it))==hash_set.end()) {
-                        queue.push_back(idx.idx[cur_cell.curk+1][*it]);
-                        hash_set.insert(make_pair(cur_cell.curk+1,*it));
-                        idx.UpdateH(queue.back()); // generate halfspace representation
+        if (Intersect(Qregion,cur_cell.r, idx.dim)){
+            for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++) results.insert(*it);
+            if (cur_cell.curk<k){
+                if ((cur_cell.curk<idx.ik)&&(cur_cell.Next.size()!=0)) { // non-best-performance
+                    for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
+                        if (hash_set.find(make_pair(cur_cell.curk+1, *it))==hash_set.end()) {
+                            queue.push_back(idx.idx[cur_cell.curk+1][*it]);
+                            hash_set.insert(make_pair(cur_cell.curk+1,*it));
+                            idx.UpdateH(queue.back()); // generate halfspace representation
+                        }
                     }
                 }
-            }
-            else{ // for large k
-                idx.SingleCellSplit(k,cur_cell,NextCell);
-                for (auto it=NextCell.begin();it!=NextCell.end();it++){
-                    queue.push_back(*it);
+                else{ // for large k
+                    idx.SingleCellSplit(k,cur_cell,NextCell);
+                    for (auto it=NextCell.begin();it!=NextCell.end();it++){
+                        queue.push_back(*it);
+                    }
                 }
             }
         }
@@ -120,8 +123,8 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) 
     vector<kcell>().swap(NextCell);
     cout << "Visiting cells of utk query: " <<  visit << endl;
     log << "Visiting cells of utk query: " <<  visit << endl;
-    cout << "Result cells of utk query: " << result << endl;
-    log << "Result cells of utk query: " << result << endl;
+    cout << "Result cells of utk query: " << results.size() << endl;
+    log << "Result cells of utk query: " << results.size() << endl;
     return;
 }
 

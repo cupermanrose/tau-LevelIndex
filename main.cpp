@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 case utk: {
-                    utk::multiple_query(idx, k, q_num, 0.1, log);
+                    utk::multiple_query(idx, k, q_num, 0.01, log);
                     break;
                 }
                 case oru: {
