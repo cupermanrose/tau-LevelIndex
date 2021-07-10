@@ -220,7 +220,22 @@ int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, Rtre
     return results.size();*/
 }
 
-void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fstream &log) {
+void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fstream &log) { // dag travel
+    vector<vector<float>> q_list;
+    generate_query(idx,q_num, utk_side_length, q_list);
+    clock_t cur_time=clock();
+    for (int i=0;i<q_num;i++){
+        cout << "utk query " << i << ": " << endl;
+        log << "utk query " << i << ": " << endl;
+        single_query(idx,k,q_list[i],log);
+    }
+    cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    return;
+}
+
+
+/*void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fstream &log) {
     clock_t rtree_time = clock();
     Rtree *rt = nullptr;
     unordered_map<long int, RtreeNode *> ramTree;
@@ -233,24 +248,24 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     vector<vector<float>> q_list;
 
     generate_query(idx,q_num, utk_side_length, q_list);
-/*    string queryfile="/home/kemingli/klevel/query/utk/utk_query_4d_l0.001.txt";
-    fstream queryout(queryfile, ios::in);
-    for (int i=0;i<q_num;i++){
-        float tmp;
-        for (int j=0;j<(idx.dim-1)*2;j++) {
-            queryout>>tmp;
-            cout<<tmp<<" ";
-        }
-        cout << endl;
-    }
-    return;
-    for (int i=0;i<q_num;i++){
-        for (int j=0;j<idx.dim-1;j++)
-            queryout << q_list[i][2*j] << ' ' << q_list[i][2*j+1] << ' ';
-        queryout << endl;
-    }
-    queryout.close();
-    return;*/
+//   string queryfile="/home/kemingli/klevel/query/utk/utk_query_4d_l0.001.txt";
+//    fstream queryout(queryfile, ios::in);
+//    for (int i=0;i<q_num;i++){
+//        float tmp;
+//        for (int j=0;j<(idx.dim-1)*2;j++) {
+//            queryout>>tmp;
+//            cout<<tmp<<" ";
+//        }
+//        cout << endl;
+//    }
+//    return;
+//    for (int i=0;i<q_num;i++){
+//        for (int j=0;j<idx.dim-1;j++)
+//            queryout << q_list[i][2*j] << ' ' << q_list[i][2*j+1] << ' ';
+//        queryout << endl;
+//    }
+//    queryout.close();
+//    return;
 
     for (int i=0;i<q_num;i++){
         vector<int> utk_results;
@@ -263,5 +278,5 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     cout << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     return;
-}
+}*/
 
