@@ -54,6 +54,10 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
         if (isIn(*it,Qregion,dim)) return true;
     }
 
+    /*AddQregion(Qregion,r,dim);
+    if (lp_adapter::is_Feasible(r.H,r.innerPoint,dim)) return true;
+    else return false;*/
+
     int bitset = 1 << (dim-1);
     for (int i = 0; i < bitset; i++) {
         vector<float> Qv; Qv.clear();
@@ -68,6 +72,89 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
     return false;
 }
 
+void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
+    for (int i=0;i<dim-1;i++){
+        halfspace tmp_HP; tmp_HP.w.clear();
+        for (int j=0;j<dim;j++) tmp_HP.w.push_back(0.0);
+        tmp_HP.w[i]=1.0;
+
+        tmp_HP.w[dim-1]=Qregion[2*i]; tmp_HP.side=true;
+        r.H.push_back(tmp_HP);
+
+        tmp_HP.w[dim-1]=Qregion[2*i+1]; tmp_HP.side=false;
+        r.H.push_back(tmp_HP);
+    }
+    return;
+}
+
+void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) {
+    int visit=0,result=0;
+    list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
+    set<pair<int,int>> hash_set; hash_set.clear();
+    vector<kcell> NextCell;
+    while (!queue.empty()){
+        auto cur_cell=queue.front(); queue.pop_front(); visit++;
+        if (cur_cell.curk==k){
+            if (Intersect(Qregion,cur_cell.r, idx.dim)) result++;
+        }
+        else if (Intersect(Qregion,cur_cell.r, idx.dim)){
+            if (cur_cell.curk<idx.ik){
+                for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
+                    if (hash_set.find(make_pair(cur_cell.curk+1, *it))==hash_set.end()) {
+                        queue.push_back(idx.idx[cur_cell.curk+1][*it]);
+                        hash_set.insert(make_pair(cur_cell.curk+1,*it));
+                        idx.UpdateH(queue.back()); // generate halfspace representation
+                    }
+                }
+            }
+            else{ // for large k
+                idx.SingleCellSplit(k,cur_cell,NextCell);
+                for (auto it=NextCell.begin();it!=NextCell.end();it++){
+                    queue.push_back(*it);
+                }
+            }
+        }
+    }
+    NextCell.clear();
+    vector<kcell>().swap(NextCell);
+    cout << "Visiting cells of utk query: " <<  visit << endl;
+    log << "Visiting cells of utk query: " <<  visit << endl;
+    cout << "Result cells of utk query: " << result << endl;
+    log << "Result cells of utk query: " << result << endl;
+    return;
+}
+
+void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fstream &log) { // dag travel
+    vector<vector<float>> q_list;
+    generate_query(idx,q_num, utk_side_length, q_list);
+    clock_t cur_time=clock();
+    for (int i=0;i<q_num;i++){
+        cout << "utk query " << i << ": " << endl;
+        log << "utk query " << i << ": " << endl;
+        single_query(idx,k,q_list[i],log);
+    }
+    cout << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    log << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    return;
+}
+
+/*
+void LocalFilter_utk(level& idx, kcell& cell, vector<int>&S1, vector<int>&Sk, int qk){
+    S1.clear();Sk.clear();
+    for (auto i=cell.Stau.begin();i!=cell.Stau.end();i++){
+        int cnt=0;
+        for (auto j=cell.Stau.begin();j!=cell.Stau.end();j++){
+            if (*i==*j) continue;
+            if (RegionDominate(cell.r.V,idx.Allobj[*i],idx.Allobj[*j],idx.dim)) cnt++;
+            if (cnt>=(qk-cell.curk)) break;
+        }
+        if (cnt==0) S1.push_back(*i);
+        if (cnt<(qk-cell.curk)) Sk.push_back(*i);
+    }
+}
+*/
+
+/*
 int utk::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
                       int k, vector<float> &Qregion, fstream &log) {
     vector<float> ql,qu;
@@ -90,44 +177,10 @@ int utk::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>
     }
     return results.size();
 
-    /*for (auto it=idx.idx[k].begin();it!=idx.idx[k].end();it++){
-        if (Intersect(Qregion,it->r, idx.dim)){
-            for (auto p=it->topk.begin();p!=it->topk.end();p++){
-                results.insert(*p);
-            }
-        }
-    }
-    return results.size();*/
 }
+*/
 
-void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
-    for (int i=0;i<dim-1;i++){
-        halfspace tmp_HP; tmp_HP.w.clear();
-        for (int j=0;j<dim;j++) tmp_HP.w.push_back(0.0);
-        tmp_HP.w[i]=1.0;
-
-        tmp_HP.w[dim-1]=Qregion[2*i]; tmp_HP.side=true;
-        r.H.push_back(tmp_HP);
-
-        tmp_HP.w[dim-1]=Qregion[2*i+1]; tmp_HP.side=false;
-        r.H.push_back(tmp_HP);
-    }
-    return;
-}
-
-void LocalFilter_utk(level& idx, kcell& cell, vector<int>&S1, vector<int>&Sk, int qk){
-    S1.clear();Sk.clear();
-    for (auto i=cell.Stau.begin();i!=cell.Stau.end();i++){
-        int cnt=0;
-        for (auto j=cell.Stau.begin();j!=cell.Stau.end();j++){
-            if (*i==*j) continue;
-            if (RegionDominate(cell.r.V,idx.Allobj[*i],idx.Allobj[*j],idx.dim)) cnt++;
-            if (cnt>=(qk-cell.curk)) break;
-        }
-        if (cnt==0) S1.push_back(*i);
-        if (cnt<(qk-cell.curk)) Sk.push_back(*i);
-    }
-}
+/*
 void utk::SplitDFS(level& idx, kcell& cell, vector<float> &Qregion, int qk, unordered_set<int>& results) {
     if ((cell.curk>=qk)||(cell.r.V.size()==0)) return;
     for (auto it=cell.topk.begin();it!=cell.topk.end();it++) results.insert(*it);
@@ -165,8 +218,9 @@ void utk::SplitDFS(level& idx, kcell& cell, vector<float> &Qregion, int qk, unor
     }
     return;
 }
+*/
 
-int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
+/*int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,
                              int k, vector<float> &Qregion, fstream &log) { // COMPUTE FROM LEVEL-0
     vector<float> ql,qu;
     ql.clear();qu.clear();
@@ -183,57 +237,42 @@ int utk::single_query_largek(level &idx, Rtree* rt, unordered_map<long int, Rtre
     }
     return results.size();
 
-    /*
-    vector<int> S1,Sk;
-    int ave_S1=0,ave_Sk=0,ave_vertex=0;
-    vector<vector<kcell>> tmp; tmp.clear();
-    vector<kcell> init_level;  init_level.clear();
-     unordered_set<int> results; results.clear();
-    tmp.emplace_back(init_level);
-    for (int i=0;i<k-idx.ik;i++){
-        vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
-        for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
-            if (!Intersect(Qregion,cur_cell->r, idx.dim)) continue; // will not contribute to utk query
-            for (auto p=cur_cell->topk.begin();p!=cur_cell->topk.end();p++){
-                results.insert(*p);
-            }
-            idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
-            for (auto p=S1.begin();p!=S1.end();p++){
-                kcell newcell;
-                idx.CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
-                if (!idx.VerifyDuplicate(newcell,this_level)){
-                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,idx.dim)){
-                        this_level.emplace_back(newcell);
-                        idx.region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
-                    }
-                }
-            }
-        }
-        //Compute V for each cell
-        for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
-            idx.UpdateH(*cur_cell);
-            idx.UpdateV(*cur_cell,ave_vertex);
-        }
-        tmp.emplace_back(this_level);
-    }
 
-    return results.size();*/
-}
-
-void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fstream &log) { // dag travel
-    vector<vector<float>> q_list;
-    generate_query(idx,q_num, utk_side_length, q_list);
-    clock_t cur_time=clock();
-    for (int i=0;i<q_num;i++){
-        cout << "utk query " << i << ": " << endl;
-        log << "utk query " << i << ": " << endl;
-        single_query(idx,k,q_list[i],log);
-    }
-    cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
-    log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
-    return;
-}
-
+//    vector<int> S1,Sk;
+//    int ave_S1=0,ave_Sk=0,ave_vertex=0;
+//    vector<vector<kcell>> tmp; tmp.clear();
+//    vector<kcell> init_level;  init_level.clear();
+//     unordered_set<int> results; results.clear();
+//    tmp.emplace_back(init_level);
+//    for (int i=0;i<k-idx.ik;i++){
+//        vector<kcell> this_level;  this_level.clear(); idx.region_map.clear();
+//        for (auto cur_cell=tmp[i].begin(); cur_cell!=tmp[i].end(); cur_cell++){
+//            if (!Intersect(Qregion,cur_cell->r, idx.dim)) continue; // will not contribute to utk query
+//            for (auto p=cur_cell->topk.begin();p!=cur_cell->topk.end();p++){
+//                results.insert(*p);
+//            }
+//            idx.LocalFilter(k, S1,Sk,*cur_cell,ave_S1,ave_Sk);
+//            for (auto p=S1.begin();p!=S1.end();p++){
+//                kcell newcell;
+//                idx.CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
+//                if (!idx.VerifyDuplicate(newcell,this_level)){
+//                    if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,idx.dim)){
+//                        this_level.emplace_back(newcell);
+//                        idx.region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
+//                    }
+//                }
+//            }
+//        }
+//        //Compute V for each cell
+//        for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
+//            idx.UpdateH(*cur_cell);
+//            idx.UpdateV(*cur_cell,ave_vertex);
+//        }
+//        tmp.emplace_back(this_level);
+//    }
+//
+//    return results.size();
+}*/
 
 /*void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fstream &log) {
     clock_t rtree_time = clock();

@@ -51,6 +51,7 @@ void kspr::single_query(level &idx, int k, int q_id, fstream &log) {
     int visit=0,result=0;
     list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
     vector<kcell> NextCell;
+    set<pair<int,int>> hash_set; hash_set.clear();
     while (!queue.empty()){
         auto cur_cell=queue.front(); queue.pop_front(); visit++;
         if (Find_qid_topk(cur_cell,q_id)){
@@ -59,7 +60,10 @@ void kspr::single_query(level &idx, int k, int q_id, fstream &log) {
         else if (Find_qid_Stau(cur_cell,q_id)&&(cur_cell.curk<k)){
             if (cur_cell.curk<idx.ik){
                 for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
-                    queue.push_back(idx.idx[cur_cell.curk+1][*it]);
+                    if (hash_set.find(make_pair(cur_cell.curk+1, *it))==hash_set.end()) {
+                        queue.push_back(idx.idx[cur_cell.curk+1][*it]);
+                        hash_set.insert(make_pair(cur_cell.curk+1,*it));
+                    }
                 }
             }
             else{ // for large k

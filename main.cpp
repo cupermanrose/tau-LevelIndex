@@ -54,24 +54,24 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
                 break;
         }
     }
-    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_HS_"+build_str+".idx";
+    idxfile=root_directory+"index/"+filename+"_dim"+to_string(dim)+"_tau"+to_string(tau)+"_ik"+to_string(ik)+"_"+build_str+".idx";
     cout<<idxfile<<endl;
     log.open(logfile, ios::out);
 }
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4; tau=5; ik=5;
+    dim=4; tau=20; ik=10;
     root_directory="/home/jiahaozhang/data/klevel/";
     // root_directory="/home/kemingli/klevel/";
 
     filename="inde/U400K4";
-//    func_str="buildidx"; // buildidx loadidx
+    //func_str="buildidx"; // buildidx loadidx
     func_str="loadidx";
     build_str="PTF"; // INS PT PTF
-    query_str="oru"; // kspr utk oru
+    query_str="utk"; // kspr utk oru
     q_num=5; // # of query
-    k=5; // query k
+    k=10; // query k
 
     // auxiliary parameter
     anti_id_f=root_directory+"data/"+filename+".ch";
@@ -115,11 +115,11 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 case utk: {
-                    utk::multiple_query(idx, k, q_num, 0.01, log);
+                    utk::multiple_query(idx, k, q_num, 0.1, log);
                     break;
                 }
                 case oru: {
-                    oru::multiple_query2(idx, k, 50, q_num, log);
+                    //oru::multiple_query2(idx, k, 50, q_num, log);
                     break;
                 }
             }

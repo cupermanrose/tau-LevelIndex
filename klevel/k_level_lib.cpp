@@ -50,9 +50,6 @@ void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) { // N
     vector<int> candidate;
     idx.GlobalFilter(log,candidate);
 
-//    kcell root; root.TobeRoot(candidate,idx.dim);
-//    vector<kcell> empty_level; empty_level={root};
-//    idx.idx.emplace_back(empty_level);
     for (int k=0;k<=idx.ik;k++){
         vector<kcell> this_level; this_level.clear();
         idx.idx.emplace_back(this_level);
