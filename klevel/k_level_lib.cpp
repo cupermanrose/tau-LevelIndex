@@ -74,8 +74,8 @@ void Vertex2BOX(const vector<kcell> &L, vector<vector<float>>& MBRs, int dim){
     MBRs.clear();
     for(auto &iter: L){
         if (iter.r.V.empty()) continue;
-        vector<float> box(dim*2);
-        for (int j = 0; j < dim; ++j) {
+        vector<float> box((dim-1)*2);
+        for (int j = 0; j < dim-1; ++j) {
             box[j]=1;
         }
         for(auto &vertex: iter.r.V){
@@ -88,16 +88,15 @@ void Vertex2BOX(const vector<kcell> &L, vector<vector<float>>& MBRs, int dim){
             for (int i = 0; i < vertex.size(); ++i) {
                 box[i]=min(box[i], vertex[i]);
             }
-            box[dim-1]=min(box[dim-1], bias);
+//            box[dim-1]=min(box[dim-1], bias);
 
             for (int i = 0; i < vertex.size(); ++i) {
-                box[i+dim]=max(box[i+dim], vertex[i]);
+                box[i+dim-1]=max(box[i+dim-1], vertex[i]);
             }
-            box[dim-1+dim]=max(box[dim-1+dim], bias);
+//            box[dim-1+dim]=max(box[dim-1+dim], bias);
         }
         MBRs.emplace_back(box);
     }
-    return;
 }
 
 void BuildRtree(const vector<kcell> &L, Rtree* &rt, unordered_map<long int, RtreeNode*>& ramTree, int dim){

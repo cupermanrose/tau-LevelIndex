@@ -69,6 +69,7 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
         }
         if (isIn(Qv, r.H, dim)) return true;
     }
+    //TODO This might be wrong
     return false;
 }
 
