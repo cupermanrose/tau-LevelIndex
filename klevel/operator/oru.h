@@ -12,7 +12,6 @@
 class oru {
 public:
     //
-    static void multiple_query(level& idx, int k, int ret_size, int q_num, fstream& log);
     static void generate_query(level& idx, int q_num,  vector<vector<float>>& q_list);
     static bool isIn(vector<float>& v, vector<halfspace>& H, int dim);
     static float GetDistance(vector<float>& q, region& r, int dim);
@@ -21,7 +20,7 @@ public:
                               int k, int ret_size, vector<float>& q, fstream& log);
     //static float single_query_largek(level& idx, int k, int ret_size, vector<float>& q, fstream& log);
     static float single_query(level &idx, int k, int ret_size, vector<float>& q, fstream &log);
-    static void multiple_query2(level &idx, int k, int ret_size, int q_num, fstream &log);
+    static void multiple_query(level &idx, int k, int ret_size, int q_num, fstream &log);
 
 };
 

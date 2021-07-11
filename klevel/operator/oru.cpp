@@ -194,28 +194,6 @@ float oru::single_query_largek(level &idx, int k, int ret_size, vector<float>& q
 }
 */
 
-void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &log) {
-    clock_t rtree_time = clock();
-    Rtree *rt = nullptr;
-    unordered_map<long int, RtreeNode *> ramTree;
-    BuildRtree(idx.idx[k], rt, ramTree,idx.dim);
-    log << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC << endl;
-    cout << "R-tree from k-level building time: " << (clock() - rtree_time) / (float) CLOCKS_PER_SEC << endl;
-
-    clock_t cur_time=clock();
-    vector<vector<float>> q_list;
-    generate_query(idx,q_num, q_list);
-    for (int i=0;i<q_num;i++){
-        float answer;
-        if (k<=idx.ik) answer=single_query(idx, rt, ramTree, k, ret_size, q_list[i],log);
-        else cout << "the maximum k of oru is less than ik";
-        cout << "The answer of oru query " << i << ": " << answer << endl;
-        log << "The answer of oru query " << i << ": " << answer << endl;
-    }
-    cout << "Average oru query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
-    log << "Average oru query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
-    return;
-}
 // --------------------------------- new code since 2021/7/8 -------------------------------------
 float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstream &log) {
     float oru_ret_dis=INFINITY;
@@ -227,6 +205,7 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
     multimap<double, kcell*> heap;
     heap.emplace(INFINITY, &root);
     unordered_set<int> ret_option;
+    unordered_set<kcell*> added;
     while(!heap.empty() && ret_option.size()<ret_size){
         kcell * nearest_cell=heap.begin()->second;
         oru_ret_dis=heap.begin()->first;
@@ -238,8 +217,13 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
         }else{
             for(auto &i:nearest_cell->Next){
                 kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
+                if(added.find(child_cell)!=added.end()){
+                    continue;
+                }else{
+                    added.insert(child_cell);
+                }
                 idx.UpdateH(*child_cell);
-                vector<vector<float>> HS; HS.clear();
+                vector<vector<float>> HS;
                 for (auto it=child_cell->r.H.begin();it!=child_cell->r.H.end();it++){
                     HS.push_back(it->w);
                     if(it->side){// this is importance !!!!!!!
@@ -256,7 +240,7 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
     return oru_ret_dis;
 }
 
-void oru::multiple_query2(level &idx, int k, int ret_size, int q_num, fstream &log) {
+void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &log) {
     clock_t cur_time=clock();
     vector<vector<float>> q_list;
     generate_query(idx,q_num, q_list);

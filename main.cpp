@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 case oru: {
-                    //oru::multiple_query2(idx, k, 50, q_num, log);
+                    oru::multiple_query(idx, k, 50, q_num, log);
                     break;
                 }
             }
