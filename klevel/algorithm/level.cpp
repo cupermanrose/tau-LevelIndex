@@ -692,12 +692,13 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
         cellsum+=this_level.size();
         idx.emplace_back(this_level);
 
-        WriteToDisk(k, idxout);
         int ave_next = EdgeComputation(k-1);
+        WriteToDisk(k-1, idxout);
         print_info(k, cellsum, valid_cell,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, ave_next, utk_set,log);
         profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
         FreeMem(k-1);
     }
+    WriteToDisk(ik, idxout);
     cout << "The total size of index: " << cellsum << endl;
     log << "The total size of index: " << cellsum << endl;
 }
