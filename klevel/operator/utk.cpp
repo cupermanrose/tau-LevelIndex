@@ -123,8 +123,10 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) 
     vector<kcell>().swap(NextCell);
     cout << "Visiting cells of utk query: " <<  visit << endl;
     log << "Visiting cells of utk query: " <<  visit << endl;
-    cout << "Result cells of utk query: " << results.size() << endl;
-    log << "Result cells of utk query: " << results.size() << endl;
+    //cout << "Result cells of utk query: " <<  visit << endl;
+    //log << "Result cells of utk query: " <<  visit << endl;
+    cout << "Results of utk query: " << results.size() << endl;
+    log << "Results of utk query: " << results.size() << endl;
     return;
 }
 
