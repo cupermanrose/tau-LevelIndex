@@ -156,7 +156,6 @@ void kskyband_rtree(
     float dist_tmp;
 
     heap.emplace(INFINITY, rtree_rt->m_memory.m_rootPageID);
-
     while (!heap.empty()) {
         heapIter = heap.begin();
         dist_tmp = heapIter->first;

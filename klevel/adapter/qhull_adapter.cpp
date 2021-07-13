@@ -48,7 +48,7 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<vector<float>>& V
             else halfspaces[res] = 0.0;
             res++;
         }
-        halfspaces[res] = 0.0; res++;
+        halfspaces[res] = 0.0-1e-4; res++;
         for (int d = 0; d < dim - 1; d++) {
             if (i == d) halfspaces[res] = 1.0;
             else halfspaces[res] = 0.0;
@@ -67,18 +67,6 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<vector<float>>& V
         res++;
     }
 
-    //coordT* rows[TOTpoints];
-    boolT ismalloc = True;    /* True if qhull should free points in qh_freeqhull() or reallocation */
-    char flags[250];          /* option flags for qhull, see qh-quick.htm */
-    //FILE* outfile = stdout;    /* output from qh_produce_output()
-    // use NULL to skip qh_produce_output() */
-    //FILE* errfile = stderr;    /* error messages from qhull code */
-
-    int exitcode;             /* 0 if no error from qhull */
-    facetT* facet;            /* set by FORALLfacets */
-    int curlong, totlong;     /* memory remaining after qh_memfreeshort, used if !qh_NOmem  */
-    //int i;
-
     qhT qh_qh;                /* Qhull's data structure.  First argument of most calls */
     qhT* qh = &qh_qh;
 
@@ -89,18 +77,7 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<vector<float>>& V
     /* use qh_sethalfspace_all to transform the halfspaces yourself.
        If so, set 'qh->feasible_point and do not use option 'Hn,...' [it would retransform the halfspaces]
     */
-    string s="qhull H";
-    for (int i = 0; i < dim - 2; i++) {
-        s += to_string(innerPoint[i]) + ",";
-    }
-    s += to_string(innerPoint[dim-2])+" Fp";
-    char qhull_cmd[s.length()+1];
-    strcpy(qhull_cmd, s.c_str());
 
-//
-//    coordT* feasible_point = new coordT[dim - 1];
-//    for (int i = 0; i < dim - 1; i++) feasible_point[i] = innerPoint[i];
-//    exitcode = qh_new_qhull_klevel(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, feasible_point, NULL, NULL);
     vector<vector<float>> ret;
     qhull_user::points_at_half_inter(ret, halfspaces, numpoints, innerPoint);
     for (auto &i1:ret) {
@@ -109,41 +86,6 @@ void qhull_adapter::ComputeVertex(vector<halfspace> &H, vector<vector<float>>& V
         V.push_back(tmp);
     }
     delete [] (halfspaces);
-//    cout<<V.size()<<endl;
-//    exitcode = qh_new_qhull(qh, dim, numpoints, halfspaces, ismalloc, qhull_cmd, NULL, NULL);
-//
-//
-//    V.clear();
-//
-//    boolT zerodiv;
-//    FORALLfacets{
-//            point tmp; tmp.w.clear();
-//            for (int d = 0; d < qh->hull_dim; d++) {
-//                if (facet->offset < -qh->MINdenom) {
-//                    tmp.w.push_back((facet->normal[d] / -facet->offset) + qh->feasible_point[d]);
-//                }
-//                else {
-//                    tmp.w.push_back(qh_divzero(facet->normal[d], facet->offset, qh->MINdenom_1,
-//                                                    &zerodiv) + qh->feasible_point[d]);
-//                }
-//            }
-//            V.emplace_back(tmp);
-//    }
-//
-//#ifdef qh_NOmem
-//    qh_freeqhull(qh, qh_ALL);
-//#else
-//    qh_freeqhull(qh, !qh_ALL);
-//    qh_memfreeshort(qh, &curlong, &totlong);
-//    if (curlong || totlong)  /* could also check previous runs */
-//        fprintf(stderr, "qhull internal warning (user_eg, #3): did not free %d bytes of long memory (%d pieces)\n",
-//                totlong, curlong);
-//#endif
-//    //qh_freeqhull(qh, !qh_ALL);
-//
-//    // memory free
-//
-//    return;
 }
 
 #define POINT_ID int
@@ -313,20 +255,6 @@ std::vector<std::vector<double>> qhull_user::get_cone_norms(Qhull &q, std::vecto
     int USED;
     int f_cnt;
     opt_neibor_facets >> num_point;
-//        for (int i = 0; i < num_point-1; ++i) {
-//            int f_cnt;
-//            opt_neibor_facets>>f_cnt;
-//            if(f_cnt<=1){
-//                // interior point or coplanar or vertices belong to not good facet
-//                if(f_cnt==1){
-//                    opt_neibor_facets>>UNUSED;
-//                }
-//            }else{
-//                for (int j = 0; j < f_cnt; ++j) {
-//                    opt_neibor_facets>>UNUSED;
-//                }
-//            }
-//        }
     opt_neibor_facets>>f_cnt;
     std::vector<int> cone_facets(f_cnt);
     for (int j = 0; j < f_cnt; ++j) {
