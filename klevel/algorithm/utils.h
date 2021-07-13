@@ -35,10 +35,18 @@ float GetScore(vector<float> &w, vector<float> &p, int dim); // w[dim-1]=1.0-sig
 // Return true: oj dominates oi in this region;
 template<typename POINT>
 bool RegionDominate(vector<POINT> &V, vector<float> &oi, vector<float> &oj, int dim) {
+    float s1, s2;
+    bool flag=false;
     for (auto it=V.begin();it!=V.end();it++){
-        if (GetScore(*it,oi,dim)>GetScore(*it,oj,dim)) return false;
+        s1=GetScore(*it,oi,dim);
+        s2=GetScore(*it,oj,dim);
+        if (s1>s2){
+            return false;
+        }else if(s1<s2){
+            flag=true;
+        }
     }
-    return true;
+    return flag;
 }
 
 class ch{

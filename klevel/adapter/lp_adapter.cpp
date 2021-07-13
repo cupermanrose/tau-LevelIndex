@@ -92,8 +92,8 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
     double var[Max_Dimension], var1[Max_Dimension];
 
     for (int i = 0; i < dim + 1; i++) row[i] = 1.0;
-    set_maxim(lp);
     set_obj_fn(lp, row);
+    set_maxim(lp);
     set_timeout(lp,10);
     int ret = solve(lp);
     get_variables(lp, var);
@@ -102,8 +102,8 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
 
     if (ret == 0)
     {
-        set_minim(lp);
         set_obj_fn(lp,row);
+        set_minim(lp);
         set_timeout(lp,10);
         int ret = solve(lp);
         get_variables(lp, var1);

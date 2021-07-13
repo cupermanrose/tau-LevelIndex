@@ -5,6 +5,7 @@
 #include "rnode.h"
 #include "tgs.h"
 #include "rtree.h"
+
 void release_rtree(Rtree *rt);
 
 void rtreeRAM(const Rtree& rt, unordered_map<long int, RtreeNode*>& ramTree);
@@ -34,8 +35,9 @@ void build_rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,
     // build rtree
     const int maxChild = (PAGESIZE - RtreeNode::size()) / RtreeNodeEntry::size(dim);
     //FileMemory mem(PAGESIZE, "./result/index.txt", RtreeNodeEntry::fromMem, true);
-    FileMemory mem(PAGESIZE, "index.txt", RtreeNodeEntry::fromMem, true);
-    rtree_rt = TGS::bulkload(mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
+    string indexf_name="index"+to_string(random()%1000)+"txt"; // TODO specific by user
+    FileMemory *mem=new FileMemory(PAGESIZE, indexf_name.c_str(), RtreeNodeEntry::fromMem, true);
+    rtree_rt = TGS::bulkload(*mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
 //            cout << "[Rtree build done]" << endl;
 
     // in-memory rtree
