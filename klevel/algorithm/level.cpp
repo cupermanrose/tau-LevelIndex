@@ -750,6 +750,12 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
                         this_level.emplace_back(newcell);
                         region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
                     }
+                    else {
+                        newcell.FreeMem();
+                    }
+                }
+                else {
+                    newcell.FreeMem();
                 }
             }
 
