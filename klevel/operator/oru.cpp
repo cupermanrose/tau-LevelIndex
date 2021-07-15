@@ -198,25 +198,25 @@ float oru::single_query_largek(level &idx, int k, int ret_size, vector<float>& q
 float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstream &log) {
     float oru_ret_dis=INFINITY;
     vector<vector<kcell>> &cells = idx.idx;
-    if(cells.empty() || cells[0].empty() || cells.size()<=k ){
+    if(cells.empty() || cells[0].empty()){
         return oru_ret_dis;
     }
     kcell &root=cells[0][0];
-    multimap<double, kcell*> heap;
-    heap.emplace(INFINITY, &root);
+    multimap<double, kcell> heap;
+    heap.emplace(INFINITY, root);
     unordered_set<int> ret_option;
     unordered_set<kcell*> added;
     while(!heap.empty() && ret_option.size()<ret_size){
-        kcell * nearest_cell=heap.begin()->second;
+        kcell nearest_cell=heap.begin()->second;
         oru_ret_dis=heap.begin()->first;
         heap.erase(heap.begin());
-        if(nearest_cell->curk==k){
-            for(auto &i:nearest_cell->topk){
+        if(nearest_cell.curk==k){
+            for(auto &i:nearest_cell.topk){
                 ret_option.insert(i);
             }
         }else{
-            for(auto &i:nearest_cell->Next){
-                kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
+            for(auto &i:nearest_cell.Next){
+                kcell *child_cell=&cells[nearest_cell.curk+1][i];// cell
                 if(added.find(child_cell)!=added.end()){
                     continue;
                 }else{
@@ -224,16 +224,34 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                 }
                 idx.UpdateH(*child_cell);
                 vector<vector<float>> HS;
-                for (auto it=child_cell->r.H.begin();it!=child_cell->r.H.end();it++){
-                    HS.push_back(it->w);
-                    if(it->side){// this is importance !!!!!!!
+                for (auto & it : child_cell->r.H){
+                    HS.push_back(it.w);
+                    if(it.side){// this is importance !!!!!!!
                         for(auto &j: HS.back()){
                             j=-j;
                         }
                     }
                 }
                 double dis=getDistance(q,HS);
-                heap.emplace(dis, child_cell);
+                heap.emplace(dis, *child_cell);
+            }
+            if(nearest_cell.curk<k && nearest_cell.Next.empty()){
+                vector<kcell> NextCell;
+                idx.SingleCellSplit(k, nearest_cell,NextCell);
+                for (auto &child_cell:NextCell) {
+                    idx.UpdateH(child_cell);
+                    vector<vector<float>> HS;
+                    for (auto & it : child_cell.r.H){
+                        HS.push_back(it.w);
+                        if(it.side){// this is importance !!!!!!!
+                            for(auto &j: HS.back()){
+                                j=-j;
+                            }
+                        }
+                    }
+                    double dis=getDistance(q,HS);
+                    heap.emplace(dis, child_cell);
+                }
             }
         }
     }
@@ -245,9 +263,7 @@ void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &lo
     vector<vector<float>> q_list;
     generate_query(idx,q_num, q_list);
     for (int i=0;i<q_num;i++){
-        float answer;
-        if (k<=idx.ik) answer=single_query(idx, k, ret_size, q_list[i],log);
-        else cout << "the maximum k of oru is less than ik";
+        float answer=single_query(idx, k, ret_size, q_list[i],log);
         cout << "The answer of oru query " << i << ": " << answer << endl;
         log << "The answer of oru query " << i << ": " << answer << endl;
     }
