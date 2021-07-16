@@ -35,7 +35,7 @@ void build_rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,
     // build rtree
     const int maxChild = (PAGESIZE - RtreeNode::size()) / RtreeNodeEntry::size(dim);
     //FileMemory mem(PAGESIZE, "./result/index.txt", RtreeNodeEntry::fromMem, true);
-    string indexf_name="index"+to_string(random()%1000)+"txt"; // TODO specific by user
+    string indexf_name="index"+to_string(time(nullptr)%1000)+"txt"; // TODO specific by user
     FileMemory *mem=new FileMemory(PAGESIZE, indexf_name.c_str(), RtreeNodeEntry::fromMem, true);
     rtree_rt = TGS::bulkload(*mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
 //            cout << "[Rtree build done]" << endl;
@@ -65,7 +65,8 @@ void box2rtree(Rtree* &rtree_rt, unordered_map<long int, RtreeNode*>& ramTree,VV
     const int maxChild = (PAGESIZE - RtreeNode::size()) / RtreeNodeEntry::size(dim);
     //FileMemory mem(PAGESIZE, "./result/index.txt", RtreeNodeEntry::fromMem, true);
     //TODO not using a file, if running multiple rtree, this would cause problem
-    FileMemory *mem=new FileMemory(PAGESIZE, "index2.txt", RtreeNodeEntry::fromMem, true);
+    string indexf_name="index"+to_string(time(nullptr)%1000)+"txt"; // TODO specific by user
+    FileMemory *mem=new FileMemory(PAGESIZE, indexf_name.c_str(), RtreeNodeEntry::fromMem, true);
     rtree_rt = TGS::bulkload(*mem, dim, maxChild, maxChild, (int)maxChild*0.3, (int)maxChild*0.3, p, data.size(), false);
 //            cout << "[Rtree build done]" << endl;
 
