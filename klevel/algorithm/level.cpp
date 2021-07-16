@@ -86,7 +86,7 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
         for(auto &i: query){
             cout<<i+1<<endl;
         }
-        exit(0);
+//        exit(0);
     }else if(apply_onion_from_file) {
         vector<vector<int>> onion;
         read_onion(anti_id_f, onion);
