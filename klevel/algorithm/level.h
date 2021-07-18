@@ -43,7 +43,7 @@ public:
     void FreeMem(int k);
     void profiling(int k, clock_t& level_zero_time, double& rskyband_time, double& verify_time, double& isFeasible_time,double& updateV_time, fstream& log);
     void print_info(int k, int cellsum, int valid_cell, clock_t& level_zero_time, clock_t& level_k_time,
-                    int& ave_S1, int& ave_Sk, int& ave_vertex, int& ave_next, set<int>& utk_set, fstream& log);
+                    int& ave_S1, int& ave_Sk, int& ave_vertex, int& ave_next, int& suc_split, set<int>& utk_set, fstream& log);
     void print_system_info(fstream& log);
     void WriteToDisk(int k, ofstream& idxout);
     void ReadFromDisk(int k, ifstream& idxin);

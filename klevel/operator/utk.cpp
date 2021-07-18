@@ -90,8 +90,9 @@ void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
     return;
 }
 
-void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) {
+void utk::single_query(level &idx, int k, vector<float> &Qregion, int& visit_sum, int& result_sum, fstream &log) {
     int visit=0;
+    int result=0;
     list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
     set<pair<int,int>> hash_set; hash_set.clear();
     set<int> results; results.clear();
@@ -99,9 +100,13 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) 
     while (!queue.empty()){
         auto cur_cell=queue.front(); queue.pop_front(); visit++;
         if (Intersect(Qregion,cur_cell.r, idx.dim)){
+            if (cur_cell.curk==k){
+                result++;
+            }
             for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++) results.insert(*it);
             if (cur_cell.curk<k){
-                if ((cur_cell.curk<idx.ik)&&(cur_cell.Next.size()!=0)) { // non-best-performance
+                //if ((cur_cell.curk<idx.ik)&&(cur_cell.Next.size()!=0)) { // non-best-performance
+                if (cur_cell.curk<idx.ik) { // best-performance
                     for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
                         if (hash_set.find(make_pair(cur_cell.curk+1, *it))==hash_set.end()) {
                             queue.push_back(idx.idx[cur_cell.curk+1][*it]);
@@ -121,10 +126,12 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) 
     }
     NextCell.clear();
     vector<kcell>().swap(NextCell);
+    visit_sum+=visit;
+    result_sum+=result;
     cout << "Visiting cells of utk query: " <<  visit << endl;
     log << "Visiting cells of utk query: " <<  visit << endl;
-    //cout << "Result cells of utk query: " <<  visit << endl;
-    //log << "Result cells of utk query: " <<  visit << endl;
+    cout << "Result cells of utk query: " <<  result << endl;
+    log << "Result cells of utk query: " <<  result << endl;
     cout << "Results of utk query: " << results.size() << endl;
     log << "Results of utk query: " << results.size() << endl;
     return;
@@ -134,13 +141,19 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     vector<vector<float>> q_list;
     generate_query(idx,q_num, utk_side_length, q_list);
     clock_t cur_time=clock();
+    int visit_sum=0;
+    int result_sum=0;
     for (int i=0;i<q_num;i++){
         cout << "utk query " << i << ": " << endl;
         log << "utk query " << i << ": " << endl;
-        single_query(idx,k,q_list[i],log);
+        single_query(idx,k, q_list[i], visit_sum, result_sum, log);
     }
     cout << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    cout << "Average visiting cell: " << (float) visit_sum / (float) q_num << endl;
+    log << "Average visiting cell: " << (float) visit_sum / (float) q_num << endl;
+    cout << "Average result cell: " << (float) result_sum / (float) q_num << endl;
+    log << "Average result cell: " << (float) result_sum / (float) q_num << endl;
     return;
 }
 

@@ -47,7 +47,7 @@ bool kspr::Find_qid_Stau(kcell &this_cell, int qid) {
     return false;
 }
 
-void kspr::single_query(level &idx, int k, int q_id, fstream &log) {
+void kspr::single_query(level &idx, int k, int q_id, int& visit_sum, int& result_sum, fstream &log) {
     int visit=0,result=0;
     list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
     vector<kcell> NextCell;
@@ -76,6 +76,8 @@ void kspr::single_query(level &idx, int k, int q_id, fstream &log) {
     }
     NextCell.clear();
     vector<kcell>().swap(NextCell);
+    visit_sum+=visit;
+    result_sum+=result;
     cout << "Visiting cells of kspr query: " <<  visit << endl;
     log << "Visiting cells of kspr query: " <<  visit << endl;
     cout << "Result cells of kspr query: " << result << endl;
@@ -87,13 +89,19 @@ void kspr::multiple_query(level &idx, int k, int q_num, fstream &log) { // dag t
     vector<int> q_list;
     generate_query(idx,q_num, q_list);
     clock_t cur_time=clock();
+    int visit_sum=0;
+    int result_sum=0;
     for (int i=0;i<q_num;i++){
         cout << "kspr query " << i <<"("<< q_list[i]<<")"<< ": " << endl;
         log << "kspr query " << i <<"("<< q_list[i]<<")"<< ": " << endl;
-        single_query(idx,k,q_list[i],log);
+        single_query(idx,k,q_list[i],visit_sum, result_sum, log);
     }
     cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    cout << "Average visit cell: " << (float) visit_sum / (float) q_num << endl;
+    log << "Average visit cell: " << (float) visit_sum / (float) q_num << endl;
+    cout << "Average result cell: " << (float) result_sum / (float) q_num << endl;
+    log << "Average result cell: " << (float) result_sum / (float) q_num << endl;
     return;
 }
 
