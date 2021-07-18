@@ -117,6 +117,7 @@ void kskyband_nortree(
      * the k-skyband contains thoes records that are dominated by fewer than k others
      */
     vector<int> do_cnt(data.size(), 0);
+    vector<int> k_cnt(k, 0);
     for (auto i = 0; i < data.size(); ++i) {
         for (auto j = i + 1; j < data.size(); ++j) {
             if (do_cnt[i] >= k) {
@@ -130,7 +131,12 @@ void kskyband_nortree(
         }
         if (do_cnt[i] < k) {
             ret.push_back(i);
+            k_cnt[do_cnt[i]]+=1;
         }
+    }
+    cout<<"for k-skyband, # of options:"<<endl;
+    for (int l = 0; l <k ; ++l) {
+        cout<<"@k="<<l+1<<":num="<<k_cnt[l]<<endl;
     }
 }
 
@@ -217,6 +223,7 @@ void onionlayer(vector<int> &ret, vector<int>& ret_layer ,vector<int> &candidate
     }
     int dim = data[0].size();
     ch c(candidate, data, dim);
+    cout<<"for onion layer, # of options:"<<endl;
     for (int i = 1; i <= k; ++i) {
         for (int id: c.get_layer(i)) {
             ret.push_back(id);

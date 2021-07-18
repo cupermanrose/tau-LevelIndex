@@ -67,10 +67,10 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
 
     filename="inde/U400K4";
     func_str="buildidx"; // buildidx loadidx
-    //func_str="loadidx";
-    build_str="PTF"; // INS PT PTF
+//    func_str="loadidx";
+    build_str="PT"; // INS PT PTF
     query_str="utk"; // kspr utk oru
-    q_num=50; // # of query
+    q_num=5; // # of query
     k=10; // query k
 
     // auxiliary parameter
