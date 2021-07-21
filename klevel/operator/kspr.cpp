@@ -48,34 +48,42 @@ bool kspr::Find_qid_Stau(kcell &this_cell, int qid) {
 }
 
 void kspr::single_query(level &idx, int k, int q_id, int& visit_sum, int& result_sum, fstream &log) {
-    int visit=0,result=0;
-    list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
-    vector<kcell> NextCell;
-    set<pair<int,int>> hash_set; hash_set.clear();
-    while (!queue.empty()){
-        auto cur_cell=queue.front(); queue.pop_front(); visit++;
-        if (Find_qid_topk(cur_cell,q_id)){
-            result++;
-        }
-        else if (Find_qid_Stau(cur_cell,q_id)&&(cur_cell.curk<k)){
-            if (cur_cell.curk<idx.ik){
-                for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
-                    if (hash_set.find(make_pair(cur_cell.curk+1, *it))==hash_set.end()) {
-                        queue.push_back(idx.idx[cur_cell.curk+1][*it]);
-                        hash_set.insert(make_pair(cur_cell.curk+1,*it));
+    int visit=0, result=0, ave_vertex=0;
+    vector<vector<kcell>> queue;
+    for (int i=0;i<=k;i++){
+        queue.push_back({});
+    }
+    queue[0].push_back(idx.idx[0][0]); // only contains rootcell
+    set<int> results; results.clear();
+    for (int i=0;i<k;i++){
+        set<int> hash_set; hash_set.clear();
+        idx.region_map.clear();
+        for (int j=0;j<queue[i].size();j++){
+            kcell& cur_cell=queue[i][j];
+            if (Find_qid_topk(cur_cell,q_id)){
+                result++;
+                continue;
+            }
+            if (Find_qid_Stau(cur_cell,q_id)){
+                if (cur_cell.curk<idx.ik){
+                    for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
+                        if (hash_set.find(*it)==hash_set.end()) {
+                            queue[i+1].push_back(idx.idx[i+1][*it]);
+                            hash_set.insert(*it);
+                        }
                     }
                 }
-            }
-            else{ // for large k
-                idx.SingleCellSplit(k,cur_cell,NextCell);
-                for (auto it=NextCell.begin();it!=NextCell.end();it++){
-                    queue.push_back(*it);
+                else{ // for large k
+                    idx.SingleCellSplit(k,cur_cell,queue[i+1]);
                 }
             }
         }
+        for (int j=0;j<queue[i+1].size();j++){
+            idx.UpdateH(queue[i+1][j]);
+            idx.UpdateV(queue[i+1][j],ave_vertex);
+        }
+        visit+=queue[i+1].size();
     }
-    NextCell.clear();
-    vector<kcell>().swap(NextCell);
     visit_sum+=visit;
     result_sum+=result;
     cout << "Visiting cells of kspr query: " <<  visit << endl;
