@@ -16,7 +16,7 @@ public:
     static void AddQregion(vector<float>& Qregion, region& r, int dim);
     static void multiple_query(level& idx, int k, int q_num, float utk_side_length, fstream& log);
     static void generate_query(level& idx, int q_num, float utk_side_length, vector<vector<float>>& q_list);
-    static void single_query(level& idx, int k, vector<float>& Qregion, fstream& log);
+    static void single_query(level& idx, int k, vector<float>& Qregion, int& visit_sum, int& result_sum, fstream& log);
 
 
     /*static int single_query(level& idx, Rtree* rt, unordered_map<long int, RtreeNode*>& ramTree,

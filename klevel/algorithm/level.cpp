@@ -159,7 +159,7 @@ void level::initIdx(fstream& log){
 void level::Build(fstream& log, ofstream& idxout) {
     vector<int> S1,Sk;
     set<int> utk_set; utk_set.clear();
-    int ave_S1=0,ave_Sk=0,ave_vertex=0, cellsum=0;
+    int ave_S1=0,ave_Sk=0,ave_vertex=0, cellsum=0,suc_split=0, HS_size=0;
 
     //for profiling
     clock_t tmp_profiling;
@@ -197,11 +197,15 @@ void level::Build(fstream& log, ofstream& idxout) {
                     bool isFeasible=lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim); // compute innerPoint
                     isFeasible_time+=(clock()-tmp_profiling);
                     if (isFeasible){ // just for profiling
+                        suc_split++;
                         utk_set.insert(newcell.objID);
                         this_level.emplace_back(newcell);
                         region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
                         feasible_f=true;
                     }
+                }
+                else {
+                    suc_split++;
                 }
             }
             if(!feasible_f){
@@ -213,6 +217,7 @@ void level::Build(fstream& log, ofstream& idxout) {
         //Compute V for each cell
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
             UpdateH(*cur_cell);
+            HS_size+=cur_cell->r.H.size();
 //            assert(lp_adapter::is_Feasible(cur_cell->r.H,cur_cell->r.innerPoint,dim)); // compute innerPoint
             tmp_profiling=clock();
             UpdateV(*cur_cell,ave_vertex);
@@ -223,7 +228,7 @@ void level::Build(fstream& log, ofstream& idxout) {
         int ave_next = EdgeComputation(k-1);
 
         WriteToDisk(k-1, idxout);
-        print_info(k, cellsum, valid_cell,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, ave_next, utk_set,log);
+        print_info(k, cellsum, valid_cell,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, ave_next, suc_split, HS_size, utk_set, log);
         profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
         FreeMem(k-1);
     }
@@ -378,15 +383,18 @@ void level::UpdateV(kcell &cur_cell, int& ave_vertex) {
     ave_vertex+=cur_cell.r.V.size();
 }
 
-void level::print_info(int k, int cellsum, int valid_cell, clock_t& level_zero_time, clock_t & cur_time, int& ave_S1, int& ave_Sk, int& ave_vertex, int& ave_next, set<int>& utk_set, fstream& log) {
+void level::print_info(int k, int cellsum, int valid_cell, clock_t& level_zero_time, clock_t & cur_time,
+                       int& ave_S1, int& ave_Sk, int& ave_vertex, int& ave_next, int& suc_split, int& HS_size,
+                       set<int>& utk_set, fstream& log) {
     cout << "LEVEL: " << k << endl;
     cout << "The region size of LEVEL " << k << ": " << idx[k].size() << endl;
     cout << "The option number of LEVEL 1-" << k << ": " << utk_set.size() << endl;
     cout << "Average S1 of LEVEL" << ": " << ave_S1 / (float)valid_cell << endl;
     cout << "Average Sk of LEVEL" << ": " << ave_Sk / (float)valid_cell << endl;
-    cout << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float) valid_cell << endl;
+    cout << "Average splitting of LEVEL" << ": " << (float)suc_split / (float) valid_cell << endl;
     cout << "Average verterices of region in LEVEL" << ": " << (float) ave_vertex / (float) valid_cell << endl;
     cout << "Average next of region in LEVEL" << ": " << (float) ave_next / (float) valid_cell << endl;
+    cout << "Average HS size of region in LEVEL" << ": " << (float) HS_size / (float) idx[k].size() << endl;
     cout << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
     cout << "Total region of LEVEL 1-" << k << ": " << cellsum << endl;
     cout << "Total Time Cost of LEVEL 1-" << k << ": " << (clock() - level_zero_time) / (float)CLOCKS_PER_SEC << endl;
@@ -396,15 +404,16 @@ void level::print_info(int k, int cellsum, int valid_cell, clock_t& level_zero_t
     log << "The option number of LEVEL 1-" << k << ": " << utk_set.size() << endl;
     log << "Average S1 of LEVEL" << ": " << ave_S1 / (float)valid_cell << endl;
     log << "Average Sk of LEVEL" << ": " << ave_Sk / (float)valid_cell << endl;
-    log << "Average splitting of LEVEL" << ": " << (float)idx[k].size() / (float)valid_cell << endl;
+    log << "Average splitting of LEVEL" << ": " << (float)suc_split / (float)valid_cell << endl;
     log << "Average verterices of region in LEVEL" << ": " << (float) ave_vertex / (float) valid_cell << endl;
     log << "Average next of region in LEVEL" << ": " << (float) ave_next / (float) valid_cell << endl;
+    log << "Average HS size of region in LEVEL" << ": " << (float) HS_size / (float) idx[k].size() << endl;
     log << "Time Cost of LEVEL " << k << ": " << (clock() - cur_time) / (float)CLOCKS_PER_SEC << endl;
     log << "Total region of LEVEL 1-" << k << ": " << cellsum << endl;
     log << "Total Time Cost of LEVEL 1-" << k << ": " << (clock() - level_zero_time) / (float)CLOCKS_PER_SEC << endl;
     log << endl;
     print_system_info(log);
-    ave_Sk=ave_S1=ave_next=0; ave_vertex=0.0;
+    ave_Sk=ave_S1=ave_next=suc_split=HS_size=0; ave_vertex=0.0;
 }
 
 void level::print_system_info(fstream &log) {
@@ -697,7 +706,7 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
 void level::Build_nofilter(fstream& log, ofstream& idxout) {
     vector<int> S1,Sk;
     set<int> utk_set; utk_set.clear();
-    int ave_S1=0,ave_Sk=0,ave_vertex=0, cellsum=0;
+    int ave_S1=0,ave_Sk=0,ave_vertex=0, cellsum=0, suc_split=0, HS_size=0;
 
     //for profiling
     clock_t tmp_profiling;
@@ -746,6 +755,7 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
                     isFeasible=lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim); // compute innerPoint
                     isFeasible_time+=(clock()-tmp_profiling);
                     if (isFeasible){ // just for profiling
+                        suc_split++;
                         utk_set.insert(newcell.objID);
                         this_level.emplace_back(newcell);
                         region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
@@ -755,6 +765,7 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
                     }
                 }
                 else {
+                    suc_split++;
                     newcell.FreeMem();
                 }
             }
@@ -773,7 +784,7 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
 
         int ave_next = EdgeComputation(k-1);
         WriteToDisk(k-1, idxout);
-        print_info(k, cellsum, valid_cell,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, ave_next, utk_set,log);
+        print_info(k, cellsum, valid_cell,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, ave_next, suc_split, HS_size, utk_set,log);
         profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
         FreeMem(k-1);
     }
@@ -783,19 +794,20 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
 }
 
 // split next level cells from cur_cell, and all cells of NextCell are inside cur_cell
-void level::SingleCellSplit(int qk, kcell &cur_cell, vector<kcell> &NextCell) {
-    NextCell.clear();
+void level::SingleCellSplit(int qk, kcell &cur_cell, vector<kcell> &this_level) {
+    if ((cur_cell.curk!=0)&&(cur_cell.r.V.size()==0)) return;
     vector<int> S1,Sk;
-    int ave_S1=0,ave_Sk=0,ave_vertex=0;
+    int ave_S1=0,ave_Sk=0;
     LocalFilter(qk, S1,Sk,cur_cell,ave_S1,ave_Sk);
     for (auto p=S1.begin();p!=S1.end();p++){
         if (global_layer[*p]>cur_cell.curk+1) continue;
         kcell newcell;
         CreateNewCell(*p,S1,Sk,cur_cell,newcell);
-        // verify
-        if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) {
-            UpdateV(newcell, ave_vertex);
-            NextCell.push_back(newcell);
+        if (!VerifyDuplicate(newcell,this_level)){ // merge Stau
+            if (lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim)) { // verify
+                this_level.emplace_back(newcell);
+                region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
+            }
         }
     }
     return;

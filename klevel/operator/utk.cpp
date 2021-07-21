@@ -95,49 +95,48 @@ void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
     return;
 }
 
-void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) {
-    int visit=0, result=0;
-    list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
-    set<pair<int,int>> hash_set; hash_set.clear();
+void utk::single_query(level &idx, int k, vector<float> &Qregion, int& visit_sum, int& result_sum, fstream &log) {
+    int visit=0, result=0, ave_vertex=0;
+    vector<vector<kcell>> queue;
+    for (int i=0;i<=k;i++){
+        queue.push_back({});
+    }
+    queue[0].push_back(idx.idx[0][0]); // only contains rootcell
     set<int> results; results.clear();
-    vector<kcell> NextCell;
-    while (!queue.empty()){
-        auto cur_cell=queue.front();
-        queue.pop_front();
-        visit++;
-        if (Intersect(Qregion,cur_cell.r, idx.dim)){
-            result++;
-            for (int & it : cur_cell.topk) {
-                results.insert(it);
-            }
-            if (cur_cell.curk<k){
-                if ((cur_cell.curk<idx.ik)&&(!cur_cell.Next.empty())) { // non-best-performance
-                    for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
-                        if (hash_set.find(make_pair(cur_cell.curk+1, *it))==hash_set.end()) {
-                            queue.push_back(idx.idx[cur_cell.curk+1][*it]);
-                            hash_set.insert(make_pair(cur_cell.curk+1,*it));
-                            idx.UpdateH(queue.back()); // generate halfspace representation
+    for (int i=0;i<k;i++){
+        set<int> hash_set; hash_set.clear();
+        idx.region_map.clear();
+        for (int j=0;j<queue[i].size();j++){
+            kcell& cur_cell=queue[i][j];
+            if (Intersect(Qregion,cur_cell.r,idx.dim)){
+                results.insert(cur_cell.objID);
+                if (cur_cell.curk<idx.ik) {
+                    for (auto it = cur_cell.Next.begin(); it != cur_cell.Next.end(); it++) {
+                        if (hash_set.find(*it) == hash_set.end()) {
+                            queue[i + 1].push_back(idx.idx[i + 1][*it]);
+                            hash_set.insert(*it);
                         }
                     }
                 }
-                else{ // for large k
-                    idx.SingleCellSplit(k,cur_cell,NextCell);
-                    for (auto it=NextCell.begin();it!=NextCell.end();it++){
-                        queue.push_back(*it);
-                    }
+                else { // for large k
+                    idx.SingleCellSplit(k,cur_cell,queue[i+1]);
                 }
             }
         }
+        for (int j=0;j<queue[i+1].size();j++){
+            idx.UpdateH(queue[i+1][j]);
+            AddQregion(Qregion,queue[i+1][j].r,idx.dim);
+            idx.UpdateV(queue[i+1][j],ave_vertex);
+        }
+        visit+=queue[i+1].size();
     }
-    NextCell.clear();
-    vector<kcell>().swap(NextCell);
+    result=queue[k].size();
+    visit_sum+=visit;
+    result_sum+=result;
     cout << "Visiting cells of utk query: " <<  visit << endl;
     log << "Visiting cells of utk query: " <<  visit << endl;
     cout << "Result cells of utk query: " <<  result << endl;
     log << "Result cells of utk query: " <<  result << endl;
-
-    //cout << "Result cells of utk query: " <<  visit << endl;
-    //log << "Result cells of utk query: " <<  visit << endl;
     cout << "Results of utk query: " << results.size() << endl;
     log << "Results of utk query: " << results.size() << endl;
     return;
@@ -147,17 +146,23 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     vector<vector<float>> q_list;
     generate_query(idx,q_num, utk_side_length, q_list);
     clock_t cur_time=clock();
+    int visit_sum=0;
+    int result_sum=0;
     for (int i=0;i<q_num;i++){
         cout << "utk query " << i << ": " << endl;
         log << "utk query " << i << ": " << endl;
         clock_t qb=clock();
-        single_query(idx,k,q_list[i],log);
+        single_query(idx,k, q_list[i], visit_sum, result_sum, log);
         clock_t qe=clock();
         cout << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
         log << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
     }
     cout << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    cout << "Average visiting cell: " << (float) visit_sum / (float) q_num << endl;
+    log << "Average visiting cell: " << (float) visit_sum / (float) q_num << endl;
+    cout << "Average result cell: " << (float) result_sum / (float) q_num << endl;
+    log << "Average result cell: " << (float) result_sum / (float) q_num << endl;
     return;
 }
 
