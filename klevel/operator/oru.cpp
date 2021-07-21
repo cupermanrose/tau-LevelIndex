@@ -11,8 +11,8 @@ void oru::generate_query(level &idx, int q_num, vector<vector<float>>& q_list) {
         vector<float> v(idx.dim-1,0.0);
         float res=1.0;
         for (int d=0;d<idx.dim-1;d++){
-            v[d] = res*rand()/RAND_MAX;
-            res=res-v[d];
+            v[d] = res*(1.0-pow((double)random()/RAND_MAX,  1.0/(idx.dim-d-1)));
+            res-=v[d];
         }
         q_list.push_back(v);
     }
@@ -130,13 +130,29 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
     int &push_cnt, int& pop_cnt) {
     float oru_ret_dis=INFINITY;
     vector<vector<kcell>> &cells = idx.idx;
+    unordered_set<int> ret_option;
     if(cells.empty() || cells[0].empty()){
+        return oru_ret_dis;
+    }
+    if(k>=ret_size){
+        multimap<double, int> topk;
+        for (int i=0; i<idx.Allobj.size(); ++i) {
+            double s=GetScore(q, idx.Allobj[i], idx.dim);
+            topk.emplace(s, i);
+            if(topk.size()>=k){
+                topk.erase(topk.begin());
+            }
+        }
+        oru_ret_dis=topk.rbegin()->first;
+        // the comment below is for future use
+//        for (auto &s_id: topk) {
+//            ret_option.emplace(s_id.second);
+//        }
         return oru_ret_dis;
     }
     kcell &root=cells[0][0];
     multimap<double, kcell> heap;
     heap.emplace(INFINITY, root);
-    unordered_set<int> ret_option;
     unordered_set<kcell*> added;
     push_cnt=0;
     pop_cnt=0;
@@ -201,8 +217,10 @@ void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &lo
     generate_query(idx,q_num, q_list);
     int tt_pop_cnt=0, tt_push_cnt=0;
     for (int i=0;i<q_num;i++){
-        int pop_cnt, push_cnt;
+        clock_t qb=clock();
+        int pop_cnt=0, push_cnt=0;
         float answer=single_query(idx, k, ret_size, q_list[i],log, push_cnt, pop_cnt);
+        clock_t qe=clock();
         tt_push_cnt+=push_cnt;
         tt_pop_cnt+=pop_cnt;
         cout << "The answer of oru query " << i << ": " << answer << endl;
@@ -211,6 +229,8 @@ void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &lo
         log << "# of visit cells " << i << ": " << push_cnt << endl;
         cout << "# of result cells " << i << ": " << pop_cnt << endl;
         log << "# of result cells " << i << ": " << pop_cnt << endl;
+        cout << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
+        log << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
     }
     if(tt_push_cnt!=0 && tt_pop_cnt!=0){
         cout << "Average # of oru visit cells: " << (double)tt_push_cnt/q_num << endl;

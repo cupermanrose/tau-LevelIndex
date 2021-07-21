@@ -6,7 +6,7 @@
 #include <fstream>
 #include <vector>
 
-void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
+void kspr:: generate_query(level &idx, int q_num, vector<int> &q_list) {
     srand(0); // random seed
     q_list.clear();
     /*fstream kspr_query("/home/jiahaozhang/data/klevel/query/kspr/kspr_id_10000.txt",ios::in);
@@ -20,6 +20,18 @@ void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     for (int i=0;i<q_num;i++){
         q_list.push_back(rand()%idx.Allobj.size());
     }
+//    multimap<double, int> heap;
+//    vector<float> w(idx.dim, 1.0/idx.dim);
+//    for (int j = 0; j < idx.Allobj.size(); ++j) {
+//        float s=GetScore(w, idx.Allobj[j], idx.dim);
+//        heap.emplace(s, j);
+//        if(heap.size()>q_num){
+//            heap.erase(heap.begin());
+//        }
+//    }
+//    for(auto &it:heap){
+//        q_list.emplace_back(it.second);
+//    }
 
     /*cout<<"begin generate query of original id:\n";
     for(int &i: q_list){
@@ -88,9 +100,13 @@ void kspr::multiple_query(level &idx, int k, int q_num, fstream &log) { // dag t
     generate_query(idx,q_num, q_list);
     clock_t cur_time=clock();
     for (int i=0;i<q_num;i++){
+        clock_t qb=clock();
         cout << "kspr query " << i <<"("<< q_list[i]<<")"<< ": " << endl;
         log << "kspr query " << i <<"("<< q_list[i]<<")"<< ": " << endl;
         single_query(idx,k,q_list[i],log);
+        clock_t qe=clock();
+        cout << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
+        log << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
     }
     cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;

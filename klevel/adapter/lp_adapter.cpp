@@ -50,7 +50,8 @@ void lp_adapter::lpModel(vector<halfspace>& H, lprec * lp, int dim) {
 
 void lp_adapter::addHP(lprec* lp, int dim, vector<float>& HP, bool sideindicator) {
     double row[Max_Dimension];
-    float EPS=0.000001;
+    float EPS=0;
+//    float EPS=0.000001;
     row[0] = 0;
     for (int d = 1; d <= dim; d++)
     {

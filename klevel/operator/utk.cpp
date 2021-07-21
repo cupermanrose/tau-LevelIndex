@@ -11,17 +11,19 @@ void utk::generate_query(level &idx, int q_num, float utk_side_length, vector<ve
         vector<float> v((idx.dim-1)*2,0.0);
         /*float res=rand()/RAND_MAX-utk_side_length*(idx.dim-1);
         if (res<0) res=1.0-utk_side_length*(idx.dim-1);*/
-        int res=rand()%10000;
-        cout << res << endl;
+        double res=0 > (1.0-(idx.dim-1)*utk_side_length)? 0 : (1.0-(idx.dim-1)*utk_side_length);
         for (int d=0;d<idx.dim-1;d++){
-            int tmp=rand() % res;
-            v[d*2] = (float) tmp / 10000.0;
+            v[d*2] = res*(1.0-pow((double)random()/RAND_MAX,  1.0/(idx.dim-d-1)));
+//            v[d*2] = (1.0-utk_side_length) < v[d*2] ? (1-utk_side_length) : v[d*2];
             v[d*2+1] = v[d*2]+utk_side_length;
-            res=res-tmp;
+            res-=v[d*2];
         }
+        for (float j : v) {
+            cout<<j<<" ";
+        }
+        cout<<endl;
         q_list.push_back(v);
     }
-    return;
 }
 
 bool utk::isIn(vector<float>& v, vector<float>& Qregion, int dim){
@@ -52,13 +54,16 @@ bool utk::isIn(vector<float> &v, vector<halfspace> &H, int dim) {
 
 bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
     if (r.V.empty()) return false;
-    for (auto it=r.V.begin();it!=r.V.end();it++){
-        if (isIn(*it,Qregion,dim)) return true;
+    for (auto & it : r.V){
+        if (isIn(it,Qregion,dim)) {
+            return true;
+        }
     }
-
-    /*AddQregion(Qregion,r,dim);
-    if (lp_adapter::is_Feasible(r.H,r.innerPoint,dim)) return true;
-    else return false;*/
+    int rHsize=r.H.size();
+    AddQregion(Qregion,r,dim);
+    bool ret=lp_adapter::is_Feasible(r.H,r.innerPoint,dim);
+    r.H=vector<halfspace>(r.H.begin(), r.H.begin()+rHsize);
+    return ret;
 
     int bitset = 1 << (dim-1);
     for (int i = 0; i < bitset; i++) {
@@ -91,17 +96,22 @@ void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
 }
 
 void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) {
-    int visit=0;
+    int visit=0, result=0;
     list<kcell> queue; queue={idx.idx[0][0]}; // only contains rootcell
     set<pair<int,int>> hash_set; hash_set.clear();
     set<int> results; results.clear();
     vector<kcell> NextCell;
     while (!queue.empty()){
-        auto cur_cell=queue.front(); queue.pop_front(); visit++;
+        auto cur_cell=queue.front();
+        queue.pop_front();
+        visit++;
         if (Intersect(Qregion,cur_cell.r, idx.dim)){
-            for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++) results.insert(*it);
+            result++;
+            for (int & it : cur_cell.topk) {
+                results.insert(it);
+            }
             if (cur_cell.curk<k){
-                if ((cur_cell.curk<idx.ik)&&(cur_cell.Next.size()!=0)) { // non-best-performance
+                if ((cur_cell.curk<idx.ik)&&(!cur_cell.Next.empty())) { // non-best-performance
                     for (auto it=cur_cell.Next.begin();it!=cur_cell.Next.end();it++){
                         if (hash_set.find(make_pair(cur_cell.curk+1, *it))==hash_set.end()) {
                             queue.push_back(idx.idx[cur_cell.curk+1][*it]);
@@ -123,6 +133,9 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, fstream &log) 
     vector<kcell>().swap(NextCell);
     cout << "Visiting cells of utk query: " <<  visit << endl;
     log << "Visiting cells of utk query: " <<  visit << endl;
+    cout << "Result cells of utk query: " <<  result << endl;
+    log << "Result cells of utk query: " <<  result << endl;
+
     //cout << "Result cells of utk query: " <<  visit << endl;
     //log << "Result cells of utk query: " <<  visit << endl;
     cout << "Results of utk query: " << results.size() << endl;
@@ -137,7 +150,11 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     for (int i=0;i<q_num;i++){
         cout << "utk query " << i << ": " << endl;
         log << "utk query " << i << ": " << endl;
+        clock_t qb=clock();
         single_query(idx,k,q_list[i],log);
+        clock_t qe=clock();
+        cout << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
+        log << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
     }
     cout << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
