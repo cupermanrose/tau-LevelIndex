@@ -104,7 +104,9 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, int& visit_sum
         for (int j=0;j<queue[i].size();j++){
             kcell& cur_cell=queue[i][j];
             if (Intersect(Qregion,cur_cell.r,idx.dim)){
-                results.insert(cur_cell.objID);
+                for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++){
+                    results.insert(*it);
+                }
                 if (cur_cell.curk<idx.ik) {
                     for (auto it = cur_cell.Next.begin(); it != cur_cell.Next.end(); it++) {
                         if (hash_set.find(*it) == hash_set.end()) {
