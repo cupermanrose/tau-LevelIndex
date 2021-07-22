@@ -9,8 +9,6 @@ void utk::generate_query(level &idx, int q_num, float utk_side_length, vector<ve
     q_list.clear();
     for (int i=0;i<q_num;i++){
         vector<float> v((idx.dim-1)*2,0.0);
-        /*float res=rand()/RAND_MAX-utk_side_length*(idx.dim-1);
-        if (res<0) res=1.0-utk_side_length*(idx.dim-1);*/
         int res=rand()%10000;
         cout << res << endl;
         for (int d=0;d<idx.dim-1;d++){

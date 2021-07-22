@@ -9,17 +9,17 @@
 void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     srand(0); // random seed
     q_list.clear();
-    /*fstream kspr_query("/home/jiahaozhang/data/klevel/query/kspr/kspr_id_10000.txt",ios::in);
+    fstream kspr_query("/home/jiahaozhang/data/klevel/query/kspr/kspr_id_10000.txt",ios::in);
     for (int i=0;i<q_num;i++){
         int id;
         for (int i=0;i<100;i++) kspr_query >> id;
         q_list.push_back(id);
         //q_list.push_back(rand()%idx.Allobj.size());
     }
-    kspr_query.close();*/
-    for (int i=0;i<q_num;i++){
+    kspr_query.close();
+    /*for (int i=0;i<q_num;i++){
         q_list.push_back(rand()%idx.Allobj.size());
-    }
+    }*/
 
     /*cout<<"begin generate query of original id:\n";
     for(int &i: q_list){
@@ -102,7 +102,13 @@ void kspr::multiple_query(level &idx, int k, int q_num, fstream &log) { // dag t
     for (int i=0;i<q_num;i++){
         cout << "kspr query " << i <<"("<< q_list[i]<<")"<< ": " << endl;
         log << "kspr query " << i <<"("<< q_list[i]<<")"<< ": " << endl;
-        single_query(idx,k,q_list[i],visit_sum, result_sum, log);
+        for (auto it=idx.levelId_2_dataId.begin();it!=idx.levelId_2_dataId.end();it++){
+            if (q_list[i]==it->second){
+                single_query(idx,k,it->first,visit_sum, result_sum, log);
+                break;
+            }
+        }
+        //single_query(idx,k,q_list[i],visit_sum, result_sum, log);
     }
     cout << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average kspr query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
