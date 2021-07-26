@@ -124,7 +124,26 @@ float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode
     }
 }
 
+inline size_t oru_non_order_hash(const vector<int> &input){
+    vector<int> tmp=input;
+    sort(tmp.begin(),tmp.end()); // make it in order to output the unique hash_value for a set
+    size_t seed = 0;
+    for (int & it : tmp){
+        boost::hash_combine(seed, it);
+    }
+    return seed;
+}
 
+ostream & operator<<(ostream &out, vector<int> &v){
+    if (v.empty()) {
+        return out;
+    }
+    out << v[0];
+    for (auto i = 1; i < v.size(); ++i) {
+        out << ", " << v[i];
+    }
+    return out;
+}
 // --------------------------------- new code since 2021/7/8 -------------------------------------
 float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstream &log,
     int &push_cnt, int& pop_cnt) {
@@ -151,27 +170,33 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
         return oru_ret_dis;
     }
     kcell &root=cells[0][0];
-    multimap<double, kcell> heap;
-    heap.emplace(INFINITY, root);
-    unordered_set<kcell*> added;
+    multimap<double, kcell*> heap;
+    heap.emplace(INFINITY, &root);
+//    unordered_set<kcell*> added;
+    unordered_set<size_t> nr_added;
+    vector<kcell*> toBeFree;
     push_cnt=0;
     pop_cnt=0;
     while(!heap.empty() && ret_option.size()<ret_size){
-        kcell nearest_cell=heap.begin()->second;
+        kcell *nearest_cell=heap.begin()->second;
         oru_ret_dis=heap.begin()->first;
         heap.erase(heap.begin());
         ++pop_cnt;
-        if(nearest_cell.curk==k){
-            for(auto &i:nearest_cell.topk){
-                ret_option.insert(i);
-            }
-        }else{
-            for(auto &i:nearest_cell.Next){
-                kcell *child_cell=&cells[nearest_cell.curk+1][i];// cell
-                if(added.find(child_cell)!=added.end()){
+//        int rsize=ret_option.size();
+        for(auto &i:nearest_cell->topk){
+            ret_option.insert(i);
+        }
+//        if(ret_option.size()!=rsize){
+//            cout<<nearest_cell->topk<<endl;
+//        }
+        if(nearest_cell->curk<k){
+            for(auto &i:nearest_cell->Next){
+                kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
+                std::size_t hashv=oru_non_order_hash(child_cell->topk);
+                if(nr_added.find(hashv)!=nr_added.end()){
                     continue;
                 }else{
-                    added.insert(child_cell);
+                    nr_added.insert(hashv);
                 }
                 idx.UpdateH(*child_cell);
                 vector<vector<float>> HS;
@@ -184,16 +209,27 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                     }
                 }
                 double dis=getDistance(q,HS);
-                heap.emplace(dis, *child_cell);
+                heap.emplace(dis, child_cell);
                 ++push_cnt;
             }
-            if(nearest_cell.curk<k && nearest_cell.Next.empty()){
-                vector<kcell> NextCell;
-                idx.SingleCellSplit(k, nearest_cell,NextCell);
-                for (auto &child_cell:NextCell) {
-                    idx.UpdateH(child_cell);
+            if(nearest_cell->curk<k && nearest_cell->Next.empty()){
+//                vector<kcell> NextCell;
+//                idx.SingleCellSplit(k, nearest_cell,NextCell);
+                vector<int> S1,Sk;
+                int ave_S1=0,ave_Sk=0;
+                idx.LocalFilter(k, S1,Sk,*nearest_cell,ave_S1,ave_Sk);
+                for (auto p=S1.begin();p!=S1.end();p++){
+                    if (idx.global_layer[*p]>nearest_cell->curk+1) continue;
+                    auto *newcell=new kcell();
+                    idx.CreateNewCell(*p,S1,Sk, *nearest_cell, *newcell);
+                    std::size_t hashv=oru_non_order_hash(newcell->topk);
+                    if(nr_added.find(hashv)!=nr_added.end()){
+                        delete (newcell);
+                        continue;
+                    }
+                    idx.UpdateH(*newcell);
                     vector<vector<float>> HS;
-                    for (auto & it : child_cell.r.H){
+                    for (auto & it : newcell->r.H){
                         HS.push_back(it.w);
                         if(it.side){// this is importance !!!!!!!
                             for(auto &j: HS.back()){
@@ -202,11 +238,21 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                         }
                     }
                     double dis=getDistance(q,HS);
-                    heap.emplace(dis, child_cell);
-                    ++push_cnt;
+                    if(dis!=INFINITY){
+                        nr_added.insert(hashv);
+                        heap.emplace(dis, newcell);
+                        ++push_cnt;
+                        toBeFree.emplace_back(newcell);
+                    }else{
+                        delete (newcell);
+                    }
+
                 }
             }
         }
+    }
+    for(auto &i:toBeFree){
+        delete(i);
     }
     return oru_ret_dis;
 }
