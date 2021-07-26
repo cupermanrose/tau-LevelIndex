@@ -24,6 +24,7 @@ void utk::generate_query(level &idx, int q_num, float utk_side_length, vector<ve
         cout<<endl;
         q_list.push_back(v);
     }
+    return;
 }
 
 bool utk::isIn(vector<float>& v, vector<float>& Qregion, int dim){
@@ -59,11 +60,10 @@ bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
             return true;
         }
     }
-    int rHsize=r.H.size();
-    AddQregion(Qregion,r,dim);
-    bool ret=lp_adapter::is_Feasible(r.H,r.innerPoint,dim);
-    r.H=vector<halfspace>(r.H.begin(), r.H.begin()+rHsize);
-    return ret;
+
+    /*AddQregion(Qregion,r,dim);
+    if (lp_adapter::is_Feasible(r.H,r.innerPoint,dim)) return true;
+    else return false;*/
 
     int bitset = 1 << (dim-1);
     for (int i = 0; i < bitset; i++) {
@@ -109,7 +109,9 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, int& visit_sum
         for (int j=0;j<queue[i].size();j++){
             kcell& cur_cell=queue[i][j];
             if (Intersect(Qregion,cur_cell.r,idx.dim)){
-                results.insert(cur_cell.objID);
+                for (auto it=cur_cell.topk.begin();it!=cur_cell.topk.end();it++){
+                    results.insert(*it);
+                }
                 if (cur_cell.curk<idx.ik) {
                     for (auto it = cur_cell.Next.begin(); it != cur_cell.Next.end(); it++) {
                         if (hash_set.find(*it) == hash_set.end()) {

@@ -61,7 +61,7 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4; tau=30; ik=10;
+    dim=4; tau=50; ik=20;
     root_directory="/home/jiahaozhang/data/klevel/";
     //root_directory="/home/kemingli/klevel/";
 
@@ -69,9 +69,9 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     //func_str="buildidx"; // buildidx loadidx
     func_str="loadidx";
     build_str="PTF"; // INS PT PTF
-    query_str="kspr"; // kspr utk oru
-    q_num=5; // # of query
-    k=30; // query k
+    query_str="utk"; // kspr utk oru
+    q_num=50; // # of query
+    k=20; // query k
 
     // auxiliary parameter
     anti_id_f=root_directory+"data/"+filename+".ch";
