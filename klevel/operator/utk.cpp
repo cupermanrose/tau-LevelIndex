@@ -9,14 +9,19 @@ void utk::generate_query(level &idx, int q_num, float utk_side_length, vector<ve
     q_list.clear();
     for (int i=0;i<q_num;i++){
         vector<float> v((idx.dim-1)*2,0.0);
-        int res=rand()%10000;
-        cout << res << endl;
+        /*float res=rand()/RAND_MAX-utk_side_length*(idx.dim-1);
+        if (res<0) res=1.0-utk_side_length*(idx.dim-1);*/
+        double res=0 > (1.0-(idx.dim-1)*utk_side_length)? 0 : (1.0-(idx.dim-1)*utk_side_length);
         for (int d=0;d<idx.dim-1;d++){
-            int tmp=rand() % res;
-            v[d*2] = (float) tmp / 10000.0;
+            v[d*2] = res*(1.0-pow((double)random()/RAND_MAX,  1.0/(idx.dim-d-1)));
+//            v[d*2] = (1.0-utk_side_length) < v[d*2] ? (1-utk_side_length) : v[d*2];
             v[d*2+1] = v[d*2]+utk_side_length;
-            res=res-tmp;
+            res-=v[d*2];
         }
+        for (float j : v) {
+            cout<<j<<" ";
+        }
+        cout<<endl;
         q_list.push_back(v);
     }
     return;
@@ -50,8 +55,10 @@ bool utk::isIn(vector<float> &v, vector<halfspace> &H, int dim) {
 
 bool utk::Intersect(vector<float> &Qregion, region& r, int dim) {
     if (r.V.empty()) return false;
-    for (auto it=r.V.begin();it!=r.V.end();it++){
-        if (isIn(*it,Qregion,dim)) return true;
+    for (auto & it : r.V){
+        if (isIn(it,Qregion,dim)) {
+            return true;
+        }
     }
 
     /*AddQregion(Qregion,r,dim);
@@ -146,7 +153,11 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     for (int i=0;i<q_num;i++){
         cout << "utk query " << i << ": " << endl;
         log << "utk query " << i << ": " << endl;
+        clock_t qb=clock();
         single_query(idx,k, q_list[i], visit_sum, result_sum, log);
+        clock_t qe=clock();
+        cout << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
+        log << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
     }
     cout << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
