@@ -69,9 +69,9 @@ void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
     //func_str="buildidx"; // buildidx loadidx
     func_str="loadidx";
     build_str="PTF"; // INS PT PTF
-    query_str="utk"; // kspr utk oru
-    q_num=50; // # of query
-    k=20; // query k
+    query_str="kspr"; // kspr utk oru
+    q_num=10; // # of query
+    k=1; // query k
 
     // auxiliary parameter
     anti_id_f=root_directory+"data/"+filename+".ch";

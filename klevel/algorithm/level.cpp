@@ -487,11 +487,14 @@ void level::ReadFromDisk(int k, ifstream &idxin) {
     int size;
     idxin.read((char*) &size, sizeof(int));
     idx[k].clear();
+    int ave_HS=0;
     for (int i=0;i<size;i++){
         kcell tmp;
         tmp.ReadFromDisk(idxin);
+        ave_HS+=tmp.Stau.size()+tmp.topk.size();
         idx[k].emplace_back(tmp);
     }
+    cout << "Average HS size of level " << k << ' ' <<  (float) ave_HS / (float) size << endl;
 }
 
 int level::EdgeComputation(int k) {
