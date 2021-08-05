@@ -196,30 +196,6 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
 //        }
         if(nearest_cell->curk<k){
             clock_t b=clock();
-            for(auto &i:nearest_cell->Next){
-                kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
-                std::size_t hashv=oru_non_order_butk_hash(child_cell->topk, child_cell->objID);
-                if(nr_added.find(hashv)!=nr_added.end()){
-                    continue;
-                }else{
-                    nr_added.insert(hashv);
-                }
-                idx.UpdateH(*child_cell);
-                int UNUSED;
-                idx.UpdateV(*child_cell,UNUSED);
-                vector<vector<float>> HS;
-                for (auto & it : child_cell->r.H){
-                    HS.push_back(it.w);
-                    if(it.side){// this is importance !!!!!!!
-                        for(auto &j: HS.back()){
-                            j=-j;
-                        }
-                    }
-                }
-                double dis=getDistance(q,HS);
-                heap.emplace(dis, child_cell);
-                ++push_cnt;
-            }
             if(nearest_cell->Next.empty()){
 //                vector<kcell> NextCell;
 //                idx.SingleCellSplit(k, nearest_cell,NextCell);
@@ -231,10 +207,10 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                     auto *newcell=new kcell();
                     idx.CreateNewCell(*p,S1,Sk, *nearest_cell, *newcell);
                     std::size_t hashv=oru_non_order_butk_hash(newcell->topk, newcell->objID);
-                    if(nr_added.find(hashv)!=nr_added.end()){
-                        delete (newcell);
-                        continue;
-                    }
+//                    if(nr_added.find(hashv)!=nr_added.end()){
+//                        delete (newcell);
+//                        continue;
+//                    }
                     idx.UpdateH(*newcell);
                     vector<vector<float>> HS;
                     for (auto & it : newcell->r.H){
@@ -260,6 +236,32 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                 }
 
             }
+            for(auto &i:nearest_cell->Next){
+                assert(nearest_cell->curk<=idx.ik);
+                kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
+                std::size_t hashv=oru_non_order_butk_hash(child_cell->topk, child_cell->objID);
+                if(nr_added.find(hashv)!=nr_added.end()){
+                    continue;
+                }else{
+                    nr_added.insert(hashv);
+                }
+                idx.UpdateH(*child_cell);
+                int UNUSED;
+                idx.UpdateV(*child_cell,UNUSED);
+                vector<vector<float>> HS;
+                for (auto & it : child_cell->r.H){
+                    HS.push_back(it.w);
+                    if(it.side){// this is importance !!!!!!!
+                        for(auto &j: HS.back()){
+                            j=-j;
+                        }
+                    }
+                }
+                double dis=getDistance(q,HS);
+                heap.emplace(dis, child_cell);
+                ++push_cnt;
+            }
+
             clock_t e=clock();
             if(nearest_cell->curk>=idx.ik){
                 largeKTime+=(e - b) / (float)CLOCKS_PER_SEC;
