@@ -124,13 +124,16 @@ float oru::single_query(level &idx, Rtree* rt, unordered_map<long int, RtreeNode
     }
 }
 
-inline size_t oru_non_order_hash(const vector<int> &input){
+inline size_t oru_non_order_butk_hash(const vector<int> &input, int exactK){
     vector<int> tmp=input;
     sort(tmp.begin(),tmp.end()); // make it in order to output the unique hash_value for a set
     size_t seed = 0;
     for (int & it : tmp){
-        boost::hash_combine(seed, it);
+        if(it!=exactK){
+            boost::hash_combine(seed, it);
+        }
     }
+    boost::hash_combine(seed, exactK);
     return seed;
 }
 
@@ -144,6 +147,7 @@ ostream & operator<<(ostream &out, vector<int> &v){
     }
     return out;
 }
+double largeKTime=0.0;
 // --------------------------------- new code since 2021/7/8 -------------------------------------
 float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstream &log,
     int &push_cnt, int& pop_cnt) {
@@ -183,6 +187,7 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
         heap.erase(heap.begin());
         ++pop_cnt;
 //        int rsize=ret_option.size();
+//        if(nearest_cell->curk==k)
         for(auto &i:nearest_cell->topk){
             ret_option.insert(i);
         }
@@ -190,15 +195,18 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
 //            cout<<nearest_cell->topk<<endl;
 //        }
         if(nearest_cell->curk<k){
+            clock_t b=clock();
             for(auto &i:nearest_cell->Next){
                 kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
-                std::size_t hashv=oru_non_order_hash(child_cell->topk);
+                std::size_t hashv=oru_non_order_butk_hash(child_cell->topk, child_cell->objID);
                 if(nr_added.find(hashv)!=nr_added.end()){
                     continue;
                 }else{
                     nr_added.insert(hashv);
                 }
                 idx.UpdateH(*child_cell);
+                int UNUSED;
+                idx.UpdateV(*child_cell,UNUSED);
                 vector<vector<float>> HS;
                 for (auto & it : child_cell->r.H){
                     HS.push_back(it.w);
@@ -212,7 +220,7 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                 heap.emplace(dis, child_cell);
                 ++push_cnt;
             }
-            if(nearest_cell->curk<k && nearest_cell->Next.empty()){
+            if(nearest_cell->Next.empty()){
 //                vector<kcell> NextCell;
 //                idx.SingleCellSplit(k, nearest_cell,NextCell);
                 vector<int> S1,Sk;
@@ -222,7 +230,7 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                     if (idx.global_layer[*p]>nearest_cell->curk+1) continue;
                     auto *newcell=new kcell();
                     idx.CreateNewCell(*p,S1,Sk, *nearest_cell, *newcell);
-                    std::size_t hashv=oru_non_order_hash(newcell->topk);
+                    std::size_t hashv=oru_non_order_butk_hash(newcell->topk, newcell->objID);
                     if(nr_added.find(hashv)!=nr_added.end()){
                         delete (newcell);
                         continue;
@@ -238,7 +246,9 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                         }
                     }
                     double dis=getDistance(q,HS);
+                    int UNUSED;
                     if(dis!=INFINITY){
+                        idx.UpdateV(*newcell,UNUSED);
                         nr_added.insert(hashv);
                         heap.emplace(dis, newcell);
                         ++push_cnt;
@@ -248,12 +258,21 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                     }
 
                 }
+
+            }
+            clock_t e=clock();
+            if(nearest_cell->curk>=idx.ik){
+                largeKTime+=(e - b) / (float)CLOCKS_PER_SEC;
             }
         }
     }
+    clock_t b=clock();
     for(auto &i:toBeFree){
         delete(i);
     }
+    clock_t e=clock();
+    largeKTime+=(e - b) / (float)CLOCKS_PER_SEC;
+
     return oru_ret_dis;
 }
 
@@ -262,6 +281,7 @@ void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &lo
     vector<vector<float>> q_list;
     generate_query(idx,q_num, q_list);
     int tt_pop_cnt=0, tt_push_cnt=0;
+    largeKTime=0.0;
     for (int i=0;i<q_num;i++){
         clock_t qb=clock();
         int pop_cnt=0, push_cnt=0;
@@ -286,5 +306,7 @@ void oru::multiple_query(level &idx, int k, int ret_size, int q_num, fstream &lo
     }
     cout << "Average oru query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average oru query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
+    cout << "Large k oru query time: " << largeKTime / (float) q_num << endl;
+    log << "Large k oru query time: " << largeKTime / (float) q_num << endl;
     return;
 }
