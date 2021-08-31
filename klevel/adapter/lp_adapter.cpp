@@ -110,7 +110,7 @@ bool lp_adapter::is_Feasible(vector<halfspace>& H, vector<float>& innerPoint, in
         get_variables(lp, var1);
         for (int i = 0; i < dim; i++) {
             var[i] = (var[i] + var1[i])/2.0;
-            if (dimm>=7){
+            if (dimm>=6){
                 if (var[i]<EPS) var[i]=EPS; // for dimension 8
                 if (var[i]>1.0-EPS) var[i]=1-EPS;
             }

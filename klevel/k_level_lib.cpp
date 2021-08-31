@@ -15,7 +15,7 @@ void PTFBuild(level& idx, string datafile, fstream& log, string idxfile) {
 void PTBuild(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
     idx.LoadData(datafile);
-    idx.Build_nofilter(log,idxout);
+    idx.Build_NaiveFilter(log, idxout);
     log.close();
     idxout.close();
 }

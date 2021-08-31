@@ -54,15 +54,15 @@ public:
     /////////////////////////////////////////////////
     void initIdx(fstream& log);
     void Build(fstream& log, ofstream& idxout);
-    void Build_nofilter(fstream& log, ofstream& idxout);
+    void Build_NaiveFilter(fstream& log, ofstream& idxout);
     bool VerifyDuplicate(kcell& newcell, vector<kcell>& this_level); // hash version
     void CreateNewCell(int p, vector<int>& S1, vector<int>& Sk, kcell& cur_cell,kcell& newcell);
     void AddHS(int o1, int o2, bool side, vector<halfspace>& H);
     void UpdateH(kcell& cur_cell);
     void UpdateV(kcell& cur_cell, int& ave_vertex);
     void LocalFilter(int k, vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
-    void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int k);
-    void NoFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
+    void Advanced_rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int k);
+    void Naive_rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
 
     //void GridFilter(vector<int>& S1, vector<int>& Sk, kcell& cur_cell);
     //bool VerifyDuplicate(int p, kcell& cur_cell, vector<int>& Sk, vector<kcell>& this_level); // for-loop version

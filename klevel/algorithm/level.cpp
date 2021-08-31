@@ -250,22 +250,20 @@ void level::LocalFilter(int k, vector<int> &S1, vector<int> &Sk, kcell &cur_cell
         }
     }
     else {
-        rskyband(S1,Sk,cur_cell, k);
+        Advanced_rskyband(S1, Sk, cur_cell, k);
         //GridFilter(S1,Sk,cur_cell);
-        //NoFilter(S1,Sk,cur_cell);
+        //Naive_rskyband(S1,Sk,cur_cell);
     }
     ave_Sk+=Sk.size();ave_S1+=S1.size();
 }
 
-void level::NoFilter(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
+void level::Naive_rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell) {
     S1.clear();Sk.clear();
-    for (auto it=cur_cell.Stau.begin();it!=cur_cell.Stau.end();it++){
-        S1.push_back(*it);
-        Sk.push_back(*it);
-    }
+    // S1=1-rskyband
+    // Sk=(tau-l)-rskyband
 }
 
-void level::rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell, int k) {
+void level::Advanced_rskyband(vector<int> &S1, vector<int> &Sk, kcell &cur_cell, int k) {
     S1.clear();
     Sk.clear();
     if (cur_cell.r.V.size()==0) {
@@ -459,12 +457,12 @@ void level::print_system_info(fstream &log) {
 
 void level::profiling(int k, clock_t &level_zero_time, double &rskyband_time, double &verify_time,
                       double &isFeasible_time, double &updateV_time, fstream &log) {
-    cout << "rskyband time (%) of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 <<endl;
+    cout << "Advanced_rskyband time (%) of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 <<endl;
     cout << "Verify Duplicate time (%) of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 << endl;
     cout << "Is_Feasible time (%) of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << endl;
     cout << "UpdateV time (%) of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 << endl;
     cout << endl;
-    log << "rskyband time (%) of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 << endl;
+    log << "Advanced_rskyband time (%) of Level " << k << ": " << rskyband_time/(clock()-level_zero_time) * 100.0 << endl;
     log << "Verify Duplicate time (%) of Level " << k << ": " << verify_time/(clock()-level_zero_time) * 100.0 <<endl;
     log << "Is_Feasible time (%) of Level " << k << ": " << isFeasible_time/(clock()-level_zero_time) * 100.0 << endl;
     log << "UpdateV time (%) of Level " << k << ": " << updateV_time/(clock()-level_zero_time) * 100.0 <<  endl;
@@ -706,7 +704,7 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
     vector<kcell>().swap(L_Merge);
 }
 
-void level::Build_nofilter(fstream& log, ofstream& idxout) {
+void level::Build_NaiveFilter(fstream& log, ofstream& idxout) {
     vector<int> S1,Sk;
     set<int> utk_set; utk_set.clear();
     int ave_S1=0,ave_Sk=0,ave_vertex=0, cellsum=0, suc_split=0, HS_size=0;
@@ -727,7 +725,7 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
             if ((cur_cell->curk!=0)&&(cur_cell->r.V.size()==0)) continue;
             valid_cell++;
             tmp_profiling=clock();
-            NoFilter(S1,Sk,*cur_cell);
+            Naive_rskyband(S1, Sk, *cur_cell);
             rskyband_time+=(clock()-tmp_profiling);
 
             for (auto p=S1.begin();p!=S1.end();p++){

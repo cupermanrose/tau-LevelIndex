@@ -89,6 +89,171 @@ void build_onion(const std::string &s, int dim, int tau);
 void read_onion(const std::string &filename, vector<vector<int>> &ret);
 
 
+/*
+void pivotRegion(vector<float>& R, vector<float>& pivot)
+{
+    int dim = R.size() / 2;
+    pivot.clear();
+    for (int i = 0; i < dim; i++)
+        pivot.push_back((R[2 * i] + R[2 * i + 1]) / 2);
+}
+
+bool isRdominated(const int  dim, vector<float>& R, float focal[], vector<float>& entry, bool& fDe)
+{
+    // generate HP;
+    vector<float> tmpHS;
+    float entry_d = entry[dim - 1];
+    float focal_d = focal[dim - 1];
+    for (int d = 0; d < dim - 1; d++)
+    {
+        tmpHS.push_back((focal[d] - focal_d) - (entry[d] - entry_d));
+    }
+    tmpHS.push_back(entry_d - focal_d);
+
+
+    // verify each vertic
+    int posCount = 0;
+    int negCount = 0;
+    int totVertics = pow(2, dim - 1);
+    for (int i = 0; i < totVertics; i++)
+    {
+        stringstream ss;
+        string tmpS = bitset<MAXDIMEN>(i).to_string();
+        tmpS = tmpS.substr(tmpS.size() - (dim - 1), dim - 1);
+
+        float sum = 0;
+        for (int si = 0; si < tmpS.size(); si++)
+        {
+            if (tmpS[si] == '0')
+                sum += R[si * 2] * tmpHS[si];
+            else if (tmpS[si] == '1')
+                sum += R[si * 2 + 1] * tmpHS[si];
+            else
+                cout << "bug here!!!" << endl;
+        }
+
+        if (sum > tmpHS[dim - 1])
+            negCount++;
+        else
+            posCount++;
+    }
+
+    // dominationship
+    if (negCount == totVertics)
+    {
+        fDe = true;
+        return true;
+    }
+    else if (posCount == totVertics)
+    {
+        fDe = false;
+        return true;
+    }
+    else
+        return false;
+}
+
+bool countRegionDominator(int dimen, float pt[], vector<long int>& rskyband, float* PG[], vector<float>& R, const int k, unordered_set<long int>& dominators)
+{
+    vector<float> record(dimen,0);
+    dominators.clear();
+    bool fDe;
+    int count = 0;
+
+    for (int i = 0; i < rskyband.size(); i++)
+    {
+        for (int di = 0; di < dimen; di++)
+            record[di] = (PG[rskyband[i]][di] + PG[rskyband[i]][di + dimen]) / 2;
+        fDe = false;
+        if (isRdominated(dimen, R, pt, record, fDe))
+        {
+            if (fDe == false)
+            {
+                count++;
+                dominators.insert(rskyband[i]);
+            }
+        }
+    }
+    if (count < k)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void Naive_rskyband(vector<float>& region, const int dimen, Rtree& a_rtree, vector<long int>& rskyband, float* PG[], const int k)
+{
+    vector<float> pivot;
+    pivotRegion(region, pivot);
+
+    RtreeNode* node;
+    priority_queue<pair<float, int>> heap;
+    int NegPageid;
+
+    float pt[10];
+    float maxscore;
+    int pageID;
+    float tmpScore;
+    unordered_set<long int> dominators;
+
+    heap.push(make_pair(INFINITY, a_rtree.m_memory.m_rootPageID));
+
+    while (!heap.empty())
+    {
+        tmpScore = heap.top().first;
+        pageID = heap.top().second;
+        heap.pop();
+
+        if (pageID > MAXPAGEID)
+        {
+            for (int j = 0; j < dimen; j++)
+                pt[j] = (PG[pageID - MAXPAGEID][j] + PG[pageID - MAXPAGEID][j + dimen]) / 2;
+            if (countRegionDominator(dimen, pt, rskyband, PG, region, k, dominators))
+            {
+                rskyband.push_back(pageID - MAXPAGEID);
+                //daGraph[pageID - MAXPAGEID] = dominators;
+            }
+        }
+        else
+        {
+            node = a_rtree.m_memory.loadPage(pageID);
+            if (node->isLeaf())
+            {
+                for (int i = 0; i < node->m_usedspace; i++)
+                {
+                    for (int j = 0; j < dimen; j++)
+                        pt[j] = node->m_entry[i]->m_hc.getLower()[j] + SIDELEN;
+
+                    if (countRegionDominator(dimen, pt, rskyband, PG, region, k, dominators))
+                    {
+                        maxscore = orderScore(pivot, pt, dimen);
+                        heap.push(make_pair(maxscore, node->m_entry[i]->m_id + MAXPAGEID));
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < node->m_usedspace; i++)
+                {
+                    for (int j = 0; j < dimen; j++)
+                    {
+                        pt[j] = node->m_entry[i]->m_hc.getUpper()[j];
+                    }
+                    if (countRegionDominator(dimen, pt, rskyband, PG, region, k, dominators))
+                    {
+                        maxscore = orderScore(pivot, pt, dimen);
+                        heap.push(make_pair(maxscore, node->m_entry[i]->m_id));
+                    }
+                }
+            }
+        }
+    }
+}
+*/
+
 #endif //K_LEVEL_UTILS_H
 
 
