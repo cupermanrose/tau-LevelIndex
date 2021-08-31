@@ -29,7 +29,7 @@ void utk::generate_query(level &idx, int q_num, float utk_side_length, vector<ve
 
 bool utk::isIn(vector<float>& v, vector<float>& Qregion, int dim){
     for (int i = 0; i < dim - 1; i++) {
-        if ((v[i] >= Qregion[2 * i]) && (v[i] <= Qregion[2 * i + 1])) continue;
+            if ((v[i] >= Qregion[2 * i]) && (v[i] <= Qregion[2 * i + 1])) continue;
         return false;
     }
     return true;
@@ -95,6 +95,8 @@ void utk::AddQregion(vector<float> &Qregion, region &r, int dim) {
     return;
 }
 
+double largeKTimeUTK=0.0;
+
 void utk::single_query(level &idx, int k, vector<float> &Qregion, int& visit_sum, int& result_sum, fstream &log) {
     int visit=0, result=0, ave_vertex=0;
     vector<vector<kcell>> queue;
@@ -121,16 +123,24 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, int& visit_sum
                     }
                 }
                 else { // for large k
+                    clock_t b=clock();
                     idx.SingleCellSplit(k,cur_cell,queue[i+1]);
+                    clock_t e=clock();
+                    largeKTimeUTK+=(e - b) / (double)CLOCKS_PER_SEC;
                 }
             }
         }
+        clock_t b=clock();
         for (int j=0;j<queue[i+1].size();j++){
             idx.UpdateH(queue[i+1][j]);
             AddQregion(Qregion,queue[i+1][j].r,idx.dim);
             idx.UpdateV(queue[i+1][j],ave_vertex);
         }
         visit+=queue[i+1].size();
+        clock_t e=clock();
+        if (i>=idx.ik) {
+            largeKTimeUTK += (e - b) / (double) CLOCKS_PER_SEC;
+        }
     }
     result=queue[k].size();
     visit_sum+=visit;
@@ -150,6 +160,8 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     clock_t cur_time=clock();
     int visit_sum=0;
     int result_sum=0;
+    vector<double> ctime;
+    largeKTimeUTK=0.0;
     for (int i=0;i<q_num;i++){
         cout << "utk query " << i << ": " << endl;
         log << "utk query " << i << ": " << endl;
@@ -158,6 +170,7 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
         clock_t qe=clock();
         cout << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
         log << "query time: " << (qe - qb) / (float)CLOCKS_PER_SEC << endl;
+        ctime.push_back((qe - qb) / (float)CLOCKS_PER_SEC);
     }
     cout << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
     log << "Average utk query time: " << (clock() - cur_time) / (float)CLOCKS_PER_SEC / (float) q_num << endl;
@@ -165,6 +178,12 @@ void utk::multiple_query(level &idx, int k, int q_num, float utk_side_length, fs
     log << "Average visiting cell: " << (float) visit_sum / (float) q_num << endl;
     cout << "Average result cell: " << (float) result_sum / (float) q_num << endl;
     log << "Average result cell: " << (float) result_sum / (float) q_num << endl;
+    cout << "Large k utk query time: " << largeKTimeUTK / (float) q_num << endl;
+    log << "Large k utk query time: " << largeKTimeUTK / (float) q_num << endl;
+    cout << "Accumulated time: " << endl;
+    for (int j = 0; j < ctime.size(); ++j) {
+        cout << j+1 << " " << ctime[j] << endl;
+    }
     return;
 }
 
