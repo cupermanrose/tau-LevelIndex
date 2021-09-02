@@ -247,7 +247,7 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                 }
                 idx.UpdateH(*child_cell);
                 int UNUSED;
-                idx.UpdateV(*child_cell,UNUSED);
+//                idx.UpdateV(*child_cell,UNUSED);
                 vector<vector<float>> HS;
                 for (auto & it : child_cell->r.H){
                     HS.push_back(it.w);
