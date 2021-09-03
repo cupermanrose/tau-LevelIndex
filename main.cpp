@@ -61,7 +61,7 @@ void Config(int dim, int tau, int ik, string root_directory, string filename,
 
 void ParameterInput(int argc, char* argv[], int& dim, int& tau, int& ik,
                     string& root_directory, string& filename, string& func_str, string& build_str, int& q_num, int& k, string& query_str){
-    dim=4; tau=5; ik=5;
+    dim=4; tau=10; ik=10;
 //    root_directory="/home/jiahaozhang/data/klevel/";
     root_directory="/home/kemingli/klevel/";
 

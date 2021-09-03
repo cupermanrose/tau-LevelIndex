@@ -49,6 +49,8 @@ bool RegionDominate(vector<POINT> &V, vector<float> &oi, vector<float> &oj, int 
     return flag;
 }
 
+
+
 class ch{
     unordered_set<int> rest;
     unordered_map<int, int> pdtid_layer;
@@ -87,7 +89,19 @@ public:
 
 void build_onion(const std::string &s, int dim, int tau);
 void read_onion(const std::string &filename, vector<vector<int>> &ret);
-
+void utk_rskyband(vector<vector<float>>& region_v, const int dimen, Rtree& a_rtree, vector<int>& rskyband,
+                  vector<vector<float>>PG, unordered_map<long int, RtreeNode *> &ramTree, vector<int>& topk, int k=1);
+template<typename T>
+std::ostream &operator<<(std::ostream &out, const vector<T> &v) {
+    if (v.empty()) {
+        return out;
+    }
+    out << v[0];
+    for (auto i = 1; i < v.size(); ++i) {
+        out << ", " << v[i];
+    }
+    return out;
+}
 
 #endif //K_LEVEL_UTILS_H
 

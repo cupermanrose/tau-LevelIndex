@@ -77,6 +77,21 @@ float dist(const V1 &v1, const V2 &v2, int dim) {
     return sqrt(ret);
 }
 
+void test_rt2(Rtree& a_rtree, RtreeNode& node, set<int> &test, unordered_map<long int, RtreeNode *> &ramTree){
+    if(node.isLeaf()){
+        for (int i = 0; i <node.m_usedspace ; ++i) {
+            assert(test.find(node.m_entry[i]->m_id+MAXPAGEID)==test.end());
+            test.insert(node.m_entry[i]->m_id+MAXPAGEID);
+        }
+    }else{
+        for (int i = 0; i <node.m_usedspace ; ++i) {
+            assert(test.find(node.m_entry[i]->m_id)==test.end());
+            test.insert(node.m_entry[i]->m_id);
+            test_rt2(a_rtree, *ramTree[node.m_entry[i]->m_id], test, ramTree);
+        }
+    }
+}
+
 
 void kskyband(
         vector<int> &ret,
@@ -97,6 +112,10 @@ void kskyband(
             Rtree *rtree = nullptr;
             unordered_map<long int, RtreeNode *> ramTree;
             build_rtree(rtree, ramTree, data);
+            set<int> test;
+            RtreeNode *node=ramTree[rtree->m_memory.m_rootPageID];
+            test_rt2(*rtree, *node, test, ramTree);
+            cout<<"finish init rtree"<<endl;
             kskyband_rtree(ret, data, k, rtree, ramTree);
             // TODO release mem of rtree
         }
@@ -461,5 +480,113 @@ void read_onion(const string &filename, vector<vector<int>> &ret){
     }
 }
 
+float utk_orderScore(vector<float>& pivot, vector<float>& entry){
+    float ret=0;
+    for (int i = 0; i < pivot.size(); i++){
+        ret += pivot[i] * entry[i];
+    }
+    return ret;
+}
 
+
+bool r_dominate(vector<vector<float>>& vs, vector<float> &v1, vector<float>& v2){
+    for (auto &v:vs) {
+        vector<float> vc=v;
+        float s=0;
+        for (float val:vc) {
+            s+=val;
+        }
+        vc.push_back(1.0-s);
+        float s1=utk_orderScore(vc, v1);
+        float s2=utk_orderScore(vc, v2);
+        if(s1<s2){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool utk_countRegionDominator(int dimen, vector<float> &pt, vector<int>& rskyband, vector<vector<float>> &PG, vector<vector<float>>& vs, const int k)
+{
+    // pt, dim
+    // PG, dim
+    // vs, region vertexes, dim-1
+    if(rskyband.size()<k){
+        return true;
+    }
+    vector<float> record(dimen,0);
+    int count = 0;
+    for (int i : rskyband){
+        if(r_dominate(vs, PG[i], pt)) {
+            count++;
+            if (count >= k) {
+                return false;
+            }
+        }
+    }
+    return count<k;
+}
+
+void utk_rskyband(vector<vector<float>>& region_v, const int dimen, Rtree& a_rtree, vector<int>& rskyband,
+        vector<vector<float>>PG, unordered_map<long int, RtreeNode *> &ramTree, vector<int>&topk, int k){
+    // region_v: dim-1
+    // dimen:  dim
+    rskyband.clear();
+    vector<float> pivot(dimen, 0);
+    for (auto &v: region_v) {
+        for (int i = 0; i <v.size() ; ++i) {
+            pivot[i]+=v[i];
+        }
+    }
+    for (float & l : pivot) {
+        l/=region_v.size();
+    }
+    float one=1.0;
+    for (float & l: pivot) {
+        one-=l;
+    }
+    pivot[dimen-1]=one;
+    RtreeNode* node;
+    priority_queue<pair<float, int>> heap;
+    int NegPageid;
+    float maxscore;
+    int pageID;
+    float tmpScore;
+    unordered_set<long int> dominators;
+    heap.emplace(INFINITY, a_rtree.m_memory.m_rootPageID);
+    vector<float> pt(dimen, 0);
+    while (!heap.empty()){
+        tmpScore = heap.top().first;
+        pageID = heap.top().second;
+        heap.pop();
+        if (pageID >= MAXPAGEID){
+            if (utk_countRegionDominator(dimen, PG[pageID - MAXPAGEID], rskyband, PG, region_v, k)){
+                if(find(topk.begin(), topk.end(), pageID-MAXPAGEID)==topk.end()){
+                    rskyband.push_back(pageID - MAXPAGEID);
+                }
+            }
+        }else{
+            node = ramTree[pageID];
+            if (node->isLeaf()){
+                for (int i = 0; i < node->m_usedspace; i++){
+                    if (utk_countRegionDominator(dimen, PG[node->m_entry[i]->m_id], rskyband, PG, region_v, k)){
+                        maxscore = utk_orderScore(pivot, PG[node->m_entry[i]->m_id]);
+                        heap.push(make_pair(maxscore, node->m_entry[i]->m_id + MAXPAGEID));
+                    }
+                }
+            }
+            else{
+                for (int i = 0; i < node->m_usedspace; i++){
+                    for (int j = 0; j < dimen; j++){
+                        pt[j] = node->m_entry[i]->m_hc.getUpper()[j];
+                    }
+                    if (utk_countRegionDominator(dimen, pt, rskyband, PG, region_v, k)){
+                        maxscore = utk_orderScore(pivot, pt);
+                        heap.push(make_pair(maxscore, node->m_entry[i]->m_id));
+                    }
+                }
+            }
+        }
+    }
+}
 

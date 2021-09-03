@@ -59,6 +59,7 @@ public:
     void CreateNewCell(int p, vector<int>& S1, vector<int>& Sk, kcell& cur_cell,kcell& newcell);
     void AddHS(int o1, int o2, bool side, vector<halfspace>& H);
     void UpdateH(kcell& cur_cell);
+    void UpdateH_S1(kcell &cur_cell, vector<int> &S1);
     void UpdateV(kcell& cur_cell, int& ave_vertex);
     void LocalFilter(int k, vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int& ave_S1, int& ave_Sk);
     void rskyband(vector<int>& S1, vector<int>& Sk, kcell& cur_cell, int k);

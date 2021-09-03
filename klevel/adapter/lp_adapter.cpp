@@ -136,5 +136,4 @@ void lp_adapter::ComputeHP(vector<float> &o1, vector<float> &o2, vector<float> &
         w.push_back((o1[d] - o1_d) - (o2[d] - o2_d));
     }
     w.push_back(o2_d - o1_d);
-    return;
 }

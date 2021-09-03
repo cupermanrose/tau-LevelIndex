@@ -4,6 +4,7 @@
 
 #include "level.h"
 #include <chrono>
+#include <adapter/rtree_adapter.h>
 
 bool apply_onion_from_file=false;
 bool write_onion_to_file=false;
@@ -156,6 +157,21 @@ void level::initIdx(fstream& log){
     cout << "Init done!" << endl;
 }
 
+void test_rt(Rtree& a_rtree, RtreeNode& node, set<int> &test, unordered_map<long int, RtreeNode *> &ramTree){
+    if(node.isLeaf()){
+        for (int i = 0; i <node.m_usedspace ; ++i) {
+            assert(test.find(node.m_entry[i]->m_id+MAXPAGEID)==test.end());
+            test.insert(node.m_entry[i]->m_id+MAXPAGEID);
+        }
+    }else{
+        for (int i = 0; i <node.m_usedspace ; ++i) {
+            assert(test.find(node.m_entry[i]->m_id)==test.end());
+            test.insert(node.m_entry[i]->m_id);
+            test_rt(a_rtree, *ramTree[node.m_entry[i]->m_id], test, ramTree);
+        }
+    }
+}
+
 void level::Build(fstream& log, ofstream& idxout) {
     vector<int> S1,Sk;
     set<int> utk_set; utk_set.clear();
@@ -164,11 +180,9 @@ void level::Build(fstream& log, ofstream& idxout) {
     //for profiling
     clock_t tmp_profiling;
     double rskyband_time=0.0,verify_time=0.0,isFeasible_time=0.0,updateV_time=0.0;
-
     initIdx(log);
     clock_t level_zero_time=clock();
     for (int k=1;k<=ik;k++){
-
         clock_t level_k_time=clock();
         vector<kcell> this_level;
         region_map.clear();
@@ -181,7 +195,6 @@ void level::Build(fstream& log, ofstream& idxout) {
             tmp_profiling=clock();
             LocalFilter(tau, S1,Sk,*cur_cell,ave_S1,ave_Sk);
             rskyband_time+=(clock()-tmp_profiling);
-            bool feasible_f=false;
 
             for (auto p=S1.begin();p!=S1.end();p++){
 
@@ -200,23 +213,22 @@ void level::Build(fstream& log, ofstream& idxout) {
                         suc_split++;
                         utk_set.insert(newcell.objID);
                         this_level.emplace_back(newcell);
+                        UpdateH_S1(this_level.back(), S1);
                         region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
-                        feasible_f=true;
+                    }else{
+                        newcell.FreeMem();
                     }
-                }
-                else {
+                }else {
                     suc_split++;
+                    newcell.FreeMem();
                 }
-            }
-            if(!feasible_f){
-                feasible_f=true; // for debug
             }
         }
 
 
         //Compute V for each cell
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
-            UpdateH(*cur_cell);
+//            UpdateH(*cur_cell);
             HS_size+=cur_cell->r.H.size();
 //            assert(lp_adapter::is_Feasible(cur_cell->r.H,cur_cell->r.innerPoint,dim)); // compute innerPoint
             tmp_profiling=clock();
@@ -377,6 +389,27 @@ void level::UpdateH(kcell &cur_cell) {
     }
 }
 
+void level::UpdateH_S1(kcell &cur_cell, vector<int> &S1) {
+    // Replace halfspaces to compute the vertices of new region(merged)
+    int p=cur_cell.objID;
+    cur_cell.r.H.clear();
+    for (auto topi:cur_cell.topk) {
+        // the halfspace score(p)<score(*topi)
+        if (topi != p) {
+            AddHS(p, topi, false, cur_cell.r.H);
+        }
+    }
+
+    for (auto otheri: S1) {
+        // the halfspace score(p)>score(*otheri)
+        if (global_layer[otheri] <= cur_cell.curk) {
+            if(otheri!=p){
+                AddHS(p, otheri, true, cur_cell.r.H);
+            }
+        }
+    }
+}
+
 void level::UpdateV(kcell &cur_cell, int& ave_vertex) {
     if (dim>=3) qhull_adapter::ComputeVertex(cur_cell.r.H,cur_cell.r.V, cur_cell.r.innerPoint, dim);
     else qhull_adapter::ComputeVertex2D(cur_cell.r.H,cur_cell.r.V,cur_cell.r.innerPoint);
@@ -448,7 +481,6 @@ void level::print_system_info(fstream &log) {
     stat_stream.close();
 
     long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
-    cout<<"$"<<page_size_kb<<endl;
     vm_usage     = vsize / 1024.0 /1024.0; //MB
     resident_set = rss * page_size_kb /1024.0; //MB
 
@@ -714,58 +746,65 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
     double rskyband_time=0.0,verify_time=0.0,isFeasible_time=0.0,updateV_time=0.0;
 
     initIdx(log);
+    unordered_map<long int, RtreeNode *> ramTree;
+    Rtree *rtree_rt= nullptr;
+    build_rtree(rtree_rt, ramTree, Allobj);
     clock_t level_zero_time=clock();
     for (int k=1;k<=ik;k++){
 
         clock_t level_k_time=clock();
-        vector<kcell> this_level; this_level.clear(); region_map.clear();
+        vector<kcell> this_level;
+        region_map.clear();
         int valid_cell=0;
-
-        for (auto cur_cell=idx[k-1].begin(); cur_cell!=idx[k-1].end(); cur_cell++){
-            if ((cur_cell->curk!=0)&&(cur_cell->r.V.size()==0)) continue;
+        for (auto &cur_cell: idx[k-1]){
+            if ((cur_cell.curk!=0)&&(cur_cell.r.V.size()==0)) continue;
             valid_cell++;
             tmp_profiling=clock();
-            NoFilter(S1,Sk,*cur_cell);
+            if (cur_cell.curk==0){
+                S1.clear();
+                Sk.clear();
+                for (int i=0;i<Allobj.size();i++){
+                    if (global_layer[i]==1) {
+                        S1.push_back(i);
+                    }
+                    Sk.push_back(i);
+                }
+            }else{
+                utk_rskyband(cur_cell.r.V, dim, *rtree_rt, S1, Allobj, ramTree, cur_cell.topk);
+                unordered_set<int> s(cur_cell.Stau.begin(), cur_cell.Stau.end());
+                for (int i:cur_cell.topk) {
+                    s.erase(i);
+                }
+                Sk=vector<int>(s.begin(), s.end());
+            }
+            ave_S1+=S1.size();
+            ave_Sk+=Sk.size();
+
+//            NoFilter(S1,Sk,*cur_cell);
             rskyband_time+=(clock()-tmp_profiling);
 
             for (auto p=S1.begin();p!=S1.end();p++){
-                {// naive optimization from previous work
-                    if (global_layer[*p]>k) continue;
-                    bool flag = true;
-                    for (auto it=S1.begin();it!=S1.end();it++){
-                        if (*it==*p) continue;
-                        if (RegionDominate(cur_cell->r.V, Allobj[*p], Allobj[*it],dim)) {
-                            flag=false;
-                            break;
-                        }
-                    }
-                    if (!flag) continue;
-                }
-
-
                 kcell newcell;
-                CreateNewCell(*p, S1, Sk, *cur_cell, newcell);
+                CreateNewCell(*p, S1, Sk, cur_cell, newcell);
 
                 bool verify;
                 tmp_profiling=clock();
                 verify=VerifyDuplicate(newcell,this_level); // merge Stau
                 verify_time+=(clock()-tmp_profiling);
                 if (!verify){ // just for profiling
-                    bool isFeasible;
                     tmp_profiling=clock();
-                    isFeasible=lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim); // compute innerPoint
+                    bool isFeasible=lp_adapter::is_Feasible(newcell.r.H,newcell.r.innerPoint,dim); // compute innerPoint
                     isFeasible_time+=(clock()-tmp_profiling);
                     if (isFeasible){ // just for profiling
                         suc_split++;
                         utk_set.insert(newcell.objID);
                         this_level.emplace_back(newcell);
+                        UpdateH_S1(this_level.back(), S1);
                         region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
-                    }
-                    else {
+                    }else {
                         newcell.FreeMem();
                     }
-                }
-                else {
+                }else {
                     suc_split++;
                     newcell.FreeMem();
                 }
@@ -775,15 +814,16 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
 
         //Compute V for each cell
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
-            UpdateH(*cur_cell);
+//            UpdateH_S1(*cur_cell, S1);
+            HS_size+=cur_cell->r.H.size();
             tmp_profiling=clock();
             UpdateV(*cur_cell,ave_vertex);
             updateV_time+=(clock()-tmp_profiling);
         }
         cellsum+=this_level.size();
         idx.emplace_back(this_level);
-
         int ave_next = EdgeComputation(k-1);
+
         WriteToDisk(k-1, idxout);
         print_info(k, cellsum, valid_cell,level_zero_time,level_k_time,ave_S1,ave_Sk,ave_vertex, ave_next, suc_split, HS_size, utk_set,log);
         profiling(k,level_zero_time,rskyband_time,verify_time,isFeasible_time,updateV_time,log);
