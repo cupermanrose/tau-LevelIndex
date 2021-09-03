@@ -1,6 +1,3 @@
-//
-// Created by cuper on 2021/3/30.
-//
 
 #include "kcell.h"
 

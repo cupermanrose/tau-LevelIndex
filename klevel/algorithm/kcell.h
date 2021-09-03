@@ -1,6 +1,3 @@
-//
-// Created by cuper on 2021/3/30.
-//
 
 #ifndef K_LEVEL_KCELL_H
 #define K_LEVEL_KCELL_H
@@ -19,6 +16,7 @@ public:
     size_t hash_value;
     region r;
     vector<int> topk; // the top-kth in this region
+    vector<int> S1;
     vector<int> Stau; // top-tau candidates set
     vector<int> Next;
 

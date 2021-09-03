@@ -1,6 +1,3 @@
-//
-// Created by cuper on 2021/4/28.
-//
 
 #include "oru.h"
 #include "qp_adapter.h"

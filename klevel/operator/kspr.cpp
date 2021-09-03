@@ -1,6 +1,3 @@
-//
-// Created by cuper on 2021/4/16.
-//
 
 #include "kspr.h"
 #include <fstream>

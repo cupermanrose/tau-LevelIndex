@@ -1,6 +1,4 @@
-//
-// Created by cuper on 2021/4/16.
-//
+
 
 #ifndef K_LEVEL_KSPR_H
 #define K_LEVEL_KSPR_H

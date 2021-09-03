@@ -1,6 +1,3 @@
-//
-// Created by jiahao on 2021/3/30.
-//
 
 #ifndef K_LEVEL_LPADAPTER_H
 #define K_LEVEL_LPADAPTER_H

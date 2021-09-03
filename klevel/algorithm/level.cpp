@@ -1,6 +1,3 @@
-//
-// Created by cuper on 2021/3/30.
-//
 
 #include "level.h"
 #include <chrono>
@@ -213,7 +210,7 @@ void level::Build(fstream& log, ofstream& idxout) {
                         suc_split++;
                         utk_set.insert(newcell.objID);
                         this_level.emplace_back(newcell);
-                        UpdateH_S1(this_level.back(), S1);
+//                        UpdateH_S1(this_level.back(), S1);
                         region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
                     }else{
                         newcell.FreeMem();
@@ -228,7 +225,7 @@ void level::Build(fstream& log, ofstream& idxout) {
 
         //Compute V for each cell
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
-//            UpdateH(*cur_cell);
+            UpdateH(*cur_cell);
             HS_size+=cur_cell->r.H.size();
 //            assert(lp_adapter::is_Feasible(cur_cell->r.H,cur_cell->r.innerPoint,dim)); // compute innerPoint
             tmp_profiling=clock();
@@ -771,11 +768,12 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
                 }
             }else{
                 utk_rskyband(cur_cell.r.V, dim, *rtree_rt, S1, Allobj, ramTree, cur_cell.topk);
-                unordered_set<int> s(cur_cell.Stau.begin(), cur_cell.Stau.end());
-                for (int i:cur_cell.topk) {
-                    s.erase(i);
-                }
-                Sk=vector<int>(s.begin(), s.end());
+                utk_rskyband(cur_cell.r.V, dim, *rtree_rt, Sk, Allobj, ramTree, cur_cell.topk, k-cur_cell.curk);
+//                unordered_set<int> s(cur_cell.Stau.begin(), cur_cell.Stau.end());
+//                for (int i:cur_cell.topk) {
+//                    s.erase(i);
+//                }
+//                Sk=vector<int>(s.begin(), s.end());
             }
             ave_S1+=S1.size();
             ave_Sk+=Sk.size();
@@ -799,7 +797,8 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
                         suc_split++;
                         utk_set.insert(newcell.objID);
                         this_level.emplace_back(newcell);
-                        UpdateH_S1(this_level.back(), S1);
+//                        UpdateH_S1(this_level.back(), S1);
+//                        this_level.back().S1=S1;
                         region_map.insert(make_pair(newcell.hash_value,this_level.size()-1));
                     }else {
                         newcell.FreeMem();
@@ -814,7 +813,7 @@ void level::Build_nofilter(fstream& log, ofstream& idxout) {
 
         //Compute V for each cell
         for (auto cur_cell=this_level.begin();cur_cell!=this_level.end();cur_cell++){
-//            UpdateH_S1(*cur_cell, S1);
+            UpdateH(*cur_cell);
             HS_size+=cur_cell->r.H.size();
             tmp_profiling=clock();
             UpdateV(*cur_cell,ave_vertex);

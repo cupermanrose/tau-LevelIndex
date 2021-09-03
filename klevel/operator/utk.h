@@ -1,6 +1,3 @@
-//
-// Created by cuper on 2021/4/16.
-//
 
 #ifndef K_LEVEL_UTK_H
 #define K_LEVEL_UTK_H
