@@ -6,7 +6,7 @@
 void kspr::generate_query(level &idx, int q_num, vector<int> &q_list) {
     srand(0); // random seed
     q_list.clear();
-    fstream kspr_query("/home/jiahaozhang/data/klevel/query/kspr/kspr_id_10000.txt",ios::in);
+    fstream kspr_query("~/data/klevel/query/kspr/kspr_id_10000.txt",ios::in);
     for (int i=0;i<q_num;i++){
         int id;
         for (int i=0;i<100;i++) kspr_query >> id;

@@ -334,7 +334,7 @@ void utk::SplitDFS(level& idx, kcell& cell, vector<float> &Qregion, int qk, unor
     vector<vector<float>> q_list;
 
     generate_query(idx,q_num, utk_side_length, q_list);
-//   string queryfile="/home/kemingli/klevel/query/utk/utk_query_4d_l0.001.txt";
+//   string queryfile="~/klevel/query/utk/utk_query_4d_l0.001.txt";
 //    fstream queryout(queryfile, ios::in);
 //    for (int i=0;i<q_num;i++){
 //        float tmp;

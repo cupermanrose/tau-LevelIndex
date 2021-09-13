@@ -396,7 +396,6 @@ ch::~ch() {
 void build_onion(const string &s, int dim, int tau){
 //    int dim=7;
 //    int tau=20; // NBA: tau=30
-//    string s="/home/kemingli/klevel/data/anti/ANTI400K7";
     string input=s+".dat";
     fstream fin(input, ios::in);
     vector<vector<float>> data;
