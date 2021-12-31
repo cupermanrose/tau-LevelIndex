@@ -527,7 +527,7 @@ bool utk_countRegionDominator(int dimen, vector<float> &pt, vector<int>& rskyban
 }
 
 void utk_rskyband(vector<vector<float>>& region_v, const int dimen, Rtree& a_rtree, vector<int>& rskyband,
-        vector<vector<float>>PG, unordered_map<long int, RtreeNode *> &ramTree, vector<int>&topk, int k){
+        vector<vector<float>>&PG, unordered_map<long int, RtreeNode *> &ramTree, vector<int>&topk, int k){
     // region_v: dim-1
     // dimen:  dim
     rskyband.clear();

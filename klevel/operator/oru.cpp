@@ -4,7 +4,8 @@
 void oru::generate_query(level &idx, int q_num, vector<vector<float>>& q_list) {
     srand(0); // random seed
     q_list.clear();
-    for (int i=0;i<q_num;i++){
+    for (int i=0;i<q_num;i++){ // generate user preference uniform under the constraint \sum v_i=1,
+        // to understand this code, you may need some knowledge of definite in
         vector<float> v(idx.dim-1,0.0);
         float res=1.0;
         for (int d=0;d<idx.dim-1;d++){
@@ -183,17 +184,12 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
         oru_ret_dis=heap.begin()->first;
         heap.erase(heap.begin());
         ++pop_cnt;
-//        int rsize=ret_option.size();
-//        if(nearest_cell->curk==k)
         for(auto &i:nearest_cell->topk){
             ret_option.insert(i);
         }
-//        if(ret_option.size()!=rsize){
-//            cout<<nearest_cell->topk<<endl;
-//        }
         if(nearest_cell->curk<k){
             clock_t b=clock();
-            if(nearest_cell->Next.empty()){
+            if(nearest_cell->Next.empty() || nearest_cell->curk>=idx.ik){
 //                vector<kcell> NextCell;
 //                idx.SingleCellSplit(k, nearest_cell,NextCell);
                 vector<int> S1,Sk;
@@ -204,10 +200,10 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
                     auto *newcell=new kcell();
                     idx.CreateNewCell(*p,S1,Sk, *nearest_cell, *newcell);
                     std::size_t hashv=oru_non_order_butk_hash(newcell->topk, newcell->objID);
-//                    if(nr_added.find(hashv)!=nr_added.end()){
-//                        delete (newcell);
-//                        continue;
-//                    }
+                    if(nr_added.find(hashv)!=nr_added.end()){
+                        delete (newcell);
+                        continue;
+                    }
                     idx.UpdateH(*newcell);
                     vector<vector<float>> HS;
                     for (auto & it : newcell->r.H){
@@ -232,31 +228,32 @@ float oru::single_query(level &idx, int k, int ret_size, vector<float>& q, fstre
 
                 }
 
-            }
-            for(auto &i:nearest_cell->Next){
-                assert(nearest_cell->curk<=idx.ik);
-                kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
-                std::size_t hashv=oru_non_order_butk_hash(child_cell->topk, child_cell->objID);
-                if(nr_added.find(hashv)!=nr_added.end()){
-                    continue;
-                }else{
-                    nr_added.insert(hashv);
-                }
-                idx.UpdateH(*child_cell);
-                int UNUSED;
-//                idx.UpdateV(*child_cell,UNUSED);
-                vector<vector<float>> HS;
-                for (auto & it : child_cell->r.H){
-                    HS.push_back(it.w);
-                    if(it.side){// this is importance !!!!!!!
-                        for(auto &j: HS.back()){
-                            j=-j;
+            }else{
+                for(auto &i:nearest_cell->Next){
+                    assert(nearest_cell->curk<=idx.ik);
+                    kcell *child_cell=&cells[nearest_cell->curk+1][i];// cell
+                    std::size_t hashv=oru_non_order_butk_hash(child_cell->topk, child_cell->objID);
+                    if(nr_added.find(hashv)!=nr_added.end()){
+                        continue;
+                    }else{
+                        nr_added.insert(hashv);
+                    }
+                    idx.UpdateH(*child_cell);
+                    int UNUSED;
+                    vector<vector<float>> HS;
+                    for (auto & it : child_cell->r.H){
+                        HS.push_back(it.w);
+                        if(it.side){// this is importance !!!!!!!
+                            for(auto &j: HS.back()){
+                                j=-j;
+                            }
                         }
                     }
+                    double dis=getDistance(q,HS);
+                    heap.emplace(dis, child_cell);
+                    ++push_cnt;
                 }
-                double dis=getDistance(q,HS);
-                heap.emplace(dis, child_cell);
-                ++push_cnt;
+
             }
 
             clock_t e=clock();

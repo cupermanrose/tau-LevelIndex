@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 project(k_level)
 
 set(CMAKE_CXX_STANDARD 14)
-
 ### add qhull
 include_directories(/usr/local/include/libqhullcpp)
 ### qhullstatic reentrant library
@@ -17,7 +16,6 @@ add_dependencies(libqhullcpp qhull)
 
 ### add osqp
 find_package(osqp REQUIRED)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-as-needed -O3 -Wall -ldl")
 
 
@@ -71,6 +69,8 @@ add_executable(${PROJECT_NAME}
         klevel/operator/utk.cpp
         klevel/operator/oru.h
         klevel/operator/oru.cpp
+        klevel/operator/topk.h
+        klevel/operator/topk.cpp
 
 
         lib/lp_lib/bfp/bfp_LUSOL/lp_LUSOL.h
@@ -189,6 +189,7 @@ if(Boost_FOUND)
 else()
     message(STATUS "This program requires the boost library, and will not be compiled.")
 endif()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE osqp::osqpstatic)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE libqhullcpp)

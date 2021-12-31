@@ -7,12 +7,9 @@ void utk::generate_query(level &idx, int q_num, float utk_side_length, vector<ve
     q_list.clear();
     for (int i=0;i<q_num;i++){
         vector<float> v((idx.dim-1)*2,0.0);
-        /*float res=rand()/RAND_MAX-utk_side_length*(idx.dim-1);
-        if (res<0) res=1.0-utk_side_length*(idx.dim-1);*/
         double res=0 > (1.0-(idx.dim-1)*utk_side_length)? 0 : (1.0-(idx.dim-1)*utk_side_length);
         for (int d=0;d<idx.dim-1;d++){
             v[d*2] = res*(1.0-pow((double)random()/RAND_MAX,  1.0/(idx.dim-d-1)));
-//            v[d*2] = (1.0-utk_side_length) < v[d*2] ? (1-utk_side_length) : v[d*2];
             v[d*2+1] = v[d*2]+utk_side_length;
             res-=v[d*2];
         }
@@ -99,7 +96,7 @@ void utk::single_query(level &idx, int k, vector<float> &Qregion, int& visit_sum
     int visit=0, result=0, ave_vertex=0;
     vector<vector<kcell>> queue;
     for (int i=0;i<=k;i++){
-        queue.push_back({});
+        queue.emplace_back();
     }
     queue[0].push_back(idx.idx[0][0]); // only contains rootcell
     set<int> results; results.clear();

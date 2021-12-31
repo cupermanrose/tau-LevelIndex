@@ -4,6 +4,10 @@
 
 void PTFBuild(level& idx, string datafile, fstream& log, string idxfile) {
     ofstream idxout(idxfile);
+    if(!idxout.is_open()){
+        cout<<"can not open index file: "<<idxfile<<endl;
+        exit(-1);
+    }
     idx.LoadData(datafile);
     idx.Build(log,idxout);
     log.close();
@@ -43,10 +47,16 @@ void INSBuild(level& idx, string datafile, fstream& log, string idxfile) {
 }*/
 
 void LoadIndex(level& idx, string datafile, fstream& log, string idxfile) { // Need debug for Edge Compuation
-    ifstream idxin(idxfile);
+
     idx.LoadData(datafile);
     vector<int> candidate;
     idx.GlobalFilter(log,candidate);
+
+    ifstream idxin(idxfile);
+    if(!idxin.is_open()){
+        cout<<"can not open index file: "<<idxfile<<endl;
+        exit(-1);
+    }
 
     for (int k=0;k<=idx.ik;k++){
         vector<kcell> this_level; this_level.clear();

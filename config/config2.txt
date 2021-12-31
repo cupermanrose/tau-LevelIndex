@@ -1,0 +1,15 @@
+dim=4    # dimension of the input file "filename"
+tau=10   # the maximum query supporting k
+ik=10    # the level number of index
+# when tau>ik, query is answered as firstly using index and then adapting to query, see more in /klevel/operator
+# when tau<ik, we only build index level to tau
+root_directory=~/klevel/   # the root directory of data/, index/, log/
+filename=inde/U400K4       # which option dataset you want to run, see more in data/
+func_str=loadidx          # "buildidx" or "loadidx", you have to build success and then use built index to load and answer query
+build_str=PTF              # build or load with which algorithm, INS, PT, or PTF
+query_str=utk             # kspr, utk, oru, and topk, only works when "func_str=loadidx"
+q_num=30                   # query number, only works when "func_str=loadidx"
+k=10                       # query k
+# tau and ik are about index building and loading, k is about query answering
+# if tau>=k, then the built index can answer corresponding query
+

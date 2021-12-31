@@ -1,7 +1,11 @@
 
 #include "level.h"
 #include <chrono>
+#include <algorithm>
 #include <adapter/rtree_adapter.h>
+#include <random>       // std::default_random_engine
+#include <unistd.h>
+
 
 bool apply_onion_from_file=false;
 bool write_onion_to_file=false;
@@ -25,6 +29,10 @@ level::~level() {
 
 void level::LoadData(string datafile) {
     fstream fin(datafile, ios::in);
+    if(!fin.is_open()){
+        cout<<"fail to open "<<datafile<<endl;
+        exit(-1);
+    }
     OriginD.clear();
     vector<float> cl(dim);
     vector<float> cu(dim);
@@ -144,7 +152,6 @@ void level::GlobalFilter(fstream& log, vector<int> &candidate) {
 void level::initIdx(fstream& log){
     vector<int> candidate;
     GlobalFilter(log,candidate);
-
     idx.clear();
     kcell rootcell; rootcell.TobeRoot(candidate, dim); rootcell.Get_HashValue();
     vector<kcell> Lzero;
@@ -691,7 +698,12 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
 
     int cnt=0;
     clock_t cur_time=clock();
-    for (int id=0;id<Allobj.size();id++){
+
+    vector<int> ids(Allobj.size());
+    iota(ids.begin(), ids.end(), 0);
+    shuffle(ids.begin(), ids.end(), default_random_engine(0));
+    for(int id:ids){
+//    for (int id=0;id<Allobj.size();id++){
         int size=L.size();
         for (int i=0;i<size;i++) {
             if ((L[i].r.V.size()==0)&(L[i].curk!=0)) L[i].curk=ik+1;

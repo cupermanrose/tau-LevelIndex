@@ -90,7 +90,7 @@ public:
 void build_onion(const std::string &s, int dim, int tau);
 void read_onion(const std::string &filename, vector<vector<int>> &ret);
 void utk_rskyband(vector<vector<float>>& region_v, const int dimen, Rtree& a_rtree, vector<int>& rskyband,
-                  vector<vector<float>>PG, unordered_map<long int, RtreeNode *> &ramTree, vector<int>& topk, int k=1);
+                  vector<vector<float>>&PG, unordered_map<long int, RtreeNode *> &ramTree, vector<int>& topk, int k=1);
 template<typename T>
 std::ostream &operator<<(std::ostream &out, const vector<T> &v) {
     if (v.empty()) {
