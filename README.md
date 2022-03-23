@@ -1,11 +1,8 @@
-#   ![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5Ctau%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) -levelIndex
+#   ![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5Ctau%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)-levelIndex
 
 This is a cmake project, which also means it is a C plus plus project for paper:
 
-![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5Ctau%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) 
--levelIndex: Towards Efficient Query Processing in Continuous Preference Space
-
-(TODO: when paper is accepted, please add the paper website here).
+![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5Ctau%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)-levelIndex: Towards Efficient Query Processing in Continuous Preference Space
 
 This project require serveral libraries, e.g., 
 - Qhull, a lib that computes the convex hull, Delaunay triangulation, Voronoi diagram, halfspace intersection about a point, furthest-site Delaunay triangulation, and furthest-site Voronoi diagram. Its official website is http://www.qhull.org/  
@@ -76,7 +73,7 @@ Step 2 install gdb, Qhull,  boost, and osqp<br />
 ------------
   ```
   cd ~
-  git clone https://github.com/a2xldmVs/klevel.git # TODO: when paper accepted, change this adress
+  git clone https://github.com/a2xldmVs/klevel.git 
   cd klevel 
   mkdir build
   cd build
@@ -88,20 +85,17 @@ Step 2 install gdb, Qhull,  boost, and osqp<br />
  Step 4: run this project
  ------------
  We have set some config files in config/ <br />
- You can build an index as setting in config1.txt and run as:
- (TODO, after paper accepted, provide the link to full dataset)
+ You can build an index as setting in config_build1.txt and run as:
  ```
-./k_level ../config/config1.txt
+./k_level ../config/config_build1.txt
 ```
 After building an index file, you could load that index file and 
-answer some queries such as utk as setting in config2.txt and run as:
+answer some queries such as utk as setting in config_query1.txt and run as:
 ```
-./k_level ../config/config2.txt
+./k_level ../config/config_query1.txt
 ```
-See more explanation details in config1.txt or config2.txt
+See more explanation details in config_build1.txt or config_query1.txt
 
-Copy Right
-------------
-- TODO, add paper citation format after accepted
-- TODO, add license after accepted
-- TODO, add code author contact email after accepted
+Dataset
+--------
+The full dataset can be accessed by https://drive.google.com/drive/folders/1TaUDTRGgEVmkSvdTbDbYQb5LH0r6gNdm?usp=sharing
