@@ -701,7 +701,7 @@ void level::IncBuild(fstream& log, ofstream& idxout) {
 
     vector<int> ids(Allobj.size());
     iota(ids.begin(), ids.end(), 0);
-    shuffle(ids.begin(), ids.end(), default_random_engine(0));
+//    shuffle(ids.begin(), ids.end(), default_random_engine(0));
     for(int id:ids){
 //    for (int id=0;id<Allobj.size();id++){
         int size=L.size();

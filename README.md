@@ -1,6 +1,6 @@
 #   ![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5Ctau%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) -levelIndex
 
-This is a cmake project, which also means it is a C plus plus project for paper
+This is a cmake project, which also means it is a C plus plus project for paper:
 
 ![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5Ctau%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) 
 -levelIndex: Towards Efficient Query Processing in Continuous Preference Space
@@ -15,8 +15,8 @@ This project require serveral libraries, e.g.,
 - osqp, a Quadratic Programming lib and its offcial website is https://osqp.org/
 
 In the next section, we introduce how to install the lib mentioned above one by one.
-(to those who familiar with cmake you can skip step 3 and 4, 
-and load this project with cmake a IDE, e.g., CLion, https://www.jetbrains.com/clion/; of course, 
+(to those who is familiar with cmake you can skip step 3 and 4, 
+and load this project with a cmake IDE, e.g., CLion, https://www.jetbrains.com/clion/; of course, 
 make sure your path is correct respecting to step 4)
 
 Step 1: download make and cmake <br />
@@ -104,4 +104,4 @@ Copy Right
 ------------
 - TODO, add paper citation format after accepted
 - TODO, add license after accepted
-- TODO, add code author email after accepted
+- TODO, add code author contact email after accepted
