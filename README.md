@@ -55,7 +55,7 @@ Step 2 install gdb, Qhull,  boost, and osqp<br />
   To install boost
   ```
   sudo apt-get update
-  sudo apt-get install libboost-all-dev
+  sudo apt-get install libboost-all-dev # after install boost, please check the version of it and change CMakeList.txt of Boost's version
   ```  
 
   To install osqp
